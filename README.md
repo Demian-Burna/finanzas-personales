@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finanzas Personales
 
-## Getting Started
+Aplicación de gestión de finanzas personales construida con Next.js 14, Supabase y TypeScript.
 
-First, run the development server:
+## Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Base de datos**: Supabase (PostgreSQL)
+- **Autenticación**: Supabase Auth
+- **Estado global**: Zustand
+- **Server state / caché**: TanStack Query v5
+- **UI**: shadcn/ui + Tailwind CSS v3
+- **Validación**: Zod
+- **Lenguaje**: TypeScript estricto
+
+## Requisitos previos
+
+- Node.js 18.17+
+- npm 9+
+- Cuenta en [Supabase](https://supabase.com)
+
+## Setup
+
+### 1. Clonar e instalar dependencias
+
+```bash
+git clone <repo-url>
+cd finanzas-personales
+npm install
+```
+
+### 2. Configurar variables de entorno
+
+```bash
+cp .env.local.example .env.local
+```
+
+Edita `.env.local` con tus credenciales de Supabase:
+
+| Variable | Descripción |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL de tu proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima pública |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio (solo en servidor) |
+| `NEXT_PUBLIC_APP_URL` | URL de la app (localhost:3000 en desarrollo) |
+
+### 3. Configurar Supabase
+
+1. Crea un proyecto en [supabase.com](https://supabase.com)
+2. Copia la URL y las claves desde **Project Settings → API**
+3. Ejecuta las migraciones desde `supabase/migrations/` (próximamente)
+
+### 4. Ejecutar en desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # Servidor de desarrollo (Turbopack)
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run lint         # ESLint
+npm run lint:fix     # ESLint con auto-fix
+npm run format       # Prettier
+npm run analyze      # Bundle analyzer (requiere build previo)
+npm run type-check   # Verificación de tipos TypeScript
+```
 
-## Learn More
+## Estructura del proyecto
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── (auth)/login/          # Página de login
+│   ├── (dashboard)/           # Área autenticada
+│   │   ├── layout.tsx         # Layout con sidebar/nav
+│   │   ├── page.tsx           # Overview/resumen
+│   │   ├── transactions/      # Transacciones
+│   │   ├── budgets/           # Presupuestos
+│   │   ├── goals/             # Metas financieras
+│   │   ├── reports/           # Reportes y análisis
+│   │   └── settings/          # Configuración
+│   ├── api/                   # Route handlers
+│   ├── layout.tsx             # Root layout (fuentes, providers)
+│   └── globals.css
+├── components/
+│   ├── ui/                    # Componentes shadcn/ui
+│   ├── charts/                # Gráficas personalizadas
+│   ├── forms/                 # Formularios de dominio
+│   ├── layout/                # Sidebar, Navbar, etc.
+│   └── shared/                # Componentes reutilizables
+├── lib/
+│   ├── supabase/              # Clientes Supabase (client/server/middleware)
+│   ├── validations/           # Schemas Zod
+│   ├── utils/                 # Funciones utilitarias
+│   └── constants/             # Constantes de dominio
+├── hooks/                     # Custom React hooks
+├── stores/                    # Zustand stores
+├── types/                     # Tipos TypeScript globales
+└── styles/                    # Estilos adicionales
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Análisis de bundle
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+ANALYZE=true npm run build
+```
 
-## Deploy on Vercel
+## Licencia
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
