@@ -176,11 +176,10 @@ function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
   )
 }
 
-function ContributeModal({ goal, accounts, currency, locale, onClose, onSubmit, isPending }: {
+function ContributeModal({ goal, accounts, currency, onClose, onSubmit, isPending }: {
   goal: SavingGoalWithContributions
   accounts: AccountWithType[]
   currency: string
-  locale: string
   onClose: () => void
   onSubmit: (values: GoalContributionInput, accountId: string | null) => void
   isPending: boolean
