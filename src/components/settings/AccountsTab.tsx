@@ -11,7 +11,7 @@ import {
   useSortable, arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Plus, Edit, Archive } from 'lucide-react'
+import { GripVertical, Plus, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 import { useForm, Controller } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
@@ -60,10 +60,9 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 
-function SortableRow({ account, onEdit, onArchive }: {
+function SortableRow({ account, onEdit }: {
   account: AccountWithType
   onEdit: (a: AccountWithType) => void
-  onArchive: (id: string) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: account.id })
   const style = { transform: CSS.Transform.toString(transform), transition }
@@ -332,7 +331,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
         <SortableContext items={accounts.map((a) => a.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {accounts.map((a) => (
-              <SortableRow key={a.id} account={a} onEdit={setEditAccount} onArchive={handleArchive} />
+              <SortableRow key={a.id} account={a} onEdit={setEditAccount} />
             ))}
           </div>
         </SortableContext>
