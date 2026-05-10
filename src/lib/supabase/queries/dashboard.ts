@@ -60,6 +60,10 @@ export async function getDashboardStats(
     args,
   )
 
+  if (error) {
+    console.error('[dashboard_stats] RPC error:', JSON.stringify(error))
+  }
+
   return { data: data as DashboardStats | null, error }
 }
 

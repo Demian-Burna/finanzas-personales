@@ -9,7 +9,15 @@ interface Props {
 
 export function StatsSection({ data, currency, locale }: Props) {
   if (!data) {
-    return <StatsSectionSkeleton />
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-xl border bg-card p-5 shadow-sm">
+            <p className="text-xs text-muted-foreground">Sin datos</p>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   // RPC returns savings_rate as a percentage already (e.g. 35.5 = 35.5%)
