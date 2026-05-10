@@ -77,6 +77,14 @@ export function BudgetsClient({ budgets, categories, currency, locale }: Props) 
 
   return (
     <div className="space-y-5">
+      {/* Header action — always visible, not just on empty state */}
+      <div className="flex justify-end">
+        <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 hidden sm:inline-flex">
+          <Plus className="size-4" />
+          Nuevo presupuesto
+        </Button>
+      </div>
+
       {/* Alert banner */}
       {alertBudgets.length > 0 && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">

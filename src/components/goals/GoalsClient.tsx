@@ -262,6 +262,16 @@ export function GoalsClient({ goals, currency, locale }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Always-visible new button on desktop */}
+      {goals.length > 0 && (
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 hidden sm:inline-flex">
+            <Plus className="size-4" />
+            Nueva meta
+          </Button>
+        </div>
+      )}
+
       {goals.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
           <Target className="size-10 mx-auto text-muted-foreground/40 mb-3" />

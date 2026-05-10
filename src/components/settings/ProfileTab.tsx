@@ -86,7 +86,7 @@ export function ProfileTab({ profile, userEmail }: Props) {
   const initials = (profile?.display_name ?? userEmail ?? '?')[0]?.toUpperCase() ?? '?'
 
   return (
-    <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6 max-w-lg">
+    <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6 max-w-lg mx-auto lg:mx-0">
       {/* Avatar */}
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -157,33 +157,32 @@ export function ProfileTab({ profile, userEmail }: Props) {
         )} />
       </div>
 
-      <div className="flex items-center justify-between pt-2">
-        <Button type="submit" disabled={isPending || isUploading}>
-          {isPending ? 'Guardando...' : 'Guardar cambios'}
-        </Button>
+      {/* Save button */}
+      <Button type="submit" disabled={isPending || isUploading}>
+        {isPending ? 'Guardando...' : 'Guardar cambios'}
+      </Button>
 
-        {/* Mobile-only actions: theme toggle + sign-out (sidebar hidden on mobile) */}
-        <div className="lg:hidden flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            aria-label="Cambiar modo"
-          >
-            {resolvedTheme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
-            disabled={isSigningOut}
-            onClick={() => startSignOut(async () => { await signOut() })}
-          >
-            <LogOut className="size-4" />
-            {isSigningOut ? 'Saliendo...' : 'Cerrar sesión'}
-          </Button>
-        </div>
+      {/* Mobile-only: theme toggle + sign out — shown as full-width rows, not cramped inline */}
+      <div className="lg:hidden space-y-2 pt-2 border-t">
+        <button
+          type="button"
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          {resolvedTheme === 'dark'
+            ? <Sun className="size-4 shrink-0" />
+            : <Moon className="size-4 shrink-0" />}
+          <span>{resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}</span>
+        </button>
+        <button
+          type="button"
+          disabled={isSigningOut}
+          onClick={() => startSignOut(async () => { await signOut() })}
+          className="flex w-full items-center gap-3 rounded-lg border border-destructive/30 px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+        >
+          <LogOut className="size-4 shrink-0" />
+          <span>{isSigningOut ? 'Saliendo...' : 'Cerrar sesión'}</span>
+        </button>
       </div>
     </form>
   )

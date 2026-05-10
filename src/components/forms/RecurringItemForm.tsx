@@ -59,6 +59,7 @@ export function RecurringItemForm({
 
   const form = useForm<RecurringItemInput>({
     resolver: recurringResolver,
+    mode: 'onChange',
     defaultValues: {
       transaction_type: 'expense',
       account_id: '',
@@ -214,7 +215,7 @@ export function RecurringItemForm({
               )}
             />
             {form.formState.errors.account_id && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.account_id.message}</p>
+              <p className="mt-1 text-xs text-destructive">{String(form.formState.errors.account_id.message)}</p>
             )}
           </div>
 
