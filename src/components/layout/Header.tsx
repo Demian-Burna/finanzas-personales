@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { Sun, Moon, Monitor, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
