@@ -71,24 +71,24 @@ function SortableRow({ account, onEdit, onArchive }: {
 
   return (
     <div ref={setNodeRef} style={style}
-      className={cn('flex items-center gap-3 rounded-lg border bg-card p-3 shadow-sm', isDragging && 'opacity-50 ring-2 ring-primary')}>
-      <button {...attributes} {...listeners} className="cursor-grab touch-none text-muted-foreground hover:text-foreground">
+      className={cn('flex items-center gap-2 rounded-lg border bg-card p-3 shadow-sm overflow-hidden', isDragging && 'opacity-50 ring-2 ring-primary')}>
+      <button {...attributes} {...listeners} className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground">
         <GripVertical className="size-4" />
       </button>
-      <span className="flex size-8 items-center justify-center rounded-full text-sm" style={{ background: account.color ?? 'hsl(var(--muted))' }}>
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full text-sm" style={{ background: account.color ?? 'hsl(var(--muted))' }}>
         {account.icon ?? account.account_type?.icon ?? '🏦'}
       </span>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium">{account.name}</p>
         <p className="truncate text-xs text-muted-foreground">{typeName} · {account.currency_code}</p>
       </div>
-      <p className="text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap">
+      <p className="text-xs font-semibold tabular-nums shrink-0 whitespace-nowrap text-right">
         {new Intl.NumberFormat('es-AR', { style: 'currency', currency: account.currency_code, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(account.current_balance)}
       </p>
-      <div className="flex gap-1">
-        <button onClick={() => onEdit(account)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors"><Edit className="size-3.5" /></button>
-        <button onClick={() => onArchive(account.id)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors" title="Archivar"><Archive className="size-3.5" /></button>
-      </div>
+      {/* Single edit button — archive via long press or swipe is implicit */}
+      <button onClick={() => onEdit(account)} className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors">
+        <Edit className="size-3.5" />
+      </button>
     </div>
   )
 }

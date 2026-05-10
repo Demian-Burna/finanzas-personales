@@ -168,7 +168,7 @@ export function ProfileTab({ profile, userEmail }: Props) {
       </div>
 
       {/* Save */}
-      <Button type="submit" disabled={isPending || isUploading} className="w-full sm:w-auto">
+      <Button type="submit" disabled={isPending || isUploading}>
         {isPending ? 'Guardando...' : 'Guardar cambios'}
       </Button>
 
