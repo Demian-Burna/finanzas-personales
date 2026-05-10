@@ -5,11 +5,12 @@ export const transactionSchema = z
     transaction_type: z.enum(['income', 'expense', 'transfer'], {
       message: 'Tipo de transacción inválido',
     }),
-    account_id: z.string().uuid('Cuenta inválida'),
+    account_id: z.string().uuid('Seleccioná una cuenta'),
     transfer_account_id: z.string().uuid().nullable().optional(),
     category_id: z.string().uuid().nullable().optional(),
     currency_code: z.string().min(3).max(3),
-    amount: z.number().positive('El monto debe ser positivo'),
+    // z.coerce.number() handles string→number from HTML inputs (valueAsNumber quirks)
+    amount: z.coerce.number().positive('El monto debe ser mayor a 0'),
     description: z.string().min(1, 'La descripción es requerida').max(255),
     notes: z.string().max(1000).nullable().optional(),
     transaction_date: z.string().min(1, 'La fecha es requerida'),

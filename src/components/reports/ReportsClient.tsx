@@ -50,8 +50,8 @@ export function ReportsClient({
   }
 
   return (
-    <Tabs defaultValue="monthly" className="space-y-6">
-      <TabsList className="w-full sm:w-auto">
+    <Tabs defaultValue="monthly" className="flex-col space-y-6">
+      <TabsList className="w-full overflow-x-auto">
         <TabsTrigger value="monthly">Resumen mensual</TabsTrigger>
         <TabsTrigger value="category">Por categoría</TabsTrigger>
         <TabsTrigger value="cashflow">Flujo de caja</TabsTrigger>

@@ -51,8 +51,8 @@ export default async function SettingsPage() {
         <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicación</p>
       </div>
 
-      <Tabs defaultValue="profile">
-        <TabsList className="w-full sm:w-auto">
+      <Tabs defaultValue="profile" className="flex-col">
+        <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="profile">Perfil</TabsTrigger>
           <TabsTrigger value="accounts">Cuentas</TabsTrigger>
           <TabsTrigger value="categories">Categorías</TabsTrigger>
