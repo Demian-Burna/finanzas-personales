@@ -1,1095 +1,330 @@
 // ============================================================
-// Database types — auto-generated from Supabase schema
-// ============================================================
-// DO NOT EDIT MANUALLY.
-// Regenerate with one of:
-//   npx supabase gen types typescript --project-id nydbzuyjucnoiqulrxwm > src/types/database.ts
-//   (or use the Supabase MCP `generate_typescript_types` tool)
-//
-// Domain enums (TransactionType, BudgetPeriod, …) and the
-// strongly-typed Row/Insert/Update helpers live in `./domain.ts`.
+// Database types — generated from Supabase schema
+// Regenerate with: npx supabase gen types typescript --local > src/types/database.ts
 // ============================================================
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
-export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: '14.5'
-  }
+export interface Database {
   public: {
     Tables: {
-      account_types: {
+      profiles: {
         Row: {
-          icon: string | null
           id: string
-          name: string
-          nature: string
-          sort_order: number
-        }
-        Insert: {
-          icon?: string | null
-          id?: string
-          name: string
-          nature: string
-          sort_order?: number
-        }
-        Update: {
-          icon?: string | null
-          id?: string
-          name?: string
-          nature?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      accounts: {
-        Row: {
-          account_type_id: string
-          color: string | null
-          created_at: string
+          display_name: string | null
+          avatar_url: string | null
           currency_code: string
-          current_balance: number
-          deleted_at: string | null
-          description: string | null
-          icon: string | null
-          id: string
-          include_in_net_worth: boolean
-          initial_balance: number
-          is_active: boolean
-          name: string
-          sort_order: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          account_type_id: string
-          color?: string | null
-          created_at?: string
-          currency_code?: string
-          current_balance?: number
-          deleted_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string
-          include_in_net_worth?: boolean
-          initial_balance?: number
-          is_active?: boolean
-          name: string
-          sort_order?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          account_type_id?: string
-          color?: string | null
-          created_at?: string
-          currency_code?: string
-          current_balance?: number
-          deleted_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string
-          include_in_net_worth?: boolean
-          initial_balance?: number
-          is_active?: boolean
-          name?: string
-          sort_order?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'accounts_account_type_id_fkey'
-            columns: ['account_type_id']
-            isOneToOne: false
-            referencedRelation: 'account_types'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'accounts_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'accounts_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      budgets: {
-        Row: {
-          alert_threshold_pct: number
-          amount: number
-          category_id: string
+          locale: string
+          timezone: string
+          onboarding_completed_at: string | null
           created_at: string
-          currency_code: string
-          deleted_at: string | null
-          end_date: string | null
-          id: string
-          is_active: boolean
-          period_type: string
-          rollover_unused: boolean
-          start_date: string
           updated_at: string
-          user_id: string
         }
-        Insert: {
-          alert_threshold_pct?: number
-          amount: number
-          category_id: string
-          created_at?: string
-          currency_code: string
-          deleted_at?: string | null
-          end_date?: string | null
-          id?: string
-          is_active?: boolean
-          period_type: string
-          rollover_unused?: boolean
-          start_date: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          alert_threshold_pct?: number
-          amount?: number
-          category_id?: string
-          created_at?: string
-          currency_code?: string
-          deleted_at?: string | null
-          end_date?: string | null
-          id?: string
-          is_active?: boolean
-          period_type?: string
-          rollover_unused?: boolean
-          start_date?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'budgets_category_id_fkey'
-            columns: ['category_id']
-            isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'budgets_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'budgets_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      categories: {
-        Row: {
-          color: string | null
-          created_at: string
-          deleted_at: string | null
-          icon: string | null
-          id: string
-          is_active: boolean
-          is_system: boolean
-          name: string
-          parent_id: string | null
-          sort_order: number
-          transaction_type: string
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          deleted_at?: string | null
-          icon?: string | null
-          id?: string
-          is_active?: boolean
-          is_system?: boolean
-          name: string
-          parent_id?: string | null
-          sort_order?: number
-          transaction_type: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          deleted_at?: string | null
-          icon?: string | null
-          id?: string
-          is_active?: boolean
-          is_system?: boolean
-          name?: string
-          parent_id?: string | null
-          sort_order?: number
-          transaction_type?: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'categories_parent_id_fkey'
-            columns: ['parent_id']
-            isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'categories_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
+        Insert: Omit<Tables<'profiles'>['Row'], 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'profiles'>['Insert']>
       }
       currencies: {
         Row: {
           code: string
+          name: string
+          symbol: string
           decimal_places: number
           is_active: boolean
+        }
+        Insert: Tables<'currencies'>['Row']
+        Update: Partial<Tables<'currencies'>['Insert']>
+      }
+      account_types: {
+        Row: {
+          id: string
           name: string
-          symbol: string
-        }
-        Insert: {
-          code: string
-          decimal_places?: number
-          is_active?: boolean
-          name: string
-          symbol: string
-        }
-        Update: {
-          code?: string
-          decimal_places?: number
-          is_active?: boolean
-          name?: string
-          symbol?: string
-        }
-        Relationships: []
-      }
-      exchange_rates: {
-        Row: {
-          created_at: string
-          from_currency: string
-          id: string
-          rate: number
-          rate_date: string
-          source: string | null
-          to_currency: string
-        }
-        Insert: {
-          created_at?: string
-          from_currency: string
-          id?: string
-          rate: number
-          rate_date: string
-          source?: string | null
-          to_currency: string
-        }
-        Update: {
-          created_at?: string
-          from_currency?: string
-          id?: string
-          rate?: number
-          rate_date?: string
-          source?: string | null
-          to_currency?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'exchange_rates_from_currency_fkey'
-            columns: ['from_currency']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'exchange_rates_to_currency_fkey'
-            columns: ['to_currency']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-        ]
-      }
-      goal_contributions: {
-        Row: {
-          amount: number
-          contribution_date: string
-          created_at: string
-          goal_id: string
-          id: string
-          note: string | null
-          transaction_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          contribution_date: string
-          created_at?: string
-          goal_id: string
-          id?: string
-          note?: string | null
-          transaction_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          contribution_date?: string
-          created_at?: string
-          goal_id?: string
-          id?: string
-          note?: string | null
-          transaction_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'goal_contributions_goal_id_fkey'
-            columns: ['goal_id']
-            isOneToOne: false
-            referencedRelation: 'saving_goals'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'goal_contributions_transaction_id_fkey'
-            columns: ['transaction_id']
-            isOneToOne: false
-            referencedRelation: 'transactions'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      monthly_snapshots: {
-        Row: {
-          created_at: string
-          data: Json | null
-          id: string
-          net_balance: number
-          net_worth: number
-          snapshot_month: string
-          total_expenses: number
-          total_income: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          data?: Json | null
-          id?: string
-          net_balance?: number
-          net_worth?: number
-          snapshot_month: string
-          total_expenses?: number
-          total_income?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          data?: Json | null
-          id?: string
-          net_balance?: number
-          net_worth?: number
-          snapshot_month?: string
-          total_expenses?: number
-          total_income?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'monthly_snapshots_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      notification_preferences: {
-        Row: {
-          channel: string
-          id: string
-          is_enabled: boolean
-          notification_type: string
-          user_id: string
-        }
-        Insert: {
-          channel: string
-          id?: string
-          is_enabled?: boolean
-          notification_type: string
-          user_id: string
-        }
-        Update: {
-          channel?: string
-          id?: string
-          is_enabled?: boolean
-          notification_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'notification_preferences_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          is_read: boolean
-          message: string | null
-          read_at: string | null
-          related_entity_id: string | null
-          related_entity_type: string | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message?: string | null
-          read_at?: string | null
-          related_entity_id?: string | null
-          related_entity_type?: string | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message?: string | null
-          read_at?: string | null
-          related_entity_id?: string | null
-          related_entity_type?: string | null
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'notifications_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          currency_code: string
-          display_name: string | null
-          id: string
-          locale: string
-          onboarding_completed_at: string | null
-          timezone: string
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          currency_code?: string
-          display_name?: string | null
-          id: string
-          locale?: string
-          onboarding_completed_at?: string | null
-          timezone?: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          currency_code?: string
-          display_name?: string | null
-          id?: string
-          locale?: string
-          onboarding_completed_at?: string | null
-          timezone?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'profiles_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-        ]
-      }
-      recurring_items: {
-        Row: {
-          account_id: string
-          advance_notice_days: number
-          amount: number
-          auto_create: boolean
-          category_id: string | null
-          created_at: string
-          currency_code: string
-          day_of_month: number | null
-          day_of_week: number | null
-          deleted_at: string | null
-          description: string
-          end_date: string | null
-          frequency: string
-          id: string
-          is_active: boolean
-          last_executed_at: string | null
-          next_occurrence_date: string | null
-          notes: string | null
-          start_date: string
-          transaction_type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          account_id: string
-          advance_notice_days?: number
-          amount: number
-          auto_create?: boolean
-          category_id?: string | null
-          created_at?: string
-          currency_code: string
-          day_of_month?: number | null
-          day_of_week?: number | null
-          deleted_at?: string | null
-          description: string
-          end_date?: string | null
-          frequency: string
-          id?: string
-          is_active?: boolean
-          last_executed_at?: string | null
-          next_occurrence_date?: string | null
-          notes?: string | null
-          start_date: string
-          transaction_type: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          account_id?: string
-          advance_notice_days?: number
-          amount?: number
-          auto_create?: boolean
-          category_id?: string | null
-          created_at?: string
-          currency_code?: string
-          day_of_month?: number | null
-          day_of_week?: number | null
-          deleted_at?: string | null
-          description?: string
-          end_date?: string | null
-          frequency?: string
-          id?: string
-          is_active?: boolean
-          last_executed_at?: string | null
-          next_occurrence_date?: string | null
-          notes?: string | null
-          start_date?: string
-          transaction_type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'recurring_items_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'recurring_items_category_id_fkey'
-            columns: ['category_id']
-            isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'recurring_items_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'recurring_items_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      saving_goals: {
-        Row: {
-          account_id: string | null
-          color: string | null
-          created_at: string
-          currency_code: string
-          current_amount: number
-          deleted_at: string | null
-          description: string | null
+          nature: 'asset' | 'liability'
           icon: string | null
+          sort_order: number
+        }
+        Insert: Omit<Tables<'account_types'>['Row'], 'id'>
+        Update: Partial<Tables<'account_types'>['Insert']>
+      }
+      accounts: {
+        Row: {
           id: string
-          name: string
-          status: string
-          target_amount: number
-          target_date: string | null
-          updated_at: string
           user_id: string
-        }
-        Insert: {
-          account_id?: string | null
-          color?: string | null
-          created_at?: string
+          account_type_id: string
           currency_code: string
-          current_amount?: number
-          deleted_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string
           name: string
-          status?: string
-          target_amount: number
-          target_date?: string | null
-          updated_at?: string
-          user_id: string
+          description: string | null
+          initial_balance: number
+          current_balance: number
+          color: string | null
+          icon: string | null
+          is_active: boolean
+          include_in_net_worth: boolean
+          sort_order: number
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
         }
-        Update: {
-          account_id?: string | null
-          color?: string | null
-          created_at?: string
-          currency_code?: string
-          current_amount?: number
-          deleted_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string
-          name?: string
-          status?: string
-          target_amount?: number
-          target_date?: string | null
-          updated_at?: string
-          user_id?: string
+        Insert: Omit<Tables<'accounts'>['Row'], 'id' | 'current_balance' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'accounts'>['Insert']>
+      }
+      categories: {
+        Row: {
+          id: string
+          user_id: string | null
+          parent_id: string | null
+          name: string
+          color: string | null
+          icon: string | null
+          transaction_type: TransactionType
+          is_system: boolean
+          is_active: boolean
+          sort_order: number
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
         }
-        Relationships: [
-          {
-            foreignKeyName: 'saving_goals_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'saving_goals_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'saving_goals_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
+        Insert: Omit<Tables<'categories'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'categories'>['Insert']>
       }
       tags: {
         Row: {
+          id: string
+          user_id: string
+          name: string
           color: string | null
           created_at: string
-          id: string
-          name: string
           updated_at: string
-          user_id: string
         }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'tags_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      transaction_tags: {
-        Row: {
-          tag_id: string
-          transaction_id: string
-        }
-        Insert: {
-          tag_id: string
-          transaction_id: string
-        }
-        Update: {
-          tag_id?: string
-          transaction_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'transaction_tags_tag_id_fkey'
-            columns: ['tag_id']
-            isOneToOne: false
-            referencedRelation: 'tags'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transaction_tags_transaction_id_fkey'
-            columns: ['transaction_id']
-            isOneToOne: false
-            referencedRelation: 'transactions'
-            referencedColumns: ['id']
-          },
-        ]
+        Insert: Omit<Tables<'tags'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'tags'>['Insert']>
       }
       transactions: {
         Row: {
-          account_id: string
-          amount: number
-          amount_in_base_currency: number | null
-          attachment_url: string | null
-          category_id: string | null
-          created_at: string
-          currency_code: string
-          deleted_at: string | null
-          description: string | null
-          exchange_rate: number
           id: string
-          is_reconciled: boolean
-          notes: string | null
-          recurring_item_id: string | null
-          transaction_date: string
-          transaction_type: string
+          user_id: string
+          account_id: string
+          category_id: string | null
           transfer_account_id: string | null
           transfer_transaction_id: string | null
-          updated_at: string
-          user_id: string
-          value_date: string | null
-        }
-        Insert: {
-          account_id: string
-          amount: number
-          amount_in_base_currency?: number | null
-          attachment_url?: string | null
-          category_id?: string | null
-          created_at?: string
           currency_code: string
-          deleted_at?: string | null
-          description?: string | null
-          exchange_rate?: number
-          id?: string
-          is_reconciled?: boolean
-          notes?: string | null
-          recurring_item_id?: string | null
+          amount: number
+          amount_in_base_currency: number | null
+          exchange_rate: number
+          transaction_type: TransactionType
+          description: string | null
+          notes: string | null
           transaction_date: string
-          transaction_type: string
-          transfer_account_id?: string | null
-          transfer_transaction_id?: string | null
-          updated_at?: string
-          user_id: string
-          value_date?: string | null
-        }
-        Update: {
-          account_id?: string
-          amount?: number
-          amount_in_base_currency?: number | null
-          attachment_url?: string | null
-          category_id?: string | null
-          created_at?: string
-          currency_code?: string
-          deleted_at?: string | null
-          description?: string | null
-          exchange_rate?: number
-          id?: string
-          is_reconciled?: boolean
-          notes?: string | null
-          recurring_item_id?: string | null
-          transaction_date?: string
-          transaction_type?: string
-          transfer_account_id?: string | null
-          transfer_transaction_id?: string | null
-          updated_at?: string
-          user_id?: string
-          value_date?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'transactions_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transactions_category_id_fkey'
-            columns: ['category_id']
-            isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transactions_currency_code_fkey'
-            columns: ['currency_code']
-            isOneToOne: false
-            referencedRelation: 'currencies'
-            referencedColumns: ['code']
-          },
-          {
-            foreignKeyName: 'transactions_recurring_item_id_fkey'
-            columns: ['recurring_item_id']
-            isOneToOne: false
-            referencedRelation: 'recurring_items'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transactions_transfer_account_id_fkey'
-            columns: ['transfer_account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transactions_transfer_transaction_id_fkey'
-            columns: ['transfer_transaction_id']
-            isOneToOne: false
-            referencedRelation: 'transactions'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'transactions_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      budgets_with_progress: {
-        Args: { p_reference_date?: string }
-        Returns: {
-          alert_threshold_pct: number
-          amount: number
-          category_color: string
-          category_icon: string
-          category_id: string
-          category_name: string
+          value_date: string | null
+          is_reconciled: boolean
+          recurring_item_id: string | null
+          attachment_url: string | null
+          deleted_at: string | null
           created_at: string
-          currency_code: string
-          days_elapsed: number
-          days_in_period: number
-          end_date: string
-          id: string
-          is_active: boolean
-          period_end: string
-          period_start: string
-          period_type: string
-          projected_total: number
-          rollover_unused: boolean
-          spent_amount: number
-          start_date: string
           updated_at: string
+        }
+        Insert: Omit<Tables<'transactions'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'transactions'>['Insert']>
+      }
+      transaction_tags: {
+        Row: {
+          transaction_id: string
+          tag_id: string
+        }
+        Insert: Tables<'transaction_tags'>['Row']
+        Update: Partial<Tables<'transaction_tags'>['Insert']>
+      }
+      budgets: {
+        Row: {
+          id: string
           user_id: string
-        }[]
+          category_id: string
+          period_type: BudgetPeriod
+          amount: number
+          currency_code: string
+          start_date: string
+          end_date: string | null
+          rollover_unused: boolean
+          alert_threshold_pct: number
+          is_active: boolean
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Tables<'budgets'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'budgets'>['Insert']>
       }
-      dashboard_stats: { Args: { p_reference_date?: string }; Returns: Json }
-      monthly_flow: {
-        Args: { p_months?: number }
-        Returns: {
-          expenses: number
-          income: number
-          month_start: string
-          net: number
-        }[]
+      recurring_items: {
+        Row: {
+          id: string
+          user_id: string
+          account_id: string
+          category_id: string | null
+          currency_code: string
+          amount: number
+          transaction_type: TransactionType
+          description: string
+          notes: string | null
+          frequency: RecurringFrequency
+          day_of_month: number | null
+          day_of_week: number | null
+          start_date: string
+          end_date: string | null
+          next_occurrence_date: string | null
+          last_executed_at: string | null
+          is_active: boolean
+          auto_create: boolean
+          advance_notice_days: number
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Tables<'recurring_items'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'recurring_items'>['Insert']>
+      }
+      saving_goals: {
+        Row: {
+          id: string
+          user_id: string
+          account_id: string | null
+          currency_code: string
+          name: string
+          description: string | null
+          target_amount: number
+          current_amount: number
+          target_date: string | null
+          color: string | null
+          icon: string | null
+          status: GoalStatus
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Tables<'saving_goals'>['Row'], 'id' | 'current_amount' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'saving_goals'>['Insert']>
+      }
+      goal_contributions: {
+        Row: {
+          id: string
+          goal_id: string
+          transaction_id: string | null
+          amount: number
+          note: string | null
+          contribution_date: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Tables<'goal_contributions'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'goal_contributions'>['Insert']>
+      }
+      exchange_rates: {
+        Row: {
+          id: string
+          from_currency: string
+          to_currency: string
+          rate: number
+          rate_date: string
+          source: string | null
+          created_at: string
+        }
+        Insert: Omit<Tables<'exchange_rates'>['Row'], 'id' | 'created_at'>
+        Update: Partial<Tables<'exchange_rates'>['Insert']>
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: NotificationType
+          title: string
+          message: string | null
+          related_entity_type: string | null
+          related_entity_id: string | null
+          is_read: boolean
+          read_at: string | null
+          created_at: string
+        }
+        Insert: Omit<Tables<'notifications'>['Row'], 'id' | 'created_at'>
+        Update: Pick<Tables<'notifications'>['Row'], 'is_read' | 'read_at'>
+      }
+      notification_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          notification_type: NotificationType
+          channel: NotificationChannel
+          is_enabled: boolean
+        }
+        Insert: Omit<Tables<'notification_preferences'>['Row'], 'id'>
+        Update: Partial<Tables<'notification_preferences'>['Insert']>
+      }
+      monthly_snapshots: {
+        Row: {
+          id: string
+          user_id: string
+          snapshot_month: string
+          total_income: number
+          total_expenses: number
+          net_balance: number
+          net_worth: number
+          data: MonthlySnapshotData | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Tables<'monthly_snapshots'>['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Tables<'monthly_snapshots'>['Insert']>
       }
     }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+// ── Domain enums ─────────────────────────────────────────────
+export type TransactionType   = 'income' | 'expense' | 'transfer'
+export type BudgetPeriod      = 'monthly' | 'weekly' | 'yearly' | 'custom'
+export type RecurringFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly'
+export type GoalStatus        = 'active' | 'completed' | 'paused' | 'cancelled'
+export type AccountNature     = 'asset' | 'liability'
+export type NotificationType  =
+  | 'budget_alert'
+  | 'recurring_reminder'
+  | 'goal_milestone'
+  | 'goal_completed'
+  | 'low_balance'
+  | 'monthly_summary'
+export type NotificationChannel = 'in_app' | 'email'
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+// ── JSONB shapes ──────────────────────────────────────────────
+export interface MonthlySnapshotData {
+  categories: Array<{
+    id: string
+    name: string
+    income: number
+    expenses: number
+  }>
+  accounts: Array<{
+    id: string
+    name: string
+    balance: number
+    type: AccountNature
+  }>
+  topExpenses: Array<{
+    category_id: string
+    name: string
+    amount: number
+    pct: number
+  }>
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
 
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+// ── Convenience type helpers ──────────────────────────────────
+type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]
 
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+export type Row<T extends keyof Database['public']['Tables']> =
+  Tables<T>['Row']
 
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
-    : never
+export type Insert<T extends keyof Database['public']['Tables']> =
+  Tables<T>['Insert']
 
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
+export type Update<T extends keyof Database['public']['Tables']> =
+  Tables<T>['Update']

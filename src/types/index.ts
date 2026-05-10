@@ -1,5 +1,5 @@
 // Re-export the auto-generated raw schema types (for supabase-js generic).
-export type { Database, Json, Tables, TablesInsert, TablesUpdate } from './database'
+export type { Database, Json } from './database'
 
 // Re-export the domain layer (narrowed enums, JSON shapes, joined views).
 export * from './domain'

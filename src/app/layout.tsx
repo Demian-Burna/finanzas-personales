@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/shared/providers'
@@ -12,6 +12,10 @@ const inter = Inter({
   preload: true,
 })
 
+export const viewport: Viewport = {
+  themeColor: '#6366f1',
+}
+
 export const metadata: Metadata = {
   title: {
     default: 'Finanzas Personales',
@@ -20,7 +24,6 @@ export const metadata: Metadata = {
   description: 'Gestiona tus finanzas personales de forma inteligente',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
   manifest: '/manifest.json',
-  themeColor: '#6366f1',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
