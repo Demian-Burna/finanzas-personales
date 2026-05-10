@@ -51,34 +51,43 @@ export default async function SettingsPage() {
         <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicación</p>
       </div>
 
-      <Tabs defaultValue="profile" className="flex-col">
-        <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0">
-          <TabsTrigger value="profile" className="rounded-none px-4 pb-3">Perfil</TabsTrigger>
-          <TabsTrigger value="accounts" className="rounded-none px-4 pb-3">Cuentas</TabsTrigger>
-          <TabsTrigger value="categories" className="rounded-none px-4 pb-3">Categorías</TabsTrigger>
-          <TabsTrigger value="notifications" className="rounded-none px-4 pb-3">Notificaciones</TabsTrigger>
-          <TabsTrigger value="data" className="rounded-none px-4 pb-3">Datos</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="profile">
+        {/* Desktop: sidebar nav + content. Mobile: tabs on top */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+          {/* Sidebar nav */}
+          <aside className="lg:w-48 shrink-0">
+            <TabsList variant="line" className="flex-col items-start w-full bg-transparent h-auto gap-0.5 border-0 p-0">
+              <TabsTrigger value="profile"       className="w-full justify-start rounded-lg px-3 py-2 text-sm">Perfil</TabsTrigger>
+              <TabsTrigger value="accounts"      className="w-full justify-start rounded-lg px-3 py-2 text-sm">Cuentas</TabsTrigger>
+              <TabsTrigger value="categories"    className="w-full justify-start rounded-lg px-3 py-2 text-sm">Categorías</TabsTrigger>
+              <TabsTrigger value="notifications" className="w-full justify-start rounded-lg px-3 py-2 text-sm">Notificaciones</TabsTrigger>
+              <TabsTrigger value="data"          className="w-full justify-start rounded-lg px-3 py-2 text-sm">Datos</TabsTrigger>
+            </TabsList>
+          </aside>
 
-        <TabsContent value="profile" className="mt-6">
-          <ProfileTab profile={profile} userEmail={user?.email ?? null} />
-        </TabsContent>
+          {/* Content area — takes all remaining space */}
+          <div className="flex-1 min-w-0">
+            <TabsContent value="profile">
+              <ProfileTab profile={profile} userEmail={user?.email ?? null} />
+            </TabsContent>
 
-        <TabsContent value="accounts" className="mt-6">
-          <AccountsTab accounts={accounts} accountTypes={accountTypes} currency={currency} />
-        </TabsContent>
+            <TabsContent value="accounts">
+              <AccountsTab accounts={accounts} accountTypes={accountTypes} currency={currency} />
+            </TabsContent>
 
-        <TabsContent value="categories" className="mt-6">
-          <CategoriesTab categories={categories} />
-        </TabsContent>
+            <TabsContent value="categories">
+              <CategoriesTab categories={categories} />
+            </TabsContent>
 
-        <TabsContent value="notifications" className="mt-6">
-          <NotificationsTab />
-        </TabsContent>
+            <TabsContent value="notifications">
+              <NotificationsTab />
+            </TabsContent>
 
-        <TabsContent value="data" className="mt-6">
-          <DataTab />
-        </TabsContent>
+            <TabsContent value="data">
+              <DataTab />
+            </TabsContent>
+          </div>
+        </div>
       </Tabs>
     </div>
   )

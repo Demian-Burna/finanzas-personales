@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { useTheme } from 'next-themes'
+import { usePathname } from 'next/navigation'
 import { Menu, Sun, Moon, Monitor, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
@@ -32,7 +33,11 @@ const avatarLetter = (user: User | null) => {
 export function Header({ user }: Props) {
   const { toggleSidebar } = useUIStore()
   const { setTheme, resolvedTheme } = useTheme()
+  const pathname = usePathname()
   const [, startTransition] = useTransition()
+
+  // Period selector only makes sense on the dashboard overview
+  const showPeriodSelector = pathname === '/'
 
   const avatarUrl = user?.user_metadata?.['avatar_url'] as string | undefined
   const displayName =
@@ -57,9 +62,9 @@ export function Header({ user }: Props) {
         <Menu className="size-5" />
       </Button>
 
-      {/* Period selector — centered */}
+      {/* Period selector — centered, only on dashboard home */}
       <div className="flex flex-1 items-center justify-center">
-        <PeriodSelector />
+        {showPeriodSelector && <PeriodSelector />}
       </div>
 
       {/* User menu */}

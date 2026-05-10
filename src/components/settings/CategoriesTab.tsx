@@ -212,7 +212,7 @@ export function CategoriesTab({ categories }: Props) {
   }
 
   return (
-    <div className="space-y-4 max-w-lg">
+    <div className="space-y-4 max-w-2xl">
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Las categorías con 🔒 son del sistema y no se pueden editar.</p>
         <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 shrink-0">

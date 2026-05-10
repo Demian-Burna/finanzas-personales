@@ -2,9 +2,20 @@
 
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import { transactionSchema, type TransactionFormValues } from '@/lib/validations/transaction'
+
+// Custom resolver: calls Zod directly, bypassing @hookform/resolvers v5 quirks with Zod v4
+const transactionResolver: Resolver<TransactionFormValues> = async (values) => {
+  const result = transactionSchema.safeParse(values)
+  if (result.success) return { values: result.data, errors: {} }
+  const errors: Record<string, { type: string; message: string }> = {}
+  for (const issue of result.error.issues) {
+    const key = issue.path.join('.') || 'root'
+    if (!errors[key]) errors[key] = { type: 'validation', message: issue.message }
+  }
+  return { values: {}, errors }
+}
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { TransactionWithRelations } from '@/lib/supabase/queries/transactions'
@@ -56,9 +67,7 @@ export function TransactionForm({
   const isEdit = !!transaction
 
   const form = useForm<TransactionFormValues>({
-    // Cast needed: @hookform/resolvers v5 infers Zod v4 input type (optional fields)
-    // but our form values use the output type (all required).
-    resolver: zodResolver(transactionSchema) as Resolver<TransactionFormValues>,
+    resolver: transactionResolver,
     defaultValues: {
       transaction_type: 'expense',
       account_id: '',
