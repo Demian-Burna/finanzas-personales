@@ -32,7 +32,7 @@ interface Props {
   profile: {
     display_name: string | null
     avatar_url: string | null
-    base_currency: string | null
+    currency_code: string | null
     locale: string | null
     timezone: string | null
   } | null
@@ -49,7 +49,7 @@ export function ProfileTab({ profile, userEmail }: Props) {
     defaultValues: {
       display_name: profile?.display_name ?? '',
       avatar_url: profile?.avatar_url ?? null,
-      currency_code: profile?.base_currency ?? 'ARS',
+      currency_code: profile?.currency_code ?? 'ARS',
       locale: profile?.locale ?? 'es-AR',
       timezone: profile?.timezone ?? 'America/Argentina/Buenos_Aires',
     },
