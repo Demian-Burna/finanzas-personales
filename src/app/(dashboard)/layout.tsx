@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+
+// All dashboard routes require auth and use cookies — prevent static pre-rendering
+export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
