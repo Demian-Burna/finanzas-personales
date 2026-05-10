@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardStats, getMonthlyFlow } from '@/lib/supabase/queries/dashboard'
 import { getAccounts } from '@/lib/supabase/queries/accounts'
@@ -21,9 +21,9 @@ export default async function ReportsPage() {
   const referenceDate = `${year}-${String(month).padStart(2, '0')}-01`
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
 
-  // Ensure last month snapshot exists (fire-and-forget style — non-blocking)
+  // Ensure last month snapshot exists (fire-and-forget style â€” non-blocking)
   void ensureMonthlySnapshotAction()
 
   const [{ currency, locale }, { data: stats }, { data: flow }, { data: accounts }] = await Promise.all([
@@ -54,7 +54,7 @@ export default async function ReportsPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Reportes</h1>
-        <p className="text-sm text-muted-foreground">Análisis y visualización de tus finanzas</p>
+        <p className="text-sm text-muted-foreground">AnÃ¡lisis y visualizaciÃ³n de tus finanzas</p>
       </div>
 
       <ReportsClient

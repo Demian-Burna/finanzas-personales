@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -15,7 +15,7 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstError(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos inválidos'
+  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
 }
 
 export async function createTransactionAction(
@@ -25,7 +25,7 @@ export async function createTransactionAction(
   if (!parsed.success) return { ok: false, error: firstError(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { transaction_type, transfer_account_id, ...rest } = parsed.data
@@ -45,7 +45,7 @@ export async function createTransactionAction(
     notes: rest.notes ?? null,
   } as never)
 
-  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear transacción' }
+  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear transacciÃ³n' }
 
   revalidatePath('/')
   revalidatePath('/transactions')
@@ -90,11 +90,11 @@ export async function deleteTransactionAction(id: string): Promise<ActionResult>
 
 export async function duplicateTransactionAction(id: string): Promise<ActionResult<{ id: string }>> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data: original } = await getTransactionById(supabase, id)
-  if (!original) return { ok: false, error: 'Transacción no encontrada' }
+  if (!original) return { ok: false, error: 'TransacciÃ³n no encontrada' }
 
   const today = new Date().toISOString().split('T')[0] ?? original.transaction_date
 

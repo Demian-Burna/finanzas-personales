@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -16,7 +16,7 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstIssue(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos inválidos'
+  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
 }
 
 function nextOccurrence(frequency: string, fromDate: string): string {
@@ -38,7 +38,7 @@ export async function createRecurringItemAction(raw: unknown): Promise<ActionRes
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { is_active, auto_create, advance_notice_days, ...rest } = parsed.data
@@ -104,12 +104,12 @@ export async function deleteRecurringItemAction(id: string): Promise<ActionResul
   return { ok: true, data: undefined }
 }
 
-// Called by Vercel cron — processes all pending auto_create items
+// Called by Vercel cron â€” processes all pending auto_create items
 export async function processRecurringItemsAction(): Promise<ActionResult<{ processed: number; errors: number }>> {
   const supabase = await createClient()
   const today = new Date().toISOString().split('T')[0] ?? ''
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data: items, error: fetchError } = await getPendingRecurringItems(supabase, today)

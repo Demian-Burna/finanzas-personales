@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -41,7 +41,7 @@ export async function importCsvAction(
   const mapping = JSON.parse(mappingRaw) as Record<string, ColumnKey>
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data: profileRaw } = await supabase.from('profiles').select('base_currency').single()

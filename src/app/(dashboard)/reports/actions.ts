@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { getMonthlyFlow } from '@/lib/supabase/queries/dashboard'
@@ -8,11 +8,11 @@ export type ActionResult<T = void> =
   | { ok: true; data: T }
   | { ok: false; error: string }
 
-// ── Snapshot mensual ─────────────────────────────────────────────────────────
+// â”€â”€ Snapshot mensual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function ensureMonthlySnapshotAction(): Promise<ActionResult> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   // Previous month
@@ -57,7 +57,7 @@ export async function ensureMonthlySnapshotAction(): Promise<ActionResult> {
   return { ok: true, data: undefined }
 }
 
-// ── CSV exports ───────────────────────────────────────────────────────────────
+// â”€â”€ CSV exports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function exportMonthlySummaryAction(
   year: number,
@@ -85,7 +85,7 @@ export async function exportMonthlySummaryAction(
     account: { name: string } | null
   }> ?? [])
 
-  const header = 'Fecha,Descripción,Tipo,Categoría,Cuenta,Monto,Moneda'
+  const header = 'Fecha,DescripciÃ³n,Tipo,CategorÃ­a,Cuenta,Monto,Moneda'
   const lines = rows.map((r) =>
     [r.transaction_date, `"${r.description ?? ''}"`, r.transaction_type, `"${r.category?.name ?? ''}"`, `"${r.account?.name ?? ''}"`, r.amount, r.currency_code].join(','),
   )
@@ -111,14 +111,14 @@ export async function exportCategoryBreakdownAction(
 
   const totals: Record<string, number> = {}
   for (const r of rows) {
-    const cat = r.category?.name ?? 'Sin categoría'
+    const cat = r.category?.name ?? 'Sin categorÃ­a'
     totals[cat] = (totals[cat] ?? 0) + r.amount
   }
 
   const total = Object.values(totals).reduce((a, b) => a + b, 0)
   const sorted = Object.entries(totals).sort(([, a], [, b]) => b - a)
 
-  const header = 'Categoría,Monto,Porcentaje'
+  const header = 'CategorÃ­a,Monto,Porcentaje'
   const lines = sorted.map(([cat, amt]) =>
     `"${cat}",${amt.toFixed(2)},${total > 0 ? ((amt / total) * 100).toFixed(1) : '0'}%`,
   )
@@ -140,7 +140,7 @@ export async function exportCashFlowAction(): Promise<ActionResult<string>> {
 
 export async function exportNetWorthAction(): Promise<ActionResult<string>> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data } = await supabase

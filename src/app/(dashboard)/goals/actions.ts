@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -14,7 +14,7 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstIssue(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos inválidos'
+  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
 }
 
 export async function createGoalAction(raw: unknown): Promise<ActionResult<{ id: string }>> {
@@ -22,7 +22,7 @@ export async function createGoalAction(raw: unknown): Promise<ActionResult<{ id:
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data, error } = await createSavingGoal(supabase, {
@@ -68,7 +68,7 @@ export async function addContributionAction(raw: unknown): Promise<ActionResult>
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   // Insert contribution

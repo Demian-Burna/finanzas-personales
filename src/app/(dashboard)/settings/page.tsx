@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/supabase/queries/accounts'
 import { getCategories } from '@/lib/supabase/queries/categories'
@@ -9,12 +9,12 @@ import { CategoriesTab } from '@/components/settings/CategoriesTab'
 import { NotificationsTab } from '@/components/settings/NotificationsTab'
 import { DataTab } from '@/components/settings/DataTab'
 
-export const metadata: Metadata = { title: 'Configuración' }
+export const metadata: Metadata = { title: 'ConfiguraciÃ³n' }
 
 export default async function SettingsPage() {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
 
   const [{ data: accounts }, { data: categories }] = await Promise.all([
     getAccounts(supabase),
@@ -47,15 +47,15 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
-        <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicación</p>
+        <h1 className="text-2xl font-bold tracking-tight">ConfiguraciÃ³n</h1>
+        <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicaciÃ³n</p>
       </div>
 
       <Tabs defaultValue="profile">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="profile">Perfil</TabsTrigger>
           <TabsTrigger value="accounts">Cuentas</TabsTrigger>
-          <TabsTrigger value="categories">Categorías</TabsTrigger>
+          <TabsTrigger value="categories">CategorÃ­as</TabsTrigger>
           <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
           <TabsTrigger value="data">Datos</TabsTrigger>
         </TabsList>

@@ -10,32 +10,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=missing_code', origin))
   }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-  if (error) {
+    if (error) {
+      console.error('[callback] exchangeCodeForSession error:', error)
+      return NextResponse.redirect(new URL('/login?error=auth_error', origin))
+    }
+
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user ?? null
+
+    if (!user) {
+      return NextResponse.redirect(new URL('/login?error=no_user', origin))
+    }
+
+    const { data: profileRaw } = await supabase
+      .from('profiles')
+      .select('onboarding_completed_at')
+      .eq('id', user.id)
+      .single()
+
+    const profile = profileRaw as { onboarding_completed_at: string | null } | null
+
+    if (!profile?.onboarding_completed_at) {
+      return NextResponse.redirect(new URL('/onboarding', origin))
+    }
+
+    return NextResponse.redirect(new URL(next, origin))
+  } catch (err) {
+    console.error('[callback] unexpected error:', err)
     return NextResponse.redirect(new URL('/login?error=auth_error', origin))
   }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.redirect(new URL('/login?error=no_user', origin))
-  }
-
-  // Check if the user has completed onboarding
-  const { data: profileRaw } = await supabase
-    .from('profiles')
-    .select('onboarding_completed_at')
-    .eq('id', user.id)
-    .single()
-  const profile = profileRaw as { onboarding_completed_at: string | null } | null
-
-  if (!profile?.onboarding_completed_at) {
-    return NextResponse.redirect(new URL('/onboarding', origin))
-  }
-
-  return NextResponse.redirect(new URL(next, origin))
 }

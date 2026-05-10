@@ -1,17 +1,15 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { OnboardingWizard } from './_components/onboarding-wizard'
 import { completeOnboarding } from './actions'
 
-export const metadata: Metadata = { title: 'Configuración inicial' }
+export const metadata: Metadata = { title: 'ConfiguraciÃ³n inicial' }
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) redirect('/login')
 
   // If already onboarded, send to dashboard
@@ -43,8 +41,8 @@ export default async function OnboardingPage() {
       <div className="w-full max-w-lg space-y-10">
         {/* Header */}
         <div className="space-y-1 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Bienvenido/a 👋</h1>
-          <p className="text-muted-foreground">Configuremos tu cuenta en 3 pasos rápidos</p>
+          <h1 className="text-3xl font-bold tracking-tight">Bienvenido/a ðŸ‘‹</h1>
+          <p className="text-muted-foreground">Configuremos tu cuenta en 3 pasos rÃ¡pidos</p>
         </div>
 
         <OnboardingWizard

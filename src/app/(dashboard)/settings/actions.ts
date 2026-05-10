@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -13,17 +13,17 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstIssue(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos inválidos'
+  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
 }
 
-// ── Profile ───────────────────────────────────────────────────────────────────
+// â”€â”€ Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function updateProfileAction(raw: unknown): Promise<ActionResult> {
   const parsed = profileSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { error } = await supabase
@@ -46,11 +46,11 @@ export async function updateProfileAction(raw: unknown): Promise<ActionResult> {
 
 export async function uploadAvatarAction(formData: FormData): Promise<ActionResult<{ url: string }>> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const file = formData.get('avatar') as File | null
-  if (!file || file.size === 0) return { ok: false, error: 'Archivo inválido' }
+  if (!file || file.size === 0) return { ok: false, error: 'Archivo invÃ¡lido' }
   if (file.size > 2 * 1024 * 1024) return { ok: false, error: 'El archivo no puede superar 2 MB' }
 
   const ext = file.name.split('.').pop() ?? 'jpg'
@@ -70,14 +70,14 @@ export async function uploadAvatarAction(formData: FormData): Promise<ActionResu
   return { ok: true, data: { url: publicUrl } }
 }
 
-// ── Accounts ──────────────────────────────────────────────────────────────────
+// â”€â”€ Accounts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createAccountAction(raw: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = accountSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { initial_balance = 0, include_in_net_worth, sort_order, ...rest } = parsed.data
@@ -148,14 +148,14 @@ export async function archiveAccountAction(id: string): Promise<ActionResult> {
   return { ok: true, data: undefined }
 }
 
-// ── Categories ────────────────────────────────────────────────────────────────
+// â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createCategoryAction(raw: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = categorySchema.safeParse(raw)
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data, error } = await createCategory(supabase, {
@@ -169,7 +169,7 @@ export async function createCategoryAction(raw: unknown): Promise<ActionResult<{
     icon: parsed.data.icon ?? null,
   } as never)
 
-  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear categoría' }
+  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear categorÃ­a' }
 
   revalidatePath('/settings')
   return { ok: true, data: { id: data.id } }
@@ -208,13 +208,13 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult> {
   return { ok: true, data: undefined }
 }
 
-// ── Data export ───────────────────────────────────────────────────────────────
+// â”€â”€ Data export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function deleteAllDataAction(confirmation: string): Promise<ActionResult> {
-  if (confirmation !== 'CONFIRMAR') return { ok: false, error: 'Confirmación incorrecta' }
+  if (confirmation !== 'CONFIRMAR') return { ok: false, error: 'ConfirmaciÃ³n incorrecta' }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const now = new Date().toISOString()
