@@ -59,7 +59,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
   const [formOpen, setFormOpen] = useState(false)
   const [editItem, setEditItem] = useState<RecurringItemWithRelations | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [payNowConfirm, setPayNowConfirm] = useState<string | null>(null)
+  const [_payNowConfirm, setPayNowConfirm] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // Group by frequency
