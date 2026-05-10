@@ -1,27 +1,25 @@
 # Finanzas Personales
 
-Aplicación de gestión de finanzas personales construida con Next.js 14, Supabase y TypeScript.
+Aplicación de gestión de finanzas personales construida con Next.js, Supabase y TypeScript.
 
 ## Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Base de datos**: Supabase (PostgreSQL)
-- **Autenticación**: Supabase Auth
-- **Estado global**: Zustand
-- **Server state / caché**: TanStack Query v5
-- **UI**: shadcn/ui + Tailwind CSS v3
-- **Validación**: Zod
-- **Lenguaje**: TypeScript estricto
+| Capa | Tecnología |
+|---|---|
+| Framework | Next.js 14 App Router |
+| Base de datos | Supabase (PostgreSQL + RLS) |
+| Auth | Supabase Auth · Google OAuth |
+| Estado global | Zustand v5 |
+| Server state | TanStack Query v5 |
+| UI | Base UI + Tailwind CSS v4 |
+| Charts | Recharts |
+| Validación | Zod v4 |
+| Drag & drop | @dnd-kit |
+| Lenguaje | TypeScript strict |
 
-## Requisitos previos
+## Setup local
 
-- Node.js 18.17+
-- npm 9+
-- Cuenta en [Supabase](https://supabase.com)
-
-## Setup
-
-### 1. Clonar e instalar dependencias
+### 1. Clonar e instalar
 
 ```bash
 git clone <repo-url>
@@ -29,80 +27,110 @@ cd finanzas-personales
 npm install
 ```
 
-### 2. Configurar variables de entorno
+### 2. Variables de entorno
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Edita `.env.local` con tus credenciales de Supabase:
-
 | Variable | Descripción |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL de tu proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima pública |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio (solo en servidor) |
-| `NEXT_PUBLIC_APP_URL` | URL de la app (localhost:3000 en desarrollo) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio (solo servidor) |
+| `NEXT_PUBLIC_APP_URL` | URL de la app |
+| `CRON_SECRET` | Secret para proteger endpoints cron |
 
-### 3. Configurar Supabase
+### 3. Supabase
 
-1. Crea un proyecto en [supabase.com](https://supabase.com)
-2. Copia la URL y las claves desde **Project Settings → API**
-3. Ejecuta las migraciones desde `supabase/migrations/` (próximamente)
+1. Creá un proyecto en [supabase.com](https://supabase.com)
+2. Aplicá las migraciones desde `supabase/migrations/` en el SQL Editor
+3. Habilitá Google OAuth en **Authentication → Providers → Google**
+4. Agregá `http://localhost:3000/auth/callback` como Redirect URL
 
-### 4. Ejecutar en desarrollo
+### 4. Desarrollo
 
 ```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000)
+Abrí [http://localhost:3000](http://localhost:3000)
 
-## Scripts disponibles
+## Scripts
 
 ```bash
-npm run dev          # Servidor de desarrollo (Turbopack)
+npm run dev          # Dev server (Turbopack)
 npm run build        # Build de producción
 npm run start        # Servidor de producción
+npm run type-check   # TypeScript sin emit
 npm run lint         # ESLint
-npm run lint:fix     # ESLint con auto-fix
-npm run format       # Prettier
-npm run analyze      # Bundle analyzer (requiere build previo)
-npm run type-check   # Verificación de tipos TypeScript
+npm run analyze      # Bundle analyzer (ANALYZE=true)
 ```
 
-## Estructura del proyecto
+## Deploy en Vercel
+
+### Variables de entorno en Vercel
+
+Configurá todas las variables de `.env.local.example` en **Settings → Environment Variables**.
+
+Generá el `CRON_SECRET`:
+
+```bash
+openssl rand -hex 32
+```
+
+### Cron jobs
+
+Definidos en `vercel.json`:
+- `0 8 * * *` — Procesa recurrentes vencidos
+- `0 2 1 * *` — Genera snapshot mensual de patrimonio
+
+### Google OAuth
+
+Actualizá las Redirect URLs en Google Cloud Console con el dominio de Vercel:
+```
+https://tu-app.vercel.app/auth/callback
+```
+
+Y también en Supabase → Authentication → URL Configuration.
+
+### Ejecutar deploy
+
+```bash
+vercel --prod
+```
+
+## Estructura
 
 ```
 src/
 ├── app/
-│   ├── (auth)/login/          # Página de login
-│   ├── (dashboard)/           # Área autenticada
-│   │   ├── layout.tsx         # Layout con sidebar/nav
-│   │   ├── page.tsx           # Overview/resumen
-│   │   ├── transactions/      # Transacciones
-│   │   ├── budgets/           # Presupuestos
-│   │   ├── goals/             # Metas financieras
-│   │   ├── reports/           # Reportes y análisis
-│   │   └── settings/          # Configuración
-│   ├── api/                   # Route handlers
-│   ├── layout.tsx             # Root layout (fuentes, providers)
-│   └── globals.css
+│   ├── (auth)/               # Login, onboarding
+│   ├── (dashboard)/          # Área autenticada
+│   │   ├── page.tsx          # Dashboard overview
+│   │   ├── transactions/     # CRUD transacciones + importación CSV
+│   │   ├── budgets/          # Presupuestos con tracking
+│   │   ├── goals/            # Metas de ahorro
+│   │   ├── recurring/        # Gastos recurrentes
+│   │   ├── reports/          # Reportes y análisis
+│   │   └── settings/         # Perfil, cuentas, categorías
+│   └── api/
+│       └── cron/             # Endpoints para Vercel Cron
 ├── components/
-│   ├── ui/                    # Componentes shadcn/ui
-│   ├── charts/                # Gráficas personalizadas
-│   ├── forms/                 # Formularios de dominio
-│   ├── layout/                # Sidebar, Navbar, etc.
-│   └── shared/                # Componentes reutilizables
+│   ├── ui/                   # Primitivos (Base UI + shadcn)
+│   ├── charts/               # FlowChart, CategoryDonut
+│   ├── forms/                # TransactionForm, BudgetForm, etc.
+│   ├── layout/               # Sidebar, Header, MobileNav
+│   ├── reports/              # Tabs de reportes
+│   ├── settings/             # Tabs de configuración
+│   └── shared/               # StatCard, BudgetCard, AlertBanner, etc.
+├── hooks/                    # useTransactions, useTransactionMutations, etc.
 ├── lib/
-│   ├── supabase/              # Clientes Supabase (client/server/middleware)
-│   ├── validations/           # Schemas Zod
-│   ├── utils/                 # Funciones utilitarias
-│   └── constants/             # Constantes de dominio
-├── hooks/                     # Custom React hooks
-├── stores/                    # Zustand stores
-├── types/                     # Tipos TypeScript globales
-└── styles/                    # Estilos adicionales
+│   ├── supabase/             # Clients (browser/server) + queries por tabla
+│   ├── validations/          # Schemas Zod
+│   └── utils/                # cn, csv download
+├── stores/                   # ui.store, finance.store (Zustand)
+└── types/                    # domain.ts, database.ts
 ```
 
 ## Análisis de bundle
@@ -110,6 +138,13 @@ src/
 ```bash
 ANALYZE=true npm run build
 ```
+
+## CI
+
+GitHub Actions en `.github/workflows/ci.yml` corre en cada PR:
+- `tsc --noEmit`
+- `next lint`
+- `next build`
 
 ## Licencia
 
