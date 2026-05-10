@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import { budgetSchema, type BudgetInput } from '@/lib/validations/budget'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
@@ -23,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { CurrencySelect } from '@/components/shared/CurrencySelect'
+import { CategoryCombobox } from '@/components/shared/CategoryCombobox'
 
 interface Props {
   open: boolean
@@ -36,12 +37,24 @@ interface Props {
 
 const PERIOD_OPTIONS = [
   { value: 'monthly', label: 'Mensual' },
-  { value: 'weekly', label: 'Semanal' },
-  { value: 'yearly', label: 'Anual' },
-  { value: 'custom', label: 'Personalizado' },
+  { value: 'weekly',  label: 'Semanal' },
+  { value: 'yearly',  label: 'Anual' },
+  { value: 'custom',  label: 'Personalizado' },
 ] as const
 
-// Only leaf categories (no children in the list — no parent_id duplicated as a child)
+// Custom resolver — bypass zodResolver/Zod v4 incompatibility
+const budgetResolver: Resolver<BudgetInput> = async (values) => {
+  const result = budgetSchema.safeParse(values)
+  if (result.success) return { values: result.data, errors: {} }
+  const errors: Record<string, { type: string; message: string }> = {}
+  for (const issue of result.error.issues) {
+    const key = issue.path.join('.') || 'root'
+    if (!errors[key]) errors[key] = { type: 'validation', message: issue.message }
+  }
+  return { values: {}, errors }
+}
+
+// Only leaf categories (expense categories that aren't parents)
 function leafCategories(categories: CategoryWithParent[]) {
   const parentIds = new Set(categories.map((c) => c.parent_id).filter(Boolean))
   return categories.filter((c) => !parentIds.has(c.id))
@@ -60,7 +73,7 @@ export function BudgetForm({
   const leaves = leafCategories(categories)
 
   const form = useForm<BudgetInput>({
-    resolver: zodResolver(budgetSchema) as Resolver<BudgetInput>,
+    resolver: budgetResolver,
     defaultValues: {
       category_id: '',
       period_type: 'monthly',
@@ -101,6 +114,8 @@ export function BudgetForm({
 
   const alertThreshold = form.watch('alert_threshold_pct')
   const rollover = form.watch('rollover_unused')
+  const periodValue = form.watch('period_type')
+  const selectedPeriod = PERIOD_OPTIONS.find((o) => o.value === periodValue)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -109,30 +124,26 @@ export function BudgetForm({
           <DialogTitle>{isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
-          {/* Category */}
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4 pt-2">
+          {/* Category — searchable combobox */}
           <div>
             <Label>Categoría</Label>
             <Controller
               control={form.control}
               name="category_id"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="mt-1 w-full">
-                    <SelectValue placeholder="Seleccioná una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leaves.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.icon ?? ''} {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategoryCombobox
+                  categories={leaves}
+                  value={field.value || null}
+                  onChange={(id) => field.onChange(id ?? '')}
+                  className="mt-1"
+                />
               )}
             />
             {form.formState.errors.category_id && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.category_id.message}</p>
+              <p className="mt-1 text-xs text-destructive">
+                {form.formState.errors.category_id.message}
+              </p>
             )}
           </div>
 
@@ -145,7 +156,9 @@ export function BudgetForm({
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="mt-1 w-full">
-                    <SelectValue />
+                    <SelectValue>
+                      {selectedPeriod?.label ?? 'Seleccioná un período'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {PERIOD_OPTIONS.map((o) => (
@@ -160,37 +173,51 @@ export function BudgetForm({
           {/* Amount + currency */}
           <div className="flex gap-2">
             <div className="flex-1">
-              <Label htmlFor="budget-amount">Monto límite</Label>
-              <Input
-                id="budget-amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                {...form.register('amount', { valueAsNumber: true })}
-                className="mt-1"
+              <Label>Monto límite</Label>
+              <Controller
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={field.value === 0 ? '' : String(field.value)}
+                    onChange={(e) => {
+                      const n = parseFloat(e.target.value.replace(',', '.'))
+                      field.onChange(isNaN(n) ? 0 : n)
+                    }}
+                    onBlur={field.onBlur}
+                    className="mt-1"
+                  />
+                )}
               />
               {form.formState.errors.amount && (
-                <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>
+                <p className="mt-1 text-xs text-destructive">
+                  {form.formState.errors.amount.message}
+                </p>
               )}
             </div>
-            <div className="w-24">
-              <Label htmlFor="budget-currency">Moneda</Label>
-              <Input
-                id="budget-currency"
-                placeholder="ARS"
-                {...form.register('currency_code')}
-                className="mt-1 uppercase"
-                maxLength={3}
+            <div className="w-36">
+              <Label>Moneda</Label>
+              <Controller
+                control={form.control}
+                name="currency_code"
+                render={({ field }) => (
+                  <CurrencySelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="mt-1 w-full"
+                  />
+                )}
               />
             </div>
           </div>
 
           {/* Start date */}
           <div>
-            <Label htmlFor="budget-start">Fecha de inicio</Label>
+            <Label>Fecha de inicio</Label>
             <Input
-              id="budget-start"
               type="date"
               {...form.register('start_date')}
               className="mt-1"
@@ -200,11 +227,10 @@ export function BudgetForm({
           {/* Alert threshold */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <Label htmlFor="alert-threshold">Umbral de alerta</Label>
+              <Label>Umbral de alerta</Label>
               <span className="text-xs font-semibold text-muted-foreground">{alertThreshold}%</span>
             </div>
             <input
-              id="alert-threshold"
               type="range"
               min={50}
               max={100}
@@ -242,7 +268,11 @@ export function BudgetForm({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={() => void form.handleSubmit(onSubmit)()}
+            >
               {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
             </Button>
           </div>

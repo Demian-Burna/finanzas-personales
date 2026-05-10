@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getBudgetsWithProgress } from '@/lib/supabase/queries/budgets'
@@ -13,11 +13,11 @@ async function getUserPrefs() {
   const supabase = await createClient()
   const { data: profileRaw } = await supabase
     .from('profiles')
-    .select('base_currency,locale')
+    .select('currency_code,locale')
     .single()
-  const profile = profileRaw as { base_currency: string | null; locale: string | null } | null
+  const profile = profileRaw as { currency_code: string | null; locale: string | null } | null
   return {
-    currency: profile?.base_currency ?? 'ARS',
+    currency: profile?.currency_code ?? 'ARS',
     locale: profile?.locale ?? 'es-AR',
   }
 }
@@ -49,7 +49,7 @@ export default function BudgetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Presupuestos</h1>
-          <p className="text-sm text-muted-foreground">Control de gastos por categoría</p>
+          <p className="text-sm text-muted-foreground">Control de gastos por categorÃ­a</p>
         </div>
       </div>
 

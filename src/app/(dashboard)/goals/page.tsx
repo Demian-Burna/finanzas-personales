@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getSavingGoals } from '@/lib/supabase/queries/saving-goals'
@@ -8,9 +8,9 @@ export const metadata: Metadata = { title: 'Metas' }
 
 async function getUserPrefs() {
   const supabase = await createClient()
-  const { data: profileRaw } = await supabase.from('profiles').select('base_currency,locale').single()
-  const profile = profileRaw as { base_currency: string | null; locale: string | null } | null
-  return { currency: profile?.base_currency ?? 'ARS', locale: profile?.locale ?? 'es-AR' }
+  const { data: profileRaw } = await supabase.from('profiles').select('currency_code,locale').single()
+  const profile = profileRaw as { currency_code: string | null; locale: string | null } | null
+  return { currency: profile?.currency_code ?? 'ARS', locale: profile?.locale ?? 'es-AR' }
 }
 
 async function GoalsData() {

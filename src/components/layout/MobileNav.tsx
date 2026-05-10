@@ -2,15 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ArrowLeftRight, PieChart, BarChart3, Target, Settings } from 'lucide-react'
+import { Home, ArrowLeftRight, PieChart, BarChart3, RefreshCcw, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { href: '/',             label: 'Inicio',       icon: Home },
   { href: '/transactions', label: 'Movimientos',  icon: ArrowLeftRight },
   { href: '/budgets',      label: 'Presupuestos', icon: PieChart },
+  { href: '/recurring',    label: 'Recurrentes',  icon: RefreshCcw },
   { href: '/reports',      label: 'Reportes',     icon: BarChart3 },
-  { href: '/goals',        label: 'Metas',        icon: Target },
   { href: '/settings',     label: 'Config.',      icon: Settings },
 ] as const
 

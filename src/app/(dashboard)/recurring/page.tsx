@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getRecurringItems } from '@/lib/supabase/queries/recurring-items'
@@ -10,9 +10,9 @@ export const metadata: Metadata = { title: 'Recurrentes' }
 
 async function getUserPrefs() {
   const supabase = await createClient()
-  const { data: profileRaw } = await supabase.from('profiles').select('base_currency,locale').single()
-  const profile = profileRaw as { base_currency: string | null; locale: string | null } | null
-  return { currency: profile?.base_currency ?? 'ARS', locale: profile?.locale ?? 'es-AR' }
+  const { data: profileRaw } = await supabase.from('profiles').select('currency_code,locale').single()
+  const profile = profileRaw as { currency_code: string | null; locale: string | null } | null
+  return { currency: profile?.currency_code ?? 'ARS', locale: profile?.locale ?? 'es-AR' }
 }
 
 async function RecurringData() {
@@ -41,7 +41,7 @@ export default function RecurringPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Recurrentes</h1>
-        <p className="text-sm text-muted-foreground">Ingresos y gastos que se repiten periódicamente</p>
+        <p className="text-sm text-muted-foreground">Ingresos y gastos que se repiten periÃ³dicamente</p>
       </div>
       <Suspense fallback={<Skeleton />}>
         <RecurringData />

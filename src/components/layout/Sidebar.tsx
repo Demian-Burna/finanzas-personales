@@ -17,6 +17,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  RefreshCcw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/ui.store'
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: '/',             label: 'Dashboard',      icon: Home },
   { href: '/transactions', label: 'Transacciones',  icon: ArrowLeftRight },
   { href: '/budgets',      label: 'Presupuestos',   icon: PieChart },
+  { href: '/recurring',    label: 'Recurrentes',    icon: RefreshCcw },
   { href: '/goals',        label: 'Metas',           icon: Target },
   { href: '/reports',      label: 'Reportes',        icon: BarChart3 },
   { href: '/settings',     label: 'Configuración',   icon: Settings },
