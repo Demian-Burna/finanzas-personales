@@ -20,7 +20,8 @@ export async function StatsSection({ referenceDate, currency, locale }: Props) {
     )
   }
 
-  const savingsRate = data.current_month.savings_rate * 100
+  // RPC already returns savings_rate as a percentage (e.g. 35.5 means 35.5%)
+  const savingsRate = data.current_month.savings_rate
   const prevSavingsRate = data.previous_month.income > 0
     ? ((data.previous_month.income - data.previous_month.expenses) / data.previous_month.income) * 100
     : 0

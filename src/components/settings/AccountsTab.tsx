@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -257,10 +258,16 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
 }
 
 export function AccountsTab({ accounts: initialAccounts, accountTypes, currency }: Props) {
+  const router = useRouter()
   const [accounts, setAccounts] = useState(initialAccounts)
   const [formOpen, setFormOpen] = useState(false)
   const [editAccount, setEditAccount] = useState<AccountWithType | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Sync local state whenever the server re-fetches (after router.refresh())
+  useEffect(() => {
+    setAccounts(initialAccounts)
+  }, [initialAccounts])
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -280,6 +287,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Cuenta creada')
       setFormOpen(false)
+      router.refresh() // re-fetches server data → useEffect syncs local state
     })
   }
 
@@ -290,6 +298,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Cuenta actualizada')
       setEditAccount(null)
+      router.refresh() // re-fetches server data → useEffect syncs local state
     })
   }
 
@@ -299,6 +308,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
       if (!res.ok) { toast.error(res.error); return }
       setAccounts((prev) => prev.filter((a) => a.id !== id))
       toast.success('Cuenta archivada')
+      router.refresh()
     })
   }
 

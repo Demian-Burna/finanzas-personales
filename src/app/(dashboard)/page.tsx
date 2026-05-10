@@ -8,6 +8,8 @@ import { RecentTransactionsSection, RecentTransactionsSkeleton } from './_sectio
 import { AlertsSection } from './_sections/AlertsSection'
 import { RefMarker } from './_components/RefMarker'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Dashboard',
 }

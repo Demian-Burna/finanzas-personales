@@ -35,6 +35,15 @@ export function PeriodSelector() {
 
   const label = `${MONTHS_ES[month] ?? ''} ${year}`
 
+  const now = new Date()
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth()
+
+  function goToToday() {
+    const next = new URLSearchParams(params.toString())
+    next.delete('month')
+    router.push(`${pathname}?${next.toString()}`)
+  }
+
   return (
     <div className="flex items-center gap-1">
       <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Mes anterior">
@@ -46,6 +55,17 @@ export function PeriodSelector() {
       <Button variant="ghost" size="icon-sm" onClick={() => navigate(1)} aria-label="Mes siguiente">
         <ChevronRight className="size-4" />
       </Button>
+      {!isCurrentMonth && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={goToToday}
+          className="ml-1 h-7 px-2 text-xs"
+          aria-label="Volver al mes actual"
+        >
+          Hoy
+        </Button>
+      )}
     </div>
   )
 }

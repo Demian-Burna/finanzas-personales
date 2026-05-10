@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/supabase/queries/accounts'
 import { getCategories } from '@/lib/supabase/queries/categories'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { SettingsTabs } from '@/components/settings/SettingsTabs'
 import { ProfileTab } from '@/components/settings/ProfileTab'
 import { AccountsTab } from '@/components/settings/AccountsTab'
 import { CategoriesTab } from '@/components/settings/CategoriesTab'
@@ -11,7 +12,13 @@ import { DataTab } from '@/components/settings/DataTab'
 
 export const metadata: Metadata = { title: 'Configuración' }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _params = await Promise.resolve(searchParams) // consumed by SettingsTabs client component
   const supabase = await createClient()
 
   const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
@@ -51,7 +58,7 @@ export default async function SettingsPage() {
         <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicación</p>
       </div>
 
-      <Tabs defaultValue="profile">
+      <SettingsTabs>
         {/* Desktop: sidebar nav + content. Mobile: tabs on top */}
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           {/* Sidebar nav */}
@@ -90,7 +97,7 @@ export default async function SettingsPage() {
             </TabsContent>
           </div>
         </div>
-      </Tabs>
+      </SettingsTabs>
     </div>
   )
 }
