@@ -127,8 +127,18 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{isEdit ? 'Editar cuenta' : 'Nueva cuenta'}</DialogTitle></DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {/* Show account type emoji next to title */}
+            {selectedTypeId && (
+              <span className="text-xl">
+                {accountTypes.find((t) => t.id === selectedTypeId)?.icon ?? '🏦'}
+              </span>
+            )}
+            {isEdit ? 'Editar cuenta' : 'Nueva cuenta'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
           {/* Name */}
           <div>
             <Label>Nombre</Label>
@@ -143,7 +153,9 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
               <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Seleccioná el tipo">
-                    {selectedTypeName ?? undefined}
+                    {selectedTypeName
+                      ? `${accountTypes.find((t) => t.id === field.value)?.icon ?? ''} ${selectedTypeName}`
+                      : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -155,6 +167,9 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
                 </SelectContent>
               </Select>
             )} />
+            {form.formState.errors.account_type_id && (
+              <p className="mt-1 text-xs text-destructive">{form.formState.errors.account_type_id.message}</p>
+            )}
           </div>
 
           {/* Balance + currency */}
@@ -182,10 +197,28 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
             </div>
           </div>
 
-          {/* Color */}
+          {/* Color — full width with hex preview */}
           <div>
             <Label>Color de identificación</Label>
-            <Input type="color" {...form.register('color')} className="mt-1 h-9 w-20 cursor-pointer p-0.5" />
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                type="color"
+                {...form.register('color')}
+                className="h-9 w-12 shrink-0 cursor-pointer rounded-md border p-0.5"
+              />
+              <Input
+                value={form.watch('color') ?? '#6366f1'}
+                onChange={(e) => form.setValue('color', e.target.value)}
+                placeholder="#6366f1"
+                className="font-mono flex-1"
+                maxLength={7}
+              />
+              {/* Live preview */}
+              <span
+                className="size-9 shrink-0 rounded-full border"
+                style={{ background: form.watch('color') ?? '#6366f1' }}
+              />
+            </div>
           </div>
 
           {/* Net worth toggle */}
@@ -205,9 +238,16 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}</Button>
+            {/* Use onClick+handleSubmit instead of type="submit" to bypass Dialog form interception */}
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={() => void form.handleSubmit(onSubmit)()}
+            >
+              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+            </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   )
