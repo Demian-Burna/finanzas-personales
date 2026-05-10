@@ -52,12 +52,12 @@ export default async function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="flex-col">
-        <TabsList className="w-full overflow-x-auto">
-          <TabsTrigger value="profile">Perfil</TabsTrigger>
-          <TabsTrigger value="accounts">Cuentas</TabsTrigger>
-          <TabsTrigger value="categories">Categorías</TabsTrigger>
-          <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
-          <TabsTrigger value="data">Datos</TabsTrigger>
+        <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0">
+          <TabsTrigger value="profile" className="rounded-none px-4 pb-3">Perfil</TabsTrigger>
+          <TabsTrigger value="accounts" className="rounded-none px-4 pb-3">Cuentas</TabsTrigger>
+          <TabsTrigger value="categories" className="rounded-none px-4 pb-3">Categorías</TabsTrigger>
+          <TabsTrigger value="notifications" className="rounded-none px-4 pb-3">Notificaciones</TabsTrigger>
+          <TabsTrigger value="data" className="rounded-none px-4 pb-3">Datos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-6">

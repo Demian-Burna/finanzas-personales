@@ -51,11 +51,11 @@ export function ReportsClient({
 
   return (
     <Tabs defaultValue="monthly" className="flex-col space-y-6">
-      <TabsList className="w-full overflow-x-auto">
-        <TabsTrigger value="monthly">Resumen mensual</TabsTrigger>
-        <TabsTrigger value="category">Por categoría</TabsTrigger>
-        <TabsTrigger value="cashflow">Flujo de caja</TabsTrigger>
-        <TabsTrigger value="networth">Patrimonio neto</TabsTrigger>
+      <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0">
+        <TabsTrigger value="monthly" className="rounded-none px-4 pb-3">Resumen mensual</TabsTrigger>
+        <TabsTrigger value="category" className="rounded-none px-4 pb-3">Por categoría</TabsTrigger>
+        <TabsTrigger value="cashflow" className="rounded-none px-4 pb-3">Flujo de caja</TabsTrigger>
+        <TabsTrigger value="networth" className="rounded-none px-4 pb-3">Patrimonio neto</TabsTrigger>
       </TabsList>
 
       <TabsContent value="monthly">
