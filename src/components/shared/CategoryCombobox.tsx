@@ -33,7 +33,6 @@ export function CategoryCombobox({
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -56,24 +55,11 @@ export function CategoryCombobox({
 
   // Outside-click: close when tapping outside trigger and dropdown
   useEffect(() => {
-    if (!open) return
-    function handler(e: PointerEvent) {
-      const t = e.target as Node
-      if (!triggerRef.current?.contains(t) && !dropdownRef.current?.contains(t)) {
-        setOpen(false)
-        setSearch('')
-      }
-    }
-    document.addEventListener('pointerdown', handler)
-    return () => document.removeEventListener('pointerdown', handler)
-  }, [open])
-
-  useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 10)
   }, [open])
 
-  // No resize listener — iOS keyboard opening fires a resize event which
-  // would close the dropdown while the user is typing in the search box
+  // Outside-click is handled by a backdrop div rendered below the dropdown
+  // (more reliable on iOS than document pointerdown listeners)
 
   function select(id: string) {
     onChange(id)
@@ -87,11 +73,16 @@ export function CategoryCombobox({
   }
 
   const dropdown = (
-    <div
-      ref={dropdownRef}
-      className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10"
-      style={{ top: pos.top, left: pos.left, width: pos.width }}
-    >
+    <>
+      {/* Backdrop — captures outside clicks/taps, z-[199] so dropdown sits above it */}
+      <div
+        className="fixed inset-0 z-[199]"
+        onPointerDown={() => { setOpen(false); setSearch('') }}
+      />
+      <div
+        className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10"
+        style={{ top: pos.top, left: pos.left, width: pos.width }}
+      >
       <div className="border-b p-1.5">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -113,10 +104,7 @@ export function CategoryCombobox({
             <button
               key={c.id}
               type="button"
-              onPointerDown={(e) => {
-                e.preventDefault() // prevent outside-click handler from firing first
-                select(c.id)
-              }}
+              onClick={() => select(c.id)}
               className={cn(
                 'flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left text-sm transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
@@ -131,6 +119,7 @@ export function CategoryCombobox({
         )}
       </div>
     </div>
+    </>
   )
 
   return (

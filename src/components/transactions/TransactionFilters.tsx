@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useRef, useEffect } from 'react'
+import { useCallback, useState, useRef } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { Search, X, ChevronDown, Check } from 'lucide-react'
@@ -58,29 +58,19 @@ function PortalSelect({
     setOpen(true)
   }
 
-  useEffect(() => {
-    if (!open) return
-    function h(e: PointerEvent) {
-      const t = e.target as Node
-      if (!triggerRef.current?.contains(t) && !dropRef.current?.contains(t)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('pointerdown', h)
-    return () => document.removeEventListener('pointerdown', h)
-  }, [open])
-
   const dropdown = (
-    <div
-      ref={dropRef}
-      className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10 py-1"
-      style={{ top: pos.top, left: pos.left, width: pos.width }}
-    >
+    <>
+      <div className="fixed inset-0 z-[199]" onPointerDown={() => setOpen(false)} />
+      <div
+        ref={dropRef}
+        className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10 py-1"
+        style={{ top: pos.top, left: pos.left, width: pos.width }}
+      >
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
-          onPointerDown={(e) => { e.preventDefault(); onChange(o.value); setOpen(false) }}
+          onClick={() => { onChange(o.value); setOpen(false) }}
           className={cn(
             'flex w-full items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
             o.value === value && 'bg-accent/50',
@@ -91,6 +81,7 @@ function PortalSelect({
         </button>
       ))}
     </div>
+    </>
   )
 
   return (
