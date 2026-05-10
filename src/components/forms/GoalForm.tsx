@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm, Controller } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
 import { savingGoalSchema, type SavingGoalInput } from '@/lib/validations/saving-goal'
 import type { SavingGoalWithContributions } from '@/lib/supabase/queries/saving-goals'
@@ -10,8 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CurrencySelect } from '@/components/shared/CurrencySelect'
 
-const EMOJI_OPTIONS = ['🎯','🏠','🚗','✈️','💻','📱','🎓','💍','🏖️','🛒','🏋️','🎸','🐶','🌱','💰','🏦','🎁','🚀']
+const EMOJI_OPTIONS = [
+  '🎯','🏠','🚗','✈️','💻','📱','🎓','💍','🏖️','🛒',
+  '🏋️','🎸','🐶','🌱','💰','🏦','🎁','🚀','🎨','🏕️',
+]
 
 interface Props {
   open: boolean
@@ -22,12 +25,25 @@ interface Props {
   isPending?: boolean
 }
 
+// Custom resolver — bypass zodResolver/Zod v4 incompatibility
+const goalResolver: Resolver<SavingGoalInput> = async (values) => {
+  const result = savingGoalSchema.safeParse(values)
+  if (result.success) return { values: result.data, errors: {} }
+  const errors: Record<string, { type: string; message: string }> = {}
+  for (const issue of result.error.issues) {
+    const key = issue.path.join('.') || 'root'
+    if (!errors[key]) errors[key] = { type: 'validation', message: issue.message }
+  }
+  return { values: {}, errors }
+}
+
 export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, onSubmit, isPending }: Props) {
   const isEdit = !!goal
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
   const form = useForm<SavingGoalInput>({
-    resolver: zodResolver(savingGoalSchema) as Resolver<SavingGoalInput>,
+    resolver: goalResolver,
+    mode: 'onChange',
     defaultValues: {
       name: '', description: '', currency_code: defaultCurrency,
       target_amount: 0, target_date: null, icon: '🎯', color: null, account_id: null,
@@ -39,13 +55,20 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
   useEffect(() => {
     if (goal) {
       form.reset({
-        name: goal.name, description: goal.description ?? '',
-        currency_code: goal.currency_code, target_amount: goal.target_amount,
-        target_date: goal.target_date ?? null, icon: goal.icon ?? '🎯',
-        color: goal.color ?? null, account_id: goal.account_id ?? null,
+        name: goal.name,
+        description: goal.description ?? '',
+        currency_code: goal.currency_code,
+        target_amount: goal.target_amount,
+        target_date: goal.target_date ?? null,
+        icon: goal.icon ?? '🎯',
+        color: goal.color ?? null,
+        account_id: goal.account_id ?? null,
       })
     } else {
-      form.reset({ name: '', description: '', currency_code: defaultCurrency, target_amount: 0, target_date: null, icon: '🎯', color: null, account_id: null })
+      form.reset({
+        name: '', description: '', currency_code: defaultCurrency,
+        target_amount: 0, target_date: null, icon: '🎯', color: null, account_id: null,
+      })
     }
   }, [goal, form, defaultCurrency])
 
@@ -56,23 +79,29 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
           <DialogTitle>{isEdit ? 'Editar meta' : 'Nueva meta'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+        <form noValidate className="space-y-4 pt-2">
           {/* Emoji picker */}
           <div>
             <Label>Ícono</Label>
             <div className="mt-1 flex items-center gap-2">
-              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="flex size-10 items-center justify-center rounded-lg border text-2xl hover:bg-muted transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="flex size-10 items-center justify-center rounded-lg border text-2xl hover:bg-muted transition-colors"
+              >
                 {selectedIcon ?? '🎯'}
               </button>
               <span className="text-xs text-muted-foreground">Hacé clic para cambiar</span>
             </div>
             {showEmojiPicker && (
-              <div className="mt-2 grid grid-cols-9 gap-1 rounded-lg border p-2">
+              <div className="mt-2 grid grid-cols-10 gap-1 rounded-lg border p-2">
                 {EMOJI_OPTIONS.map((e) => (
-                  <button key={e} type="button"
+                  <button
+                    key={e}
+                    type="button"
                     onClick={() => { form.setValue('icon', e); setShowEmojiPicker(false) }}
-                    className={`flex size-8 items-center justify-center rounded text-lg hover:bg-muted transition-colors ${selectedIcon === e ? 'bg-primary/10 ring-1 ring-primary' : ''}`}>
+                    className={`flex size-8 items-center justify-center rounded text-lg hover:bg-muted transition-colors ${selectedIcon === e ? 'bg-primary/10 ring-1 ring-primary' : ''}`}
+                  >
                     {e}
                   </button>
                 ))}
@@ -82,27 +111,54 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
 
           {/* Name */}
           <div>
-            <Label htmlFor="goal-name">Nombre</Label>
-            <Input id="goal-name" placeholder="Ej: Viaje a Europa" {...form.register('name')} className="mt-1" />
-            {form.formState.errors.name && <p className="mt-1 text-xs text-destructive">{form.formState.errors.name.message}</p>}
+            <Label>Nombre</Label>
+            <Input placeholder="Ej: Viaje a Europa" {...form.register('name')} className="mt-1" />
+            {form.formState.errors.name && (
+              <p className="mt-1 text-xs text-destructive">{form.formState.errors.name.message}</p>
+            )}
           </div>
 
           {/* Description */}
           <div>
-            <Label htmlFor="goal-desc">Descripción (opcional)</Label>
-            <Input id="goal-desc" placeholder="Detalles de la meta..." {...form.register('description')} className="mt-1" />
+            <Label>Descripción (opcional)</Label>
+            <Input placeholder="Detalles de la meta..." {...form.register('description')} className="mt-1" />
           </div>
 
           {/* Amount + currency */}
           <div className="flex gap-2">
             <div className="flex-1">
               <Label>Monto objetivo</Label>
-              <Input type="number" step="0.01" min="0" placeholder="0.00" {...form.register('target_amount', { valueAsNumber: true })} className="mt-1" />
-              {form.formState.errors.target_amount && <p className="mt-1 text-xs text-destructive">{form.formState.errors.target_amount.message}</p>}
+              <Controller
+                control={form.control}
+                name="target_amount"
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={field.value === 0 ? '' : String(field.value)}
+                    onChange={(e) => {
+                      const n = parseFloat(e.target.value.replace(',', '.'))
+                      field.onChange(isNaN(n) ? 0 : n)
+                    }}
+                    onBlur={field.onBlur}
+                    className="mt-1"
+                  />
+                )}
+              />
+              {form.formState.errors.target_amount && (
+                <p className="mt-1 text-xs text-destructive">{form.formState.errors.target_amount.message}</p>
+              )}
             </div>
-            <div className="w-24">
+            <div className="w-36">
               <Label>Moneda</Label>
-              <Input placeholder="ARS" {...form.register('currency_code')} className="mt-1 uppercase" maxLength={3} />
+              <Controller
+                control={form.control}
+                name="currency_code"
+                render={({ field }) => (
+                  <CurrencySelect value={field.value} onValueChange={field.onChange} className="mt-1 w-full" />
+                )}
+              />
             </div>
           </div>
 
@@ -113,8 +169,16 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear meta'}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={() => void form.handleSubmit(onSubmit)()}
+            >
+              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear meta'}
+            </Button>
           </div>
         </form>
       </DialogContent>

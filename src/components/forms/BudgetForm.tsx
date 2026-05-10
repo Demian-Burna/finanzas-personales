@@ -74,6 +74,7 @@ export function BudgetForm({
 
   const form = useForm<BudgetInput>({
     resolver: budgetResolver,
+    mode: 'onChange',
     defaultValues: {
       category_id: '',
       period_type: 'monthly',

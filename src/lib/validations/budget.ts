@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const budgetSchema = z.object({
-  category_id: z.string().uuid('Categoría inválida'),
+  category_id: z.string().min(1, 'Seleccioná una categoría'),
   period_type: z.enum(['monthly', 'weekly', 'yearly', 'custom'], {
     message: 'Período inválido',
   }),
