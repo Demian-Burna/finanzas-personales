@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts'
 import { Download, ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
@@ -107,6 +107,9 @@ export function CategoryBreakdownTab({ currency, locale }: Props) {
       downloadCsv(res.data, `fintrack-categorias-${period}.csv`)
     })
   }
+
+  // Auto-load on mount
+  useEffect(() => { void load(period) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = rows.reduce((s, r) => s + r.total, 0)
 

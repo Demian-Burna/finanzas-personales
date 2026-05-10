@@ -11,7 +11,6 @@ import { RecentTransactionsSection } from './_sections/RecentTransactionsSection
 import { AlertsSection } from './_sections/AlertsSection'
 import { RefMarker } from './_components/RefMarker'
 
-// Always render fresh — never serve a stale cached version when month changes
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
@@ -23,27 +22,14 @@ const MONTHS_ES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
-export default async function OverviewPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>
-}) {
-  const params = await Promise.resolve(searchParams)
-  const monthParam = typeof params.month === 'string' ? params.month : undefined
+export default async function OverviewPage() {
+  // Dashboard always shows the current month — use Reports for other periods
+  const now = new Date()
+  const referenceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+  const periodLabel = `${MONTHS_ES[now.getMonth()] ?? ''} ${now.getFullYear()}`
 
-  // Derive referenceDate from URL param or current month
-  let referenceDate: string
-  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
-    referenceDate = `${monthParam}-01`
-  } else {
-    const now = new Date()
-    referenceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-  }
-
-  // Single authenticated client — all queries share the same session
   const supabase = await createClient()
 
-  // Fetch user prefs and all dashboard data in parallel
   const [
     profileResult,
     statsResult,
@@ -63,11 +49,6 @@ export default async function OverviewPage({
   const profile = profileResult.data as { currency_code: string | null; locale: string | null } | null
   const currency = profile?.currency_code ?? 'ARS'
   const locale = profile?.locale ?? 'es-AR'
-
-  // Period label
-  const [yearStr, monthStr] = referenceDate.split('-')
-  const monthIdx = parseInt(monthStr ?? '1', 10) - 1
-  const periodLabel = `${MONTHS_ES[monthIdx] ?? ''} ${yearStr}`
 
   return (
     <div className="space-y-6">

@@ -5,7 +5,9 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Camera } from 'lucide-react'
+import { Camera, LogOut } from 'lucide-react'
+import { useTransition as useSignOutTransition } from 'react'
+import { signOut } from '@/app/(dashboard)/actions'
 import { profileSchema, type ProfileInput } from '@/lib/validations/profile'
 import { Button } from '@/components/ui/button'
 import { CurrencySelect } from '@/components/shared/CurrencySelect'
@@ -43,6 +45,7 @@ export function ProfileTab({ profile, userEmail }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [isPending, startTransition] = useTransition()
   const [isUploading, startUpload] = useTransition()
+  const [isSigningOut, startSignOut] = useSignOutTransition()
 
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema) as Resolver<ProfileInput>,
@@ -152,9 +155,23 @@ export function ProfileTab({ profile, userEmail }: Props) {
         )} />
       </div>
 
-      <Button type="submit" disabled={isPending || isUploading}>
-        {isPending ? 'Guardando...' : 'Guardar cambios'}
-      </Button>
+      <div className="flex items-center justify-between pt-2">
+        <Button type="submit" disabled={isPending || isUploading}>
+          {isPending ? 'Guardando...' : 'Guardar cambios'}
+        </Button>
+
+        {/* Sign-out — visible on mobile where the sidebar is hidden */}
+        <Button
+          type="button"
+          variant="outline"
+          className="lg:hidden gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+          disabled={isSigningOut}
+          onClick={() => startSignOut(async () => { await signOut() })}
+        >
+          <LogOut className="size-4" />
+          {isSigningOut ? 'Saliendo...' : 'Cerrar sesión'}
+        </Button>
+      </div>
     </form>
   )
 }

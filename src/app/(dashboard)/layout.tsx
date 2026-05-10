@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { Header } from '@/components/layout/Header'
 import { MobileNav } from '@/components/layout/MobileNav'
 
 export const metadata: Metadata = {
@@ -27,9 +26,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
+      <Sidebar user={user} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={user} />
         <main className="flex-1 overflow-y-auto p-4 pb-20 lg:p-6 lg:pb-6">
           {children}
         </main>
