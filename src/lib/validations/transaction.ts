@@ -6,8 +6,9 @@ export const transactionSchema = z
       message: 'Tipo de transacción inválido',
     }),
     account_id: z.string().uuid('Seleccioná una cuenta'),
-    transfer_account_id: z.string().uuid().nullable().optional(),
-    category_id: z.string().uuid().nullable().optional(),
+    // Allow '' (empty string from base-ui Select) in addition to null/uuid
+    transfer_account_id: z.union([z.string().uuid(), z.literal(''), z.null()]).optional(),
+    category_id: z.union([z.string().uuid(), z.literal(''), z.null()]).optional(),
     currency_code: z.string().min(3).max(3),
     // z.coerce.number() handles string→number from HTML inputs (valueAsNumber quirks)
     amount: z.coerce.number().positive('El monto debe ser mayor a 0'),
@@ -24,7 +25,7 @@ export const transactionSchema = z
         path: ['transfer_account_id'],
       })
     }
-    if (val.transaction_type !== 'transfer' && !val.category_id) {
+    if (val.transaction_type !== 'transfer' && (!val.category_id || val.category_id === '')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Seleccioná una categoría',

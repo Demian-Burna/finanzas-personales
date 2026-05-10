@@ -34,8 +34,8 @@ export async function createTransactionAction(
     ...rest,
     transaction_type,
     user_id: user.id,
-    transfer_account_id: transaction_type === 'transfer' ? (transfer_account_id ?? null) : null,
-    category_id: transaction_type === 'transfer' ? null : (rest.category_id ?? null),
+    transfer_account_id: transaction_type === 'transfer' ? (transfer_account_id || null) : null,
+    category_id: transaction_type === 'transfer' ? null : (rest.category_id || null),
     amount_in_base_currency: rest.amount,
     transfer_transaction_id: null,
     exchange_rate: null,
@@ -65,8 +65,8 @@ export async function updateTransactionAction(
   const { error } = await updateTransaction(supabase, id, {
     ...rest,
     transaction_type,
-    transfer_account_id: transaction_type === 'transfer' ? (transfer_account_id ?? null) : null,
-    category_id: transaction_type === 'transfer' ? null : (rest.category_id ?? null),
+    transfer_account_id: transaction_type === 'transfer' ? (transfer_account_id || null) : null,
+    category_id: transaction_type === 'transfer' ? null : (rest.category_id || null),
     amount_in_base_currency: rest.amount,
     notes: rest.notes ?? null,
   } as never)
