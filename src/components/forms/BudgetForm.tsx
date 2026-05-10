@@ -88,6 +88,7 @@ export function BudgetForm({
   })
 
   useEffect(() => {
+    if (!open) return // only reset when dialog opens
     if (budget) {
       form.reset({
         category_id: budget.category_id,
@@ -111,7 +112,7 @@ export function BudgetForm({
         alert_threshold_pct: 80,
       })
     }
-  }, [budget, form, defaultCurrency])
+  }, [open, budget, form, defaultCurrency])
 
   const alertThreshold = form.watch('alert_threshold_pct')
   const rollover = form.watch('rollover_unused')

@@ -87,6 +87,7 @@ export function RecurringItemForm({
     : ''
 
   useEffect(() => {
+    if (!open) return // only reset when dialog opens
     if (item) {
       form.reset({
         transaction_type: item.transaction_type as RecurringItemInput['transaction_type'],
@@ -110,7 +111,7 @@ export function RecurringItemForm({
         end_date: null, is_active: true, auto_create: false, advance_notice_days: 3,
       })
     }
-  }, [item, form, defaultCurrency])
+  }, [open, item, form, defaultCurrency])
 
   const filteredCategories = categories.filter(
     (c) => c.transaction_type === txType || c.transaction_type === null,

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const recurringItemSchema = z.object({
-  account_id: z.string().uuid('Cuenta inválida'),
+  account_id: z.string().min(1, 'Seleccioná una cuenta'),
   category_id: z.string().uuid().nullable().optional(),
   currency_code: z.string().length(3, 'Moneda inválida (código ISO de 3 letras)'),
   amount: z.number().positive('El monto debe ser positivo'),

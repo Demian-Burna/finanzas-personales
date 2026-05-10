@@ -53,6 +53,7 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
   const selectedIcon = form.watch('icon')
 
   useEffect(() => {
+    if (!open) return // only reset when dialog opens
     if (goal) {
       form.reset({
         name: goal.name,
@@ -70,7 +71,7 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
         target_amount: 0, target_date: null, icon: '🎯', color: null, account_id: null,
       })
     }
-  }, [goal, form, defaultCurrency])
+  }, [open, goal, form, defaultCurrency])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

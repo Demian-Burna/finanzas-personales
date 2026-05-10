@@ -81,78 +81,108 @@ function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
     }, [])
 
   const goalCurrency = goal.currency_code ?? currency
+  const barColor = isCompleted ? '#10b981' : pct >= 80 ? '#f59e0b' : '#6366f1'
 
   return (
-    <div className={cn('rounded-xl border bg-card p-5 shadow-sm space-y-4', isPaused && 'opacity-60')}>
-      {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className="relative shrink-0">
-          <CircularProgress pct={pct} />
-          <span className="absolute inset-0 flex items-center justify-center text-xl">
-            {goal.icon ?? '🎯'}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <p className="font-semibold text-sm truncate">{goal.name}</p>
-            {isCompleted && (
-              <span className="shrink-0 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5">
-                Cumplida ✓
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {formatCurrency(goal.current_amount, goalCurrency, locale)} de {formatCurrency(goal.target_amount, goalCurrency, locale)}
-          </p>
-          {projectionMonths != null && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              A este ritmo llegás en ~{projectionMonths} mes{projectionMonths !== 1 ? 'es' : ''}
-            </p>
-          )}
-          {goal.target_date && !isCompleted && (
-            <p className="text-[10px] text-muted-foreground">
-              Objetivo: {new Date(goal.target_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
-            </p>
-          )}
-        </div>
+    <div className={cn('rounded-xl border bg-card shadow-sm overflow-hidden', isPaused && 'opacity-60')}>
+      {/* Progress bar stripe at top */}
+      <div className="h-1 bg-muted">
+        <div
+          className="h-full transition-all duration-500"
+          style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+        />
       </div>
 
-      {/* Chart */}
-      {chartData.length > 1 && (
-        <div className="h-[80px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 0 }}>
-              <defs>
-                <linearGradient id={`grad-${goal.id}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" hide />
-              <YAxis hide domain={[0, goal.target_amount]} />
-              <Tooltip
-                formatter={(v) => [formatCurrency(Number(v ?? 0), goalCurrency, locale), 'Acumulado']}
-                contentStyle={{ fontSize: 11 }}
-              />
-              <ReferenceLine y={goal.target_amount} stroke="#10b981" strokeDasharray="4 2" />
-              <Area type="monotone" dataKey="amount" stroke="#6366f1" fill={`url(#grad-${goal.id})`} strokeWidth={2} dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
+      <div className="p-4 space-y-3">
+        {/* Header row: icon + name + pct badge */}
+        <div className="flex items-start gap-3">
+          <span className="text-2xl shrink-0 leading-none mt-0.5">{goal.icon ?? '🎯'}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-semibold text-sm truncate leading-snug">{goal.name}</p>
+              <span className={cn(
+                'shrink-0 text-[10px] font-bold tabular-nums rounded-full px-2 py-0.5',
+                isCompleted
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                  : pct >= 80
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+                    : 'bg-primary/10 text-primary',
+              )}>
+                {isCompleted ? 'Cumplida ✓' : `${pct.toFixed(0)}%`}
+              </span>
+            </div>
+            {goal.target_date && !isCompleted && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Objetivo: {new Date(goal.target_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* Actions */}
-      {!isCompleted && (
-        <div className="flex gap-2">
-          <Button size="sm" onClick={() => onContribute(goal)} className="flex-1 text-xs h-7">
-            Agregar aporte
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => onEdit(goal)} className="text-xs h-7">Editar</Button>
-          <Button variant="ghost" size="sm" onClick={() => onPause(goal.id, isPaused ? 'active' : 'paused')} className="text-xs h-7">
-            {isPaused ? 'Reanudar' : 'Pausar'}
-          </Button>
+        {/* Amount row */}
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-lg font-bold tabular-nums">
+              {formatCurrency(goal.current_amount, goalCurrency, locale)}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              de {formatCurrency(goal.target_amount, goalCurrency, locale)}
+              {remaining > 0 && !isCompleted && ` · faltan ${formatCurrency(remaining, goalCurrency, locale)}`}
+            </p>
+          </div>
+          {projectionMonths != null && (
+            <p className="text-[10px] text-muted-foreground text-right">
+              ~{projectionMonths} mes{projectionMonths !== 1 ? 'es' : ''}<br />
+              <span>a este ritmo</span>
+            </p>
+          )}
         </div>
-      )}
+
+        {/* Mini chart */}
+        {chartData.length > 1 && (
+          <div className="h-16 -mx-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 0 }}>
+                <defs>
+                  <linearGradient id={`grad-${goal.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={barColor} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={barColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" hide />
+                <YAxis hide domain={[0, goal.target_amount]} />
+                <Tooltip
+                  formatter={(v) => [formatCurrency(Number(v ?? 0), goalCurrency, locale), 'Acumulado']}
+                  contentStyle={{
+                    fontSize: 11,
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--foreground)',
+                  }}
+                />
+                <ReferenceLine y={goal.target_amount} stroke="#10b981" strokeDasharray="4 2" />
+                <Area type="monotone" dataKey="amount" stroke={barColor} fill={`url(#grad-${goal.id})`} strokeWidth={2} dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Actions */}
+        {!isCompleted && (
+          <div className="flex gap-2 pt-1 border-t">
+            <Button size="sm" onClick={() => onContribute(goal)} className="flex-1 text-xs h-8 gap-1.5">
+              + Agregar aporte
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onEdit(goal)} className="text-xs h-8">
+              Editar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onPause(goal.id, isPaused ? 'active' : 'paused')} className="text-xs h-8">
+              {isPaused ? 'Reanudar' : 'Pausar'}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
