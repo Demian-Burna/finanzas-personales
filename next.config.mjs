@@ -11,6 +11,7 @@ const supabaseHostname = rawSupabaseUrl ? new URL(rawSupabaseUrl).hostname : '*.
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    instrumentationHook: true,
     optimizePackageImports: [
       'lucide-react',
       '@tanstack/react-query',

@@ -1,9 +1,5 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-
-// Force dynamic rendering to ensure Next.js generates the client-reference-manifest
-// (prevents ENOENT build error with route groups on Vercel)
-export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { StatsSection, StatsSectionSkeleton } from './_sections/StatsSection'
 import { ChartsSection, ChartsSectionSkeleton } from './_sections/ChartsSection'
