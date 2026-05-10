@@ -13,10 +13,21 @@ import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Plus, Edit, Archive } from 'lucide-react'
 import { toast } from 'sonner'
 import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import { accountSchema, type AccountInput } from '@/lib/validations/account'
+
+// Custom resolver — same pattern as TransactionForm to bypass zodResolver/Zod v4 incompatibility
+const accountResolver: Resolver<AccountInput> = async (values) => {
+  const result = accountSchema.safeParse(values)
+  if (result.success) return { values: result.data, errors: {} }
+  const errors: Record<string, { type: string; message: string }> = {}
+  for (const issue of result.error.issues) {
+    const key = issue.path.join('.') || 'root'
+    if (!errors[key]) errors[key] = { type: 'validation', message: issue.message }
+  }
+  return { values: {}, errors }
+}
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,10 +58,6 @@ const TYPE_LABELS: Record<string, string> = {
   savings: 'Ahorro',
 }
 
-const ACCOUNT_EMOJIS = [
-  '🏦', '💳', '💵', '💰', '🏧', '💎', '🏛️', '🐷',
-  '📈', '🤝', '💼', '🏠', '🚗', '✈️', '🎯', '⭐',
-]
 
 function SortableRow({ account, onEdit, onArchive }: {
   account: AccountWithType
@@ -94,10 +101,9 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
   isPending: boolean
 }) {
   const isEdit = !!account
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
   const form = useForm<AccountInput>({
-    resolver: zodResolver(accountSchema) as Resolver<AccountInput>,
+    resolver: accountResolver,
     defaultValues: {
       account_type_id: account?.account_type_id ?? '',
       currency_code: account?.currency_code ?? defaultCurrency,
@@ -105,13 +111,12 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
       description: account?.description ?? '',
       initial_balance: account?.initial_balance ?? 0,
       color: account?.color ?? '#6366f1',
-      icon: account?.icon ?? '🏦',
+      icon: null, // icon comes from account_type, not set manually
       include_in_net_worth: account?.include_in_net_worth ?? true,
       sort_order: account?.sort_order ?? 0,
     },
   })
 
-  const selectedIcon = form.watch('icon')
   const selectedTypeId = form.watch('account_type_id')
   const selectedTypeName = (() => {
     const t = accountTypes.find((x) => x.id === selectedTypeId)
@@ -177,33 +182,10 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
             </div>
           </div>
 
-          {/* Color + Emoji */}
-          <div className="flex gap-3">
-            <div>
-              <Label>Color</Label>
-              <Input type="color" {...form.register('color')} className="mt-1 h-9 w-16 cursor-pointer p-0.5" />
-            </div>
-            <div className="flex-1">
-              <Label>Ícono</Label>
-              <div className="mt-1 flex items-center gap-2">
-                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="flex size-9 items-center justify-center rounded-lg border text-xl hover:bg-muted transition-colors">
-                  {selectedIcon ?? '🏦'}
-                </button>
-                <span className="text-xs text-muted-foreground">Hacé clic para cambiar</span>
-              </div>
-              {showEmojiPicker && (
-                <div className="mt-2 grid grid-cols-8 gap-1 rounded-lg border p-2">
-                  {ACCOUNT_EMOJIS.map((e) => (
-                    <button key={e} type="button"
-                      onClick={() => { form.setValue('icon', e); setShowEmojiPicker(false) }}
-                      className={cn('flex size-8 items-center justify-center rounded text-lg hover:bg-muted transition-colors', selectedIcon === e && 'bg-primary/10 ring-1 ring-primary')}>
-                      {e}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Color */}
+          <div>
+            <Label>Color de identificación</Label>
+            <Input type="color" {...form.register('color')} className="mt-1 h-9 w-20 cursor-pointer p-0.5" />
           </div>
 
           {/* Net worth toggle */}
