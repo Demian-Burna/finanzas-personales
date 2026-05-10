@@ -1,17 +1,16 @@
 import { z } from 'zod'
 
-export const profileUpdateSchema = z.object({
-  display_name: z.string().trim().min(1).max(100).nullable().optional(),
-  avatar_url: z.string().url('URL inválida').nullable().optional(),
-  currency_code: z.string().length(3).toUpperCase().optional(),
-  locale: z.string().max(10).optional(),
-  timezone: z.string().max(50).optional(),
+export const profileSchema = z.object({
+  display_name: z
+    .string()
+    .min(1, 'El nombre no puede estar vacío')
+    .max(100, 'El nombre no puede superar 100 caracteres')
+    .nullable()
+    .optional(),
+  avatar_url: z.string().url('URL de avatar inválida').nullable().optional(),
+  currency_code: z.string().length(3, 'Moneda inválida (código ISO de 3 letras)'),
+  locale: z.string().max(10, 'Locale inválido'),
+  timezone: z.string().max(50, 'Zona horaria inválida'),
 })
-export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>
 
-export const onboardingStep1Schema = z.object({
-  currency_code: z.string().length(3).toUpperCase(),
-  locale: z.string().max(10),
-  timezone: z.string().max(50),
-})
-export type OnboardingStep1Input = z.infer<typeof onboardingStep1Schema>
+export type ProfileInput = z.infer<typeof profileSchema>

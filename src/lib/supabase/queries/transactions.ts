@@ -1,257 +1,153 @@
-// ============================================================
-// Transactions — list, filter, paginate, mutate
-// ============================================================
-// Performance notes:
-//   • All SELECTs use explicit columns — never `*` — so adding
-//     columns to the DB doesn't bloat the over-the-wire payload.
-//   • Pagination is cursor-based on (transaction_date, id) which
-//     is supported by the idx_txn_user_date partial index. Avoids
-//     OFFSET (which scales O(n) with the offset).
-//   • Soft delete: queries filter `deleted_at IS NULL` server-side.
-// ============================================================
-
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import type {
-  TransactionInsert,
-  TransactionUpdate,
-  TransactionWithRelations,
-  TransactionType,
-} from '@/types/domain'
-import type { CursorPage } from '@/types'
-import { unwrap, unwrapMaybe } from '../error'
+import type { TransactionRow, TransactionInsert, TransactionUpdate } from '@/types/domain'
 
 type Client = SupabaseClient<Database>
 
-// ── Column projection used everywhere ────────────────────────
-// Explicit list — ergonomic + cheap on the wire.
-const TRANSACTION_SELECT = `
-  id,
-  user_id,
-  account_id,
-  category_id,
-  transfer_account_id,
-  transfer_transaction_id,
-  currency_code,
-  amount,
-  amount_in_base_currency,
-  exchange_rate,
-  transaction_type,
-  description,
-  notes,
-  transaction_date,
-  value_date,
-  is_reconciled,
-  recurring_item_id,
-  attachment_url,
-  deleted_at,
-  created_at,
-  updated_at,
-  category:categories!transactions_category_id_fkey (
-    id, name, color, icon, transaction_type
-  ),
-  account:accounts!transactions_account_id_fkey (
-    id, name, icon, color, currency_code
-  ),
-  transfer_account:accounts!transactions_transfer_account_id_fkey (
-    id, name, icon, color, currency_code
-  )
-` as const
+export interface TransactionWithRelations extends TransactionRow {
+  account: {
+    id: string
+    name: string
+    color: string | null
+    currency_code: string
+  } | null
+  category: {
+    id: string
+    name: string
+    color: string | null
+    icon: string | null
+  } | null
+}
 
-// ── Filters ──────────────────────────────────────────────────
 export interface TransactionFilters {
-  /** ISO date (inclusive). */
-  fromDate?: string
-  /** ISO date (inclusive). */
-  toDate?: string
-  /** Filter by income/expense/transfer. */
-  type?: TransactionType
   accountId?: string
   categoryId?: string
-  /** Free-text search over description and notes. */
+  type?: 'income' | 'expense' | 'transfer'
+  dateFrom?: string
+  dateTo?: string
   search?: string
-  minAmount?: number
-  maxAmount?: number
-  isReconciled?: boolean
+  /** ISO date string of the last fetched item (for cursor pagination) */
+  cursorDate?: string
+  /** UUID of the last fetched item (tie-breaker for same date) */
+  cursorId?: string
+  pageSize?: number
 }
 
-export interface TransactionPageOptions extends TransactionFilters {
-  /** Items per page. Default 50. Max 200. */
-  limit?: number
-  /** Cursor returned by a previous call (or null for first page). */
-  cursor?: TransactionCursor | null
-}
+// Explicit column list — never select *
+const TRANSACTION_COLUMNS = [
+  'id', 'user_id', 'account_id', 'category_id',
+  'transfer_account_id', 'transfer_transaction_id',
+  'currency_code', 'amount', 'amount_in_base_currency', 'exchange_rate',
+  'transaction_type', 'description', 'notes',
+  'transaction_date', 'value_date', 'is_reconciled',
+  'recurring_item_id', 'attachment_url', 'deleted_at',
+  'created_at', 'updated_at',
+  // FK-hinted joins — supabase-js doesn't infer nested types correctly,
+  // so callers receive TransactionWithRelations via `as unknown as` cast below.
+  'account:accounts!account_id(id,name,color,currency_code)',
+  'category:categories!category_id(id,name,color,icon)',
+].join(',')
 
-/**
- * Composite cursor: ordering by transaction_date DESC then id DESC
- * is stable as long as id is unique within a (date) bucket.
- */
-export interface TransactionCursor {
-  date: string
-  id: string
-}
+export async function getTransactions(
+  client: Client,
+  filters: TransactionFilters = {},
+): Promise<{ data: TransactionWithRelations[]; error: PostgrestError | null }> {
+  const {
+    accountId,
+    categoryId,
+    type,
+    dateFrom,
+    dateTo,
+    search,
+    cursorDate,
+    cursorId,
+    pageSize = 25,
+  } = filters
 
-// ── List with cursor pagination ──────────────────────────────
-export async function listTransactions(
-  supabase: Client,
-  userId: string,
-  options: TransactionPageOptions = {},
-): Promise<CursorPage<TransactionWithRelations, TransactionCursor>> {
-  const limit = Math.min(options.limit ?? 50, 200)
-
-  let query = supabase
+  let query = client
     .from('transactions')
-    .select(TRANSACTION_SELECT)
-    .eq('user_id', userId)
+    .select(TRANSACTION_COLUMNS)
     .is('deleted_at', null)
     .order('transaction_date', { ascending: false })
     .order('id', { ascending: false })
-    .limit(limit + 1) // fetch one extra to detect hasMore
+    .limit(pageSize)
 
-  // ── Filters ──
-  if (options.fromDate) query = query.gte('transaction_date', options.fromDate)
-  if (options.toDate) query = query.lte('transaction_date', options.toDate)
-  if (options.type) query = query.eq('transaction_type', options.type)
-  if (options.accountId) query = query.eq('account_id', options.accountId)
-  if (options.categoryId) query = query.eq('category_id', options.categoryId)
-  if (options.minAmount !== undefined) query = query.gte('amount', options.minAmount)
-  if (options.maxAmount !== undefined) query = query.lte('amount', options.maxAmount)
-  if (options.isReconciled !== undefined) query = query.eq('is_reconciled', options.isReconciled)
+  if (accountId)  query = query.eq('account_id', accountId)
+  if (categoryId) query = query.eq('category_id', categoryId)
+  if (type)       query = query.eq('transaction_type', type)
+  if (dateFrom)   query = query.gte('transaction_date', dateFrom)
+  if (dateTo)     query = query.lte('transaction_date', dateTo)
+  if (search)     query = query.ilike('description', `%${search}%`)
 
-  if (options.search) {
-    // ILIKE on description OR notes — both are unindexed but fine for typical volumes.
-    const term = `%${options.search.replace(/[%_]/g, '\\$&')}%`
-    query = query.or(`description.ilike.${term},notes.ilike.${term}`)
-  }
-
-  // ── Cursor (keyset) pagination ──
-  // Continue from (date < cursor.date) OR (date = cursor.date AND id < cursor.id).
-  if (options.cursor) {
-    const { date, id } = options.cursor
+  // Composite cursor: rows where date < cursorDate, OR same date with id < cursorId
+  if (cursorDate && cursorId) {
     query = query.or(
-      `transaction_date.lt.${date},and(transaction_date.eq.${date},id.lt.${id})`,
+      `transaction_date.lt.${cursorDate},and(transaction_date.eq.${cursorDate},id.lt.${cursorId})`,
     )
   }
 
-  const rows = unwrap(await query) as unknown as TransactionWithRelations[]
+  const { data, error } = await query
 
-  const hasMore = rows.length > limit
-  const items = hasMore ? rows.slice(0, limit) : rows
-  const last = items.at(-1)
-  const nextCursor: TransactionCursor | null =
-    hasMore && last ? { date: last.transaction_date, id: last.id } : null
-
-  return { items, nextCursor, hasMore }
+  return {
+    data: (data as unknown as TransactionWithRelations[]) ?? [],
+    error,
+  }
 }
 
-// ── Get one ──────────────────────────────────────────────────
-export async function getTransaction(
-  supabase: Client,
+export async function getTransactionById(
+  client: Client,
   id: string,
-): Promise<TransactionWithRelations | null> {
-  const result = await supabase
+): Promise<{ data: TransactionWithRelations | null; error: PostgrestError | null }> {
+  const { data, error } = await client
     .from('transactions')
-    .select(TRANSACTION_SELECT)
+    .select(TRANSACTION_COLUMNS)
     .eq('id', id)
     .is('deleted_at', null)
     .single()
 
-  return unwrapMaybe(result) as unknown as TransactionWithRelations | null
+  return { data: data as unknown as TransactionWithRelations | null, error }
 }
 
-// ── Create ───────────────────────────────────────────────────
-// For transfers, two records are inserted in a single round-trip:
-// the source (canonical) and the destination mirror linked via
-// transfer_transaction_id. The DB trigger updates both balances.
+// supabase-js cannot resolve Insert/Update types when defined as Omit<Row, ...>
+// in the Database interface (circular self-reference during type evaluation).
+// Using `as never` is intentional — the function signatures still enforce types for callers.
 export async function createTransaction(
-  supabase: Client,
+  client: Client,
   input: TransactionInsert,
-): Promise<TransactionWithRelations> {
-  if (input.transaction_type === 'transfer') {
-    if (!input.transfer_account_id) {
-      throw new Error('transfer_account_id is required for transfer transactions')
-    }
+): Promise<{ data: TransactionRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
+    .from('transactions')
+    .insert(input as never)
+    .select('id,user_id,account_id,category_id,currency_code,amount,transaction_type,description,transaction_date,created_at,updated_at')
+    .single()
 
-    // 1. Insert the source-side canonical record.
-    const source = unwrap(
-      await supabase.from('transactions').insert(input).select('id').single(),
-    )
-
-    // 2. Insert the mirror record on the destination account.
-    //    The balance trigger ignores rows where transfer_transaction_id IS NOT NULL.
-    await supabase
-      .from('transactions')
-      .insert({
-        ...input,
-        account_id: input.transfer_account_id,
-        transfer_account_id: input.account_id,
-        transfer_transaction_id: source.id,
-      })
-      .throwOnError()
-
-    return (await getTransaction(supabase, source.id))!
-  }
-
-  // Plain income / expense.
-  const created = unwrap(
-    await supabase.from('transactions').insert(input).select('id').single(),
-  )
-  return (await getTransaction(supabase, created.id))!
+  return { data, error }
 }
 
-// ── Update ───────────────────────────────────────────────────
 export async function updateTransaction(
-  supabase: Client,
+  client: Client,
   id: string,
-  patch: TransactionUpdate,
-): Promise<TransactionWithRelations> {
-  unwrap(await supabase.from('transactions').update(patch).eq('id', id).select('id').single())
-  return (await getTransaction(supabase, id))!
+  input: TransactionUpdate,
+): Promise<{ data: TransactionRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
+    .from('transactions')
+    .update(input as never)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .select('id,user_id,account_id,category_id,currency_code,amount,transaction_type,description,transaction_date,created_at,updated_at')
+    .single()
+
+  return { data, error }
 }
 
-// ── Soft delete ──────────────────────────────────────────────
-// Sets deleted_at = now(); the balance trigger handles the revert.
-// Mirror transfer records are soft-deleted alongside their source.
-export async function deleteTransaction(supabase: Client, id: string): Promise<void> {
-  const now = new Date().toISOString()
+export async function deleteTransaction(
+  client: Client,
+  id: string,
+): Promise<{ error: PostgrestError | null }> {
+  const { error } = await client
+    .from('transactions')
+    .update({ deleted_at: new Date().toISOString() } as never)
+    .eq('id', id)
 
-  // Soft-delete the row + any mirror sharing transfer_transaction_id = id.
-  unwrap(
-    await supabase
-      .from('transactions')
-      .update({ deleted_at: now })
-      .or(`id.eq.${id},transfer_transaction_id.eq.${id}`)
-      .select('id'),
-  )
-}
-
-// ── Bulk delete ──────────────────────────────────────────────
-export async function deleteTransactions(supabase: Client, ids: string[]): Promise<number> {
-  if (ids.length === 0) return 0
-  const now = new Date().toISOString()
-  const rows = unwrap(
-    await supabase
-      .from('transactions')
-      .update({ deleted_at: now })
-      .in('id', ids)
-      .select('id'),
-  )
-  return rows.length
-}
-
-// ── Bulk re-categorise ───────────────────────────────────────
-export async function setTransactionsCategory(
-  supabase: Client,
-  ids: string[],
-  categoryId: string | null,
-): Promise<number> {
-  if (ids.length === 0) return 0
-  const rows = unwrap(
-    await supabase
-      .from('transactions')
-      .update({ category_id: categoryId })
-      .in('id', ids)
-      .select('id'),
-  )
-  return rows.length
+  return { error }
 }

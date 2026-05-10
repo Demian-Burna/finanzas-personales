@@ -1,31 +1,33 @@
 import { z } from 'zod'
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)')
+const hexColor = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido (debe ser #RRGGBB)')
+  .nullable()
+  .optional()
 
 export const savingGoalSchema = z.object({
   account_id: z.string().uuid().nullable().optional(),
-  currency_code: z.string().length(3).toUpperCase(),
-  name: z.string().trim().min(1, 'El nombre es requerido').max(120),
-  description: z.string().max(1000).nullable().optional(),
-  target_amount: z.number().finite().positive('El objetivo debe ser positivo'),
-  target_date: isoDate.nullable().optional(),
-  color: z
+  currency_code: z.string().length(3, 'Moneda inválida (código ISO de 3 letras)'),
+  name: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, 'Color hex inválido')
-    .nullable()
-    .optional(),
+    .min(1, 'El nombre es requerido')
+    .max(100, 'El nombre no puede superar 100 caracteres'),
+  description: z.string().max(500).nullable().optional(),
+  target_amount: z.number().positive('El monto objetivo debe ser positivo'),
+  target_date: z.string().nullable().optional(),
+  color: hexColor,
   icon: z.string().max(50).nullable().optional(),
-  status: z.enum(['active', 'completed', 'paused', 'cancelled']).default('active'),
 })
 
-export type SavingGoalFormInput = z.infer<typeof savingGoalSchema>
+export type SavingGoalInput = z.infer<typeof savingGoalSchema>
 
-// Goal contribution
 export const goalContributionSchema = z.object({
-  goal_id: z.string().uuid(),
+  goal_id: z.string().uuid('Meta inválida'),
   transaction_id: z.string().uuid().nullable().optional(),
-  amount: z.number().finite().positive('Monto positivo'),
-  contribution_date: isoDate,
+  amount: z.number().positive('El monto debe ser positivo'),
   note: z.string().max(500).nullable().optional(),
+  contribution_date: z.string().min(1, 'La fecha es requerida'),
 })
-export type GoalContributionFormInput = z.infer<typeof goalContributionSchema>
+
+export type GoalContributionInput = z.infer<typeof goalContributionSchema>

@@ -1,159 +1,97 @@
-// ============================================================
-// Accounts — list, fetch, mutate, archive
-// ============================================================
-// `current_balance` is denormalized and kept in sync by the
-// update_account_balance() DB trigger, so reads are O(1).
-// ============================================================
-
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import type { AccountInsert, AccountUpdate, AccountWithType } from '@/types/domain'
-import { unwrap, unwrapMaybe } from '../error'
+import type { AccountRow, AccountInsert, AccountUpdate } from '@/types/domain'
 
 type Client = SupabaseClient<Database>
 
-const ACCOUNT_SELECT = `
-  id,
-  user_id,
-  account_type_id,
-  currency_code,
-  name,
-  description,
-  initial_balance,
-  current_balance,
-  color,
-  icon,
-  is_active,
-  include_in_net_worth,
-  sort_order,
-  deleted_at,
-  created_at,
-  updated_at,
-  account_type:account_types!accounts_account_type_id_fkey (
-    id, name, nature, icon, sort_order
-  )
-` as const
-
-// ── List ─────────────────────────────────────────────────────
-export interface AccountListOptions {
-  /** Default true. */
-  activeOnly?: boolean
-  /** Default true. */
-  includeBalances?: boolean
+export interface AccountWithType extends AccountRow {
+  account_type: {
+    id: string
+    name: string
+    nature: 'asset' | 'liability'
+    icon: string | null
+  } | null
 }
 
-export async function listAccounts(
-  supabase: Client,
-  userId: string,
-  options: AccountListOptions = {},
-): Promise<AccountWithType[]> {
-  const activeOnly = options.activeOnly ?? true
+const ACCOUNT_COLUMNS = [
+  'id', 'user_id', 'account_type_id', 'currency_code', 'name', 'description',
+  'initial_balance', 'current_balance', 'color', 'icon',
+  'is_active', 'include_in_net_worth', 'sort_order',
+  'deleted_at', 'created_at', 'updated_at',
+  // FK-hinted join — cast to AccountWithType at call sites
+  'account_type:account_types!account_type_id(id,name,nature,icon)',
+].join(',')
 
-  let query = supabase
+export async function getAccounts(
+  client: Client,
+): Promise<{ data: AccountWithType[]; error: PostgrestError | null }> {
+  const { data, error } = await client
     .from('accounts')
-    .select(ACCOUNT_SELECT)
-    .eq('user_id', userId)
+    .select(ACCOUNT_COLUMNS)
     .is('deleted_at', null)
+    .eq('is_active', true)
     .order('sort_order', { ascending: true })
-    .order('name', { ascending: true })
 
-  if (activeOnly) query = query.eq('is_active', true)
-
-  return unwrap(await query) as unknown as AccountWithType[]
+  return {
+    data: (data as unknown as AccountWithType[]) ?? [],
+    error,
+  }
 }
 
-// ── Get one ──────────────────────────────────────────────────
-export async function getAccount(
-  supabase: Client,
+export async function getAccountById(
+  client: Client,
   id: string,
-): Promise<AccountWithType | null> {
-  const result = await supabase
+): Promise<{ data: AccountWithType | null; error: PostgrestError | null }> {
+  const { data, error } = await client
     .from('accounts')
-    .select(ACCOUNT_SELECT)
+    .select(ACCOUNT_COLUMNS)
     .eq('id', id)
     .is('deleted_at', null)
     .single()
 
-  return unwrapMaybe(result) as unknown as AccountWithType | null
+  return { data: data as unknown as AccountWithType | null, error }
 }
 
-// ── Create ───────────────────────────────────────────────────
-// We seed current_balance with initial_balance so the dashboard
-// reflects it before any transaction runs through the trigger.
+// supabase-js cannot resolve Insert/Update types when defined as Omit<Row, ...>
+// in the Database interface (circular self-reference during type evaluation).
+// Using `as never` is intentional — the function signatures still enforce types for callers.
 export async function createAccount(
-  supabase: Client,
+  client: Client,
   input: AccountInsert,
-): Promise<AccountWithType> {
-  const payload: AccountInsert = {
-    ...input,
-    current_balance: input.current_balance ?? input.initial_balance ?? 0,
-  }
+): Promise<{ data: AccountRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
+    .from('accounts')
+    .insert(input as never)
+    .select('id,user_id,account_type_id,currency_code,name,initial_balance,current_balance,is_active,created_at,updated_at')
+    .single()
 
-  const created = unwrap(
-    await supabase.from('accounts').insert(payload).select('id').single(),
-  )
-  return (await getAccount(supabase, created.id))!
+  return { data, error }
 }
 
-// ── Update ───────────────────────────────────────────────────
 export async function updateAccount(
-  supabase: Client,
+  client: Client,
   id: string,
-  patch: AccountUpdate,
-): Promise<AccountWithType> {
-  unwrap(await supabase.from('accounts').update(patch).eq('id', id).select('id').single())
-  return (await getAccount(supabase, id))!
+  input: AccountUpdate,
+): Promise<{ data: AccountRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
+    .from('accounts')
+    .update(input as never)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .select('id,user_id,account_type_id,currency_code,name,initial_balance,current_balance,is_active,created_at,updated_at')
+    .single()
+
+  return { data, error }
 }
 
-// ── Archive (soft delete) ────────────────────────────────────
-export async function archiveAccount(supabase: Client, id: string): Promise<void> {
-  unwrap(
-    await supabase
-      .from('accounts')
-      .update({ deleted_at: new Date().toISOString(), is_active: false })
-      .eq('id', id)
-      .select('id'),
-  )
-}
+export async function deleteAccount(
+  client: Client,
+  id: string,
+): Promise<{ error: PostgrestError | null }> {
+  const { error } = await client
+    .from('accounts')
+    .update({ deleted_at: new Date().toISOString() } as never)
+    .eq('id', id)
 
-// ── Reorder ──────────────────────────────────────────────────
-// Assigns sequential sort_order values from the input list order.
-// Useful for drag-and-drop in settings.
-export async function reorderAccounts(
-  supabase: Client,
-  ids: string[],
-): Promise<void> {
-  await Promise.all(
-    ids.map((id, idx) =>
-      supabase.from('accounts').update({ sort_order: idx }).eq('id', id).throwOnError(),
-    ),
-  )
-}
-
-// ── Net worth (total balance across asset/liability accounts) ─
-export interface NetWorth {
-  total: number
-  assets: number
-  liabilities: number
-  by_currency: Record<string, number>
-}
-
-export async function getNetWorth(supabase: Client, userId: string): Promise<NetWorth> {
-  const accounts = await listAccounts(supabase, userId, { activeOnly: true })
-
-  return accounts
-    .filter((a) => a.include_in_net_worth)
-    .reduce<NetWorth>(
-      (acc, account) => {
-        const sign = account.account_type.nature === 'asset' ? 1 : -1
-        const signed = Number(account.current_balance) * sign
-        acc.total += signed
-        if (sign === 1) acc.assets += Number(account.current_balance)
-        else acc.liabilities += Number(account.current_balance)
-        acc.by_currency[account.currency_code] =
-          (acc.by_currency[account.currency_code] ?? 0) + signed
-        return acc
-      },
-      { total: 0, assets: 0, liabilities: 0, by_currency: {} },
-    )
+  return { error }
 }

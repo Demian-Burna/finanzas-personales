@@ -1,141 +1,100 @@
-// ============================================================
-// Budgets — list with computed progress, CRUD
-// ============================================================
-// Progress (spent_amount + projection) is computed in-DB by the
-// `budgets_with_progress(reference_date)` SQL function (one round
-// trip, indexed scan over transactions).
-// ============================================================
-
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import type {
-  BudgetInsert,
-  BudgetRow,
-  BudgetUpdate,
-  BudgetWithProgress,
-  BudgetPeriod,
-} from '@/types/domain'
-import { unwrap, unwrapMaybe } from '../error'
+import type { BudgetRow, BudgetInsert, BudgetUpdate } from '@/types/domain'
 
 type Client = SupabaseClient<Database>
 
-const BUDGET_SELECT = `
-  id,
-  user_id,
-  category_id,
-  period_type,
-  amount,
-  currency_code,
-  start_date,
-  end_date,
-  rollover_unused,
-  alert_threshold_pct,
-  is_active,
-  deleted_at,
-  created_at,
-  updated_at
-` as const
+// Return type of the budgets_with_progress RPC
+export interface BudgetWithProgress {
+  id: string
+  user_id: string
+  category_id: string
+  category_name: string
+  category_color: string | null
+  category_icon: string | null
+  period_type: string
+  amount: number
+  currency_code: string
+  start_date: string
+  end_date: string | null
+  rollover_unused: boolean
+  alert_threshold_pct: number
+  is_active: boolean
+  spent_amount: number
+  period_start: string
+  period_end: string
+  days_elapsed: number
+  days_in_period: number
+  projected_total: number
+  created_at: string
+  updated_at: string
+}
 
-// ── List with progress ───────────────────────────────────────
-// Calls the budgets_with_progress(p_reference_date) RPC. Returns
-// active, non-deleted budgets with computed progress for the period
-// containing referenceDate (defaults to today).
-export async function listBudgetsWithProgress(
-  supabase: Client,
+// supabase-js requires Database.Functions to be typed for full inference;
+// these RPCs exist in the DB but not in the generated types yet.
+type UntypedRpc = (
+  fn: string,
+  args?: Record<string, unknown>,
+) => PromiseLike<{ data: unknown; error: PostgrestError | null }>
+
+export async function getBudgetsWithProgress(
+  client: Client,
   referenceDate?: string,
-): Promise<BudgetWithProgress[]> {
-  const args = referenceDate ? { p_reference_date: referenceDate } : {}
-  const rows = unwrap(await supabase.rpc('budgets_with_progress', args))
+): Promise<{ data: BudgetWithProgress[]; error: PostgrestError | null }> {
+  const args: Record<string, unknown> = {}
+  if (referenceDate) args['p_reference_date'] = referenceDate
 
-  return rows.map((r) => ({
-    id: r.id,
-    user_id: r.user_id,
-    category_id: r.category_id,
-    period_type: r.period_type as BudgetPeriod,
-    amount: Number(r.amount),
-    currency_code: r.currency_code,
-    start_date: r.start_date,
-    end_date: r.end_date,
-    rollover_unused: r.rollover_unused,
-    alert_threshold_pct: r.alert_threshold_pct,
-    is_active: r.is_active,
-    deleted_at: null,
-    created_at: r.created_at,
-    updated_at: r.updated_at,
-    category: {
-      id: r.category_id,
-      name: r.category_name,
-      color: r.category_color,
-      icon: r.category_icon,
-    },
-    spent_amount: Number(r.spent_amount),
-    period_start: r.period_start,
-    period_end: r.period_end,
-    days_elapsed: r.days_elapsed,
-    days_in_period: r.days_in_period,
-    projected_total: Number(r.projected_total),
-  }))
+  const { data, error } = await (client as unknown as { rpc: UntypedRpc }).rpc(
+    'budgets_with_progress',
+    args,
+  )
+
+  return {
+    data: (data as BudgetWithProgress[] | null) ?? [],
+    error,
+  }
 }
 
-// ── Plain list (without progress) ────────────────────────────
-export async function listBudgets(
-  supabase: Client,
-  userId: string,
-  options: { activeOnly?: boolean } = {},
-): Promise<BudgetRow[]> {
-  const activeOnly = options.activeOnly ?? true
-  let query = supabase
+// supabase-js cannot resolve Insert/Update types when defined as Omit<Row, ...>
+// in the Database interface (circular self-reference during type evaluation).
+// Using `as never` is intentional — the function signatures still enforce types for callers.
+export async function createBudget(
+  client: Client,
+  input: BudgetInsert,
+): Promise<{ data: BudgetRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
     .from('budgets')
-    .select(BUDGET_SELECT)
-    .eq('user_id', userId)
-    .is('deleted_at', null)
-    .order('start_date', { ascending: false })
+    .insert(input as never)
+    .select('id,user_id,category_id,period_type,amount,currency_code,start_date,end_date,is_active,alert_threshold_pct,created_at,updated_at')
+    .single()
 
-  if (activeOnly) query = query.eq('is_active', true)
-  return unwrap(await query) as unknown as BudgetRow[]
+  return { data, error }
 }
 
-// ── Get one ──────────────────────────────────────────────────
-export async function getBudget(supabase: Client, id: string): Promise<BudgetRow | null> {
-  const result = await supabase
+export async function updateBudget(
+  client: Client,
+  id: string,
+  input: BudgetUpdate,
+): Promise<{ data: BudgetRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client
     .from('budgets')
-    .select(BUDGET_SELECT)
+    .update(input as never)
     .eq('id', id)
     .is('deleted_at', null)
+    .select('id,user_id,category_id,period_type,amount,currency_code,start_date,end_date,is_active,alert_threshold_pct,created_at,updated_at')
     .single()
-  return unwrapMaybe(result) as unknown as BudgetRow | null
+
+  return { data, error }
 }
 
-// ── Create ───────────────────────────────────────────────────
-export async function createBudget(
-  supabase: Client,
-  input: BudgetInsert,
-): Promise<BudgetRow> {
-  const created = unwrap(
-    await supabase.from('budgets').insert(input).select(BUDGET_SELECT).single(),
-  )
-  return created as unknown as BudgetRow
-}
-
-// ── Update ───────────────────────────────────────────────────
-export async function updateBudget(
-  supabase: Client,
+export async function deleteBudget(
+  client: Client,
   id: string,
-  patch: BudgetUpdate,
-): Promise<BudgetRow> {
-  const updated = unwrap(
-    await supabase.from('budgets').update(patch).eq('id', id).select(BUDGET_SELECT).single(),
-  )
-  return updated as unknown as BudgetRow
-}
+): Promise<{ error: PostgrestError | null }> {
+  const { error } = await client
+    .from('budgets')
+    .update({ deleted_at: new Date().toISOString() } as never)
+    .eq('id', id)
 
-// ── Archive (soft delete) ────────────────────────────────────
-export async function archiveBudget(supabase: Client, id: string): Promise<void> {
-  unwrap(
-    await supabase
-      .from('budgets')
-      .update({ deleted_at: new Date().toISOString(), is_active: false })
-      .eq('id', id)
-      .select('id'),
-  )
+  return { error }
 }

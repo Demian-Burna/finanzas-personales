@@ -1,11 +1,15 @@
 import { z } from 'zod'
 
 export const tagSchema = z.object({
-  name: z.string().trim().min(1, 'El nombre es requerido').max(50),
+  name: z
+    .string()
+    .min(1, 'El nombre es requerido')
+    .max(50, 'El nombre no puede superar 50 caracteres'),
   color: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, 'Color hex inválido')
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido (debe ser #RRGGBB)')
     .nullable()
     .optional(),
 })
-export type TagFormInput = z.infer<typeof tagSchema>
+
+export type TagInput = z.infer<typeof tagSchema>

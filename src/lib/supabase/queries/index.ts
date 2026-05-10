@@ -1,8 +1,36 @@
-// Convenient re-export so callers can do:
-//   import { listTransactions, listBudgetsWithProgress } from '@/lib/supabase/queries'
+export {
+  getTransactions,
+  getTransactionById,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from './transactions'
+export type { TransactionWithRelations, TransactionFilters } from './transactions'
 
-export * from './transactions'
-export * from './accounts'
-export * from './categories'
-export * from './budgets'
-export * from './dashboard'
+export {
+  getAccounts,
+  getAccountById,
+  createAccount,
+  updateAccount,
+  deleteAccount,
+} from './accounts'
+export type { AccountWithType } from './accounts'
+
+export {
+  getCategories,
+  getCategoryById,
+  createCategory,
+  updateCategory,
+} from './categories'
+export type { CategoryWithParent } from './categories'
+
+export {
+  getBudgetsWithProgress,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+} from './budgets'
+export type { BudgetWithProgress } from './budgets'
+
+export { getDashboardStats, getMonthlyFlow } from './dashboard'
+export type { DashboardStats, MonthlyFlowPoint } from './dashboard'

@@ -31,9 +31,13 @@ export async function updateSession(request: NextRequest) {
   const url = request.nextUrl.clone()
   const isAuthRoute = url.pathname.startsWith('/login')
   const isDashboardRoute =
-    url.pathname === '/' || url.pathname.startsWith('/transactions') ||
-    url.pathname.startsWith('/budgets') || url.pathname.startsWith('/goals') ||
-    url.pathname.startsWith('/reports') || url.pathname.startsWith('/settings')
+    url.pathname === '/' ||
+    url.pathname.startsWith('/transactions') ||
+    url.pathname.startsWith('/budgets') ||
+    url.pathname.startsWith('/goals') ||
+    url.pathname.startsWith('/reports') ||
+    url.pathname.startsWith('/settings') ||
+    url.pathname.startsWith('/onboarding')
 
   if (!user && isDashboardRoute) {
     url.pathname = '/login'
