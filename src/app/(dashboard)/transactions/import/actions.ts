@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -94,7 +94,7 @@ export async function importCsvAction(
       currency_code: currency,
       amount,
       amount_in_base_currency: amount,
-      exchange_rate: null,
+      exchange_rate: 1,
       transaction_type: txType,
       description,
       notes: null,

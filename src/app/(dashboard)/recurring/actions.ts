@@ -128,7 +128,7 @@ export async function processRecurringItemsAction(): Promise<ActionResult<{ proc
       currency_code: item.currency_code,
       amount: item.amount,
       amount_in_base_currency: item.amount,
-      exchange_rate: null,
+      exchange_rate: 1,
       transaction_type: item.transaction_type,
       description: item.description,
       notes: item.notes,
