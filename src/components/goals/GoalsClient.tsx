@@ -26,21 +26,6 @@ function formatCurrency(value: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
 }
 
-// Circular progress SVG
-function CircularProgress({ pct, size = 72 }: { pct: number; size?: number }) {
-  const r = (size - 8) / 2
-  const circ = 2 * Math.PI * r
-  const dash = (Math.min(pct, 100) / 100) * circ
-  const color = pct >= 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#6366f1'
-
-  return (
-    <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={6} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={6}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
-    </svg>
-  )
-}
 
 function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
   goal: SavingGoalWithContributions
