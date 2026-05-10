@@ -11,8 +11,10 @@ const TABS = [
 ]
 
 /**
- * Native <select> for settings tab navigation on mobile.
- * Hidden on desktop (lg:hidden) — the sidebar handles desktop.
+ * Full-width native <select> for settings tab navigation.
+ * Rendered outside <SettingsTabs> so it sits between the page title
+ * and the tab content — never inside the Tabs flex tree.
+ * Hidden on desktop (lg:hidden) where the sidebar handles navigation.
  */
 export function SettingsMobileNav() {
   const router = useRouter()
@@ -31,8 +33,7 @@ export function SettingsMobileNav() {
       <select
         value={tab}
         onChange={(e) => handleChange(e.target.value)}
-        className="w-full rounded-xl border bg-muted/40 px-3 py-2.5 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring appearance-none"
-        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+        className="w-full rounded-xl border bg-muted/40 px-3 py-2.5 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       >
         {TABS.map((t) => (
           <option key={t.value} value={t.value}>{t.label}</option>

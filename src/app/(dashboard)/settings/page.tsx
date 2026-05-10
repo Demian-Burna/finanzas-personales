@@ -53,16 +53,16 @@ export default async function SettingsPage({
   const currency = profile?.currency_code ?? 'ARS'
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
         <p className="text-sm text-muted-foreground">Preferencias de cuenta y aplicación</p>
       </div>
 
-      <SettingsTabs>
-        {/* Mobile: native select dropdown. Desktop: sidebar nav */}
-        <SettingsMobileNav />
+      {/* Mobile: full-width select below title, outside Tabs tree so it stacks correctly */}
+      <SettingsMobileNav />
 
+      <SettingsTabs>
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           {/* Sidebar nav — desktop only */}
           <aside className="hidden lg:block lg:w-40 shrink-0">
