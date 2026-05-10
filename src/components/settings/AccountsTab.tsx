@@ -80,9 +80,9 @@ function SortableRow({ account, onEdit, onArchive }: {
       </span>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium">{account.name}</p>
-        <p className="text-xs text-muted-foreground">{typeName} · {account.currency_code}</p>
+        <p className="truncate text-xs text-muted-foreground">{typeName} · {account.currency_code}</p>
       </div>
-      <p className="text-sm font-semibold tabular-nums shrink-0">
+      <p className="text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap">
         {new Intl.NumberFormat('es-AR', { style: 'currency', currency: account.currency_code, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(account.current_balance)}
       </p>
       <div className="flex gap-1">
