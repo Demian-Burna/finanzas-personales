@@ -80,11 +80,15 @@ export async function updateRecurringItemAction(id: string, raw: unknown): Promi
     category_id: rest.category_id ?? null,
     day_of_month: rest.day_of_month ?? null,
     day_of_week: rest.day_of_week ?? null,
+    // When start_date changes, reset next_occurrence_date to match
+    // so the item schedules from the new date
+    next_occurrence_date: rest.start_date,
   } as never)
 
   if (error) return { ok: false, error: error.message }
 
   revalidatePath('/recurring')
+  revalidatePath('/')
   return { ok: true, data: undefined }
 }
 

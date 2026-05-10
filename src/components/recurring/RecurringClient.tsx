@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Edit, Power, PowerOff, Trash2, Clock, CreditCard, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, differenceInDays, parseISO } from 'date-fns'
@@ -51,6 +52,7 @@ function formatCurrency(value: number, currency: string, locale: string) {
 }
 
 export function RecurringClient({ items, accounts, categories, currency, locale }: Props) {
+  const router = useRouter()
   const [formOpen, setFormOpen] = useState(false)
   const [editItem, setEditItem] = useState<RecurringItemWithRelations | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -75,6 +77,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Recurrente creado')
       setFormOpen(false)
+      router.refresh()
     })
   }
 
@@ -85,6 +88,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Recurrente actualizado')
       setEditItem(null)
+      router.refresh()
     })
   }
 
@@ -93,6 +97,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
     startTransition(async () => {
       const res = await toggleRecurringItemAction(id, isActive)
       if (!res.ok) toast.error(res.error)
+      else router.refresh()
     })
   }
 
@@ -102,6 +107,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Pago registrado y próxima fecha actualizada')
       setPayNowConfirm(null)
+      router.refresh()
     })
   }
 
@@ -111,6 +117,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Eliminado')
       setDeleteConfirm(null)
+      router.refresh()
     })
   }
 
