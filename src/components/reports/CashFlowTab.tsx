@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useTransition } from 'react'
 import {
@@ -23,29 +23,6 @@ function fmt(v: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
 }
 
-// Simple linear projection for next 3 months
-function project(flow: MonthlyFlowPoint[], months = 3): MonthlyFlowPoint[] {
-  if (flow.length < 3) return []
-  const last = flow.slice(-3)
-  const avgIncome = last.reduce((s, p) => s + p.income, 0) / 3
-  const avgExpenses = last.reduce((s, p) => s + p.expenses, 0) / 3
-
-  const result: MonthlyFlowPoint[] = []
-  const lastDate = new Date((flow[flow.length - 1]?.month_start ?? '') + 'T00:00:00')
-
-  for (let i = 1; i <= months; i++) {
-    const d = new Date(lastDate.getFullYear(), lastDate.getMonth() + i, 1)
-    const monthStart = d.toISOString().split('T')[0] ?? ''
-    result.push({
-      month_start: monthStart,
-      income: Math.round(avgIncome),
-      expenses: Math.round(avgExpenses),
-      net: Math.round(avgIncome - avgExpenses),
-    })
-  }
-  return result
-}
-
 interface Props {
   flow: MonthlyFlowPoint[]
   currency: string
@@ -63,25 +40,13 @@ export function CashFlowTab({ flow, currency, locale }: Props) {
     })
   }
 
-  const projected = project(flow)
-
-  const historicData = flow.map((p) => ({
+  // Only show real historical data — no projections
+  const chartData = flow.map((p) => ({
     month: fmtMonth(p.month_start),
     Ingresos: p.income,
     Gastos: p.expenses,
     Neto: p.net,
-    projected: false,
   }))
-
-  const projectedData = projected.map((p) => ({
-    month: fmtMonth(p.month_start) + ' (p)',
-    Ingresos: p.income,
-    Gastos: p.expenses,
-    Neto: p.net,
-    projected: true,
-  }))
-
-  const chartData = [...historicData, ...projectedData]
 
   return (
     <div className="space-y-6">
@@ -91,10 +56,9 @@ export function CashFlowTab({ flow, currency, locale }: Props) {
         </Button>
       </div>
 
-      {/* Area chart */}
+      {/* Area chart — historical only */}
       <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <h3 className="text-sm font-semibold mb-1">Flujo de caja — últimos 12 meses</h3>
-        <p className="text-xs text-muted-foreground mb-4">Los meses marcados con (p) son proyecciones basadas en promedios</p>
+        <h3 className="text-sm font-semibold mb-4">Flujo de caja — últimos 12 meses</h3>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
             <defs>
@@ -109,8 +73,15 @@ export function CashFlowTab({ flow, currency, locale }: Props) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={52}
-              tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
+            <YAxis
+              tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+              tickLine={false}
+              axisLine={false}
+              width={52}
+              tickFormatter={(v: number) =>
+                new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)
+              }
+            />
             <Tooltip
               formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
               contentStyle={{

@@ -105,7 +105,7 @@ export function MonthlySummaryTab({ stats, currency, locale, year, month, onMont
         {[
           { title: 'Ingresos', curr: stats?.current_month.income ?? 0, prev: stats?.previous_month.income ?? 0 },
           { title: 'Gastos', curr: stats?.current_month.expenses ?? 0, prev: stats?.previous_month.expenses ?? 0, invert: true },
-          { title: 'Balance neto', curr: stats?.current_month.net ?? 0, prev: stats?.previous_month.net ?? 0 },
+          { title: 'Ahorro del mes', curr: stats?.current_month.net ?? 0, prev: stats?.previous_month.net ?? 0 },
           { title: 'Tasa de ahorro', curr: savings, prev: prevSavings, pct: true },
         ].map(({ title, curr, prev, invert, pct }) => (
           <div key={title} className="rounded-xl border bg-card p-4 shadow-sm">

@@ -32,7 +32,8 @@ export function StatsSection({ data, currency, locale }: Props) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
-        title="Balance total"
+        title="Patrimonio neto"
+        subtitle="Suma de todas las cuentas"
         value={data.net_worth}
         currency={currency}
         locale={locale}

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   title: string
+  subtitle?: string
   value: number
   previousValue?: number
   currency: string
@@ -34,7 +35,7 @@ function formatPercent(value: number, locale: string) {
   }).format(value / 100)
 }
 
-export function StatCard({ title, value, previousValue, currency, locale, invertTrend, isPercentage, className }: Props) {
+export function StatCard({ title, subtitle, value, previousValue, currency, locale, invertTrend, isPercentage, className }: Props) {
   const animated = useCountUp(value)
 
   const pctChange =
@@ -47,6 +48,7 @@ export function StatCard({ title, value, previousValue, currency, locale, invert
   return (
     <div className={cn('rounded-xl border bg-card p-5 shadow-sm', className)}>
       <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      {subtitle && <p className="text-[10px] text-muted-foreground/70 mt-0.5">{subtitle}</p>}
       <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight">
         {isPercentage ? formatPercent(animated, locale) : formatCurrency(animated, currency, locale)}
       </p>
