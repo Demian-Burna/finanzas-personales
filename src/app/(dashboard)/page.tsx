@@ -78,6 +78,11 @@ export default async function OverviewPage({
 
       <AlertsSection budgets={budgetsResult.data ?? []} locale={locale} />
 
+      {statsResult.error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive font-mono">
+          dashboard_stats error: {JSON.stringify(statsResult.error)}
+        </div>
+      )}
       <StatsSection data={statsResult.data} currency={currency} locale={locale} />
 
       <ChartsSection
