@@ -52,7 +52,7 @@ export default async function OverviewPage({
     transactionsResult,
     budgetsResult,
   ] = await Promise.all([
-    supabase.from('profiles').select('base_currency,locale').single(),
+    supabase.from('profiles').select('currency_code,locale').single(),
     getDashboardStats(supabase, referenceDate),
     getMonthlyFlow(supabase, 6),
     getAccounts(supabase),
@@ -60,8 +60,8 @@ export default async function OverviewPage({
     getBudgetsWithProgress(supabase, referenceDate),
   ])
 
-  const profile = profileResult.data as { base_currency: string | null; locale: string | null } | null
-  const currency = profile?.base_currency ?? 'ARS'
+  const profile = profileResult.data as { currency_code: string | null; locale: string | null } | null
+  const currency = profile?.currency_code ?? 'ARS'
   const locale = profile?.locale ?? 'es-AR'
 
   // Period label
@@ -78,11 +78,6 @@ export default async function OverviewPage({
 
       <AlertsSection budgets={budgetsResult.data ?? []} locale={locale} />
 
-      {statsResult.error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive font-mono">
-          dashboard_stats error: {JSON.stringify(statsResult.error)}
-        </div>
-      )}
       <StatsSection data={statsResult.data} currency={currency} locale={locale} />
 
       <ChartsSection

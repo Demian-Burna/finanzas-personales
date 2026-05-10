@@ -31,7 +31,7 @@ export async function updateProfileAction(raw: unknown): Promise<ActionResult> {
     .update({
       display_name: parsed.data.display_name ?? null,
       avatar_url: parsed.data.avatar_url ?? null,
-      base_currency: parsed.data.currency_code,
+      currency_code: parsed.data.currency_code,
       locale: parsed.data.locale,
       timezone: parsed.data.timezone,
     } as never)

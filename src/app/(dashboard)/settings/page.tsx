@@ -30,13 +30,13 @@ export default async function SettingsPage({
 
   const { data: profileRaw } = await supabase
     .from('profiles')
-    .select('display_name,avatar_url,base_currency,locale,timezone')
+    .select('display_name,avatar_url,currency_code,locale,timezone')
     .single()
 
   const profile = profileRaw as {
     display_name: string | null
     avatar_url: string | null
-    base_currency: string | null
+    currency_code: string | null
     locale: string | null
     timezone: string | null
   } | null
@@ -49,7 +49,7 @@ export default async function SettingsPage({
 
   const accountTypes = (accountTypesRaw as Array<{ id: string; name: string; nature: string; icon: string | null }> | null) ?? []
 
-  const currency = profile?.base_currency ?? 'ARS'
+  const currency = profile?.currency_code ?? 'ARS'
 
   return (
     <div className="space-y-5">

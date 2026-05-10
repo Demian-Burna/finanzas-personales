@@ -44,9 +44,9 @@ export async function importCsvAction(
   const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
-  const { data: profileRaw } = await supabase.from('profiles').select('base_currency').single()
-  const profile = profileRaw as { base_currency: string | null } | null
-  const currency = profile?.base_currency ?? 'ARS'
+  const { data: profileRaw } = await supabase.from('profiles').select('currency_code').single()
+  const profile = profileRaw as { currency_code: string | null } | null
+  const currency = profile?.currency_code ?? 'ARS'
 
   const lines = csv.split(/\r?\n/).filter((l) => l.trim())
   const sep = detectSeparator(lines[0] ?? '')
