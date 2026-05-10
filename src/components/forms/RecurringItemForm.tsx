@@ -7,6 +7,7 @@ import { recurringItemSchema, type RecurringItemInput } from '@/lib/validations/
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { RecurringItemWithRelations } from '@/lib/supabase/queries/recurring-items'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -312,7 +313,17 @@ export function RecurringItemForm({
           <Button
             type="button"
             disabled={isPending}
-            onClick={() => void form.handleSubmit(onSubmit)()}
+            onClick={() => {
+              form.handleSubmit(
+                onSubmit,
+                (errors) => {
+                  const first = Object.values(errors)[0]?.message
+                  toast.error(first ?? 'Revisá los campos del formulario')
+                }
+              )().catch((e: unknown) => {
+                toast.error('Error inesperado: ' + String(e))
+              })
+            }}
           >
             {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
           </Button>

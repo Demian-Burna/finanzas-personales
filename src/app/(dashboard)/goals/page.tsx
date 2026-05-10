@@ -2,6 +2,7 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getSavingGoals } from '@/lib/supabase/queries/saving-goals'
+import { getAccounts } from '@/lib/supabase/queries/accounts'
 import { GoalsClient } from '@/components/goals/GoalsClient'
 
 export const metadata: Metadata = { title: 'Metas' }
@@ -15,11 +16,12 @@ async function getUserPrefs() {
 
 async function GoalsData() {
   const supabase = await createClient()
-  const [{ currency, locale }, { data: goals }] = await Promise.all([
+  const [{ currency, locale }, { data: goals }, { data: accounts }] = await Promise.all([
     getUserPrefs(),
     getSavingGoals(supabase),
+    getAccounts(supabase),
   ])
-  return <GoalsClient goals={goals} currency={currency} locale={locale} />
+  return <GoalsClient goals={goals} accounts={accounts ?? []} currency={currency} locale={locale} />
 }
 
 function Skeleton() {

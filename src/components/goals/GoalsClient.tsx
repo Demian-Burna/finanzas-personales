@@ -7,17 +7,21 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 import type { SavingGoalWithContributions } from '@/lib/supabase/queries/saving-goals'
+import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { SavingGoalInput, GoalContributionInput } from '@/lib/validations/saving-goal'
 import { GoalForm } from '@/components/forms/GoalForm'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { createGoalAction, updateGoalAction, addContributionAction, updateGoalStatusAction } from '@/app/(dashboard)/goals/actions'
+import { createTransactionAction } from '@/app/(dashboard)/transactions/actions'
 
 interface Props {
   goals: SavingGoalWithContributions[]
+  accounts: AccountWithType[]
   currency: string
   locale: string
 }
@@ -172,17 +176,22 @@ function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
   )
 }
 
-function ContributeModal({ goal, onClose, onSubmit, isPending }: {
+function ContributeModal({ goal, accounts, currency, locale, onClose, onSubmit, isPending }: {
   goal: SavingGoalWithContributions
-  currency?: string
-  locale?: string
+  accounts: AccountWithType[]
+  currency: string
+  locale: string
   onClose: () => void
-  onSubmit: (values: GoalContributionInput) => void
+  onSubmit: (values: GoalContributionInput, accountId: string | null) => void
   isPending: boolean
 }) {
+  const goalCurrency = goal.currency_code ?? currency
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0] ?? '')
+  const [accountId, setAccountId] = useState<string>('')
+
+  const selectedAccount = accounts.find((a) => a.id === accountId)
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
@@ -192,9 +201,39 @@ function ContributeModal({ goal, onClose, onSubmit, isPending }: {
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
-            <Label>Monto</Label>
-            <Input type="number" step="0.01" min="0" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1" />
+            <Label>Monto ({goalCurrency})</Label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mt-1"
+            />
           </div>
+
+          {/* Account — creates a transaction deducting from this account */}
+          <div>
+            <Label>Descontar de cuenta</Label>
+            <Select value={accountId} onValueChange={(v) => setAccountId(v)}>
+              <SelectTrigger className="mt-1 w-full">
+                <SelectValue>
+                  {selectedAccount ? selectedAccount.name : <span className="text-muted-foreground">Sin transacción</span>}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>{a.name} ({a.currency_code})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {accountId
+                ? 'Se creará un gasto en la cuenta seleccionada'
+                : 'Opcional — si seleccionás una cuenta se crea un gasto automáticamente'}
+            </p>
+          </div>
+
           <div>
             <Label>Fecha</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1" />
@@ -205,8 +244,14 @@ function ContributeModal({ goal, onClose, onSubmit, isPending }: {
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button disabled={isPending || !amount || Number(amount) <= 0}
-              onClick={() => onSubmit({ goal_id: goal.id, amount: Number(amount), contribution_date: date, note: note || null, transaction_id: null })}>
+            <Button
+              type="button"
+              disabled={isPending || !amount || Number(amount) <= 0}
+              onClick={() => onSubmit(
+                { goal_id: goal.id, amount: Number(amount), contribution_date: date, note: note || null, transaction_id: null },
+                accountId || null,
+              )}
+            >
               {isPending ? 'Guardando...' : 'Agregar'}
             </Button>
           </div>
@@ -216,7 +261,7 @@ function ContributeModal({ goal, onClose, onSubmit, isPending }: {
   )
 }
 
-export function GoalsClient({ goals, currency, locale }: Props) {
+export function GoalsClient({ goals, accounts, currency, locale }: Props) {
   const [formOpen, setFormOpen] = useState(false)
   const [editGoal, setEditGoal] = useState<SavingGoalWithContributions | null>(null)
   const [contributeGoal, setContributeGoal] = useState<SavingGoalWithContributions | null>(null)
@@ -241,11 +286,38 @@ export function GoalsClient({ goals, currency, locale }: Props) {
     })
   }
 
-  function handleContribute(values: GoalContributionInput) {
+  function handleContribute(values: GoalContributionInput, accountId: string | null) {
     startTransition(async () => {
+      // 1. Record the contribution and update goal progress
       const res = await addContributionAction(values)
       if (!res.ok) { toast.error(res.error); return }
-      toast.success('Aporte registrado')
+
+      // 2. If an account was selected, create a matching expense transaction
+      if (accountId) {
+        const goal = goals.find((g) => g.id === values.goal_id)
+        const txRes = await createTransactionAction({
+          transaction_type: 'expense',
+          account_id: accountId,
+          category_id: null,
+          currency_code: goal?.currency_code ?? currency,
+          amount: values.amount,
+          exchange_rate: 1,
+          exchange_rate_type: undefined,
+          description: `Aporte: ${goal?.name ?? 'Meta de ahorro'}`,
+          notes: values.note ?? null,
+          transaction_date: values.contribution_date,
+          is_reconciled: false,
+          transfer_account_id: null,
+        })
+        if (!txRes.ok) {
+          toast.warning('Aporte registrado pero hubo un error al crear la transacción')
+        } else {
+          toast.success('Aporte registrado y transacción creada')
+        }
+      } else {
+        toast.success('Aporte registrado')
+      }
+
       setContributeGoal(null)
     })
   }
@@ -310,7 +382,7 @@ export function GoalsClient({ goals, currency, locale }: Props) {
       <GoalForm open={formOpen} onOpenChange={setFormOpen} defaultCurrency={currency} onSubmit={handleCreate} isPending={isPending} />
       <GoalForm open={!!editGoal} onOpenChange={(o) => { if (!o) setEditGoal(null) }} defaultCurrency={currency} goal={editGoal ?? undefined} onSubmit={handleUpdate} isPending={isPending} />
       {contributeGoal && (
-        <ContributeModal goal={contributeGoal} currency={currency} locale={locale} onClose={() => setContributeGoal(null)} onSubmit={handleContribute} isPending={isPending} />
+        <ContributeModal goal={contributeGoal} accounts={accounts} currency={currency} locale={locale} onClose={() => setContributeGoal(null)} onSubmit={handleContribute} isPending={isPending} />
       )}
     </div>
   )

@@ -190,11 +190,15 @@ export function TransactionsTable({
 
                     <div className="min-w-0">
                       <p className="truncate font-medium text-foreground">{tx.description ?? '—'}</p>
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1 overflow-hidden">
                         {/* Show category inline on mobile only */}
-                        {tx.category?.icon && <span className="sm:hidden">{tx.category.icon}</span>}
-                        {format(new Date(tx.transaction_date + 'T00:00:00'), 'd MMM yyyy', { locale: es })}
-                        {tx.account?.name && <span className="sm:hidden">· {tx.account.name}</span>}
+                        {tx.category?.icon && <span className="sm:hidden shrink-0">{tx.category.icon}</span>}
+                        <span className="shrink-0">
+                          {format(new Date(tx.transaction_date + 'T00:00:00'), 'd MMM yyyy', { locale: es })}
+                        </span>
+                        {tx.account?.name && (
+                          <span className="sm:hidden truncate">· {tx.account.name}</span>
+                        )}
                       </p>
                     </div>
 
