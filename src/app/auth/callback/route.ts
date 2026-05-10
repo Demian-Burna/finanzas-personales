@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
+import type { Database } from '@/types/database'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/env'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -10,12 +12,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=missing_code', origin))
   }
 
+  // Build the redirect response first so we can attach cookies to it.
+  // Supabase SSR writes the session tokens via setAll() — they must land
+  // on the outgoing response or the browser won't have a session after redirect.
+  const redirectResponse = NextResponse.redirect(new URL('/', origin))
+
+  const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          redirectResponse.cookies.set(name, value, options)
+        })
+      },
+    },
+  })
+
   try {
-    const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error('[callback] exchangeCodeForSession error:', error)
+      console.error('[callback] exchangeCodeForSession:', error.message)
       return NextResponse.redirect(new URL('/login?error=auth_error', origin))
     }
 
@@ -33,12 +52,11 @@ export async function GET(request: NextRequest) {
       .single()
 
     const profile = profileRaw as { onboarding_completed_at: string | null } | null
+    const destination = profile?.onboarding_completed_at ? next : '/onboarding'
 
-    if (!profile?.onboarding_completed_at) {
-      return NextResponse.redirect(new URL('/onboarding', origin))
-    }
-
-    return NextResponse.redirect(new URL(next, origin))
+    // Overwrite the location header with the real destination
+    redirectResponse.headers.set('location', new URL(destination, origin).toString())
+    return redirectResponse
   } catch (err) {
     console.error('[callback] unexpected error:', err)
     return NextResponse.redirect(new URL('/login?error=auth_error', origin))
