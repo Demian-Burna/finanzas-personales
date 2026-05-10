@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { Treemap, ResponsiveContainer, Tooltip } from 'recharts'
@@ -156,14 +156,14 @@ export function CategoryBreakdownTab({ currency, locale }: Props) {
                 <Treemap
                   data={treemapData}
                   dataKey="size"
-                  stroke="hsl(var(--background))"
+                  stroke="var(--background)"
                   content={({ x, y, width, height, name, color }: {
                     x?: number; y?: number; width?: number; height?: number; name?: string; color?: string
                   }) => {
                     if (!width || !height || width < 30 || height < 20) return <g />
                     return (
                       <g>
-                        <rect x={x} y={y} width={width} height={height} style={{ fill: color ?? '#6366f1', stroke: 'hsl(var(--background))', strokeWidth: 2, cursor: 'pointer' }} />
+                        <rect x={x} y={y} width={width} height={height} style={{ fill: color ?? '#6366f1', stroke: 'var(--background)', strokeWidth: 2, cursor: 'pointer' }} />
                         {width > 60 && height > 30 && (
                           <text x={(x ?? 0) + 8} y={(y ?? 0) + 20} fill="#fff" fontSize={11} fontWeight={500}>
                             {(name ?? '').length > 14 ? (name ?? '').slice(0, 13) + '…' : name}
@@ -181,10 +181,10 @@ export function CategoryBreakdownTab({ currency, locale }: Props) {
                     formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
                     contentStyle={{
                       fontSize: 11,
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
-                      color: 'hsl(var(--foreground))',
+                      color: 'var(--foreground)',
                     }}
                   />
                 </Treemap>

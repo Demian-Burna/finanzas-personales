@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useTransition } from 'react'
 import {
@@ -73,7 +73,8 @@ export function MonthlySummaryTab({ stats, currency, locale, year, month, onMont
     onMonthChange(d.getFullYear(), d.getMonth() + 1)
   }
 
-  const savings = stats ? stats.current_month.savings_rate * 100 : 0
+  // RPC already returns savings_rate as a percentage (e.g. 72.9 = 72.9%)
+  const savings = stats ? stats.current_month.savings_rate : 0
   const prevSavings = stats && stats.previous_month.income > 0
     ? ((stats.previous_month.income - stats.previous_month.expenses) / stats.previous_month.income) * 100
     : 0
@@ -123,23 +124,23 @@ export function MonthlySummaryTab({ stats, currency, locale, year, month, onMont
           <h3 className="text-sm font-semibold mb-4">Ingresos vs Gastos</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weeklyData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} tickFormatter={(v: number) =>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) =>
                 new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} width={52} />
               <Tooltip
                 formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
                 contentStyle={{
                   fontSize: 11,
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
-                  color: 'hsl(var(--foreground))',
+                  color: 'var(--foreground)',
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: 11, color: 'hsl(var(--foreground))' }} />
-              <Bar dataKey="Ingresos" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Gastos" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+              <Legend wrapperStyle={{ fontSize: 11, color: 'var(--foreground)' }} />
+              <Bar dataKey="Ingresos" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Gastos" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useTransition } from 'react'
 import {
@@ -97,18 +97,18 @@ export function NetWorthTab({ snapshots, accounts, currency, locale }: Props) {
           <h3 className="text-sm font-semibold mb-4">Evolución del patrimonio neto</h3>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={52}
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={52}
                 tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
               <Tooltip
                 formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
                 contentStyle={{
                   fontSize: 11,
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
-                  color: 'hsl(var(--foreground))',
+                  color: 'var(--foreground)',
                 }}
               />
               <Line type="monotone" dataKey="Activos" stroke="#10b981" strokeWidth={2} dot={false} />
@@ -130,18 +130,18 @@ export function NetWorthTab({ snapshots, accounts, currency, locale }: Props) {
         <h3 className="text-sm font-semibold mb-4">Desglose actual</h3>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={waterfallData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={52}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={52}
               tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
             <Tooltip
               formatter={(v) => fmt(Math.abs(Number(v ?? 0)), currency, locale)}
               contentStyle={{
                 fontSize: 11,
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
                 borderRadius: '8px',
-                color: 'hsl(var(--foreground))',
+                color: 'var(--foreground)',
               }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
@@ -168,7 +168,7 @@ export function NetWorthTab({ snapshots, accounts, currency, locale }: Props) {
                   {list.map((a) => (
                     <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="px-5 py-2 flex items-center gap-2">
-                        <span className="size-2 rounded-full" style={{ background: a.color ?? 'hsl(var(--muted-foreground))' }} />
+                        <span className="size-2 rounded-full" style={{ background: a.color ?? 'var(--muted-foreground)' }} />
                         {a.name}
                       </td>
                       <td className="px-5 py-2 text-right tabular-nums font-medium">

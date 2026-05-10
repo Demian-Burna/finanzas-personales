@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { MonthlySummaryTab } from './MonthlySummaryTab'
 import { CategoryBreakdownTab } from './CategoryBreakdownTab'
@@ -37,16 +37,16 @@ export function ReportsClient({
   initialYear,
   initialMonth,
 }: Props) {
-  const [stats, setStats] = useState(initialStats)
-  const [year, setYear] = useState(initialYear)
-  const [month, setMonth] = useState(initialMonth)
+  const router = useRouter()
+  const pathname = usePathname()
+  const params = useSearchParams()
 
-  async function handleMonthChange(y: number, m: number) {
-    setYear(y)
-    setMonth(m)
-    // Fetch new stats client-side — reuse the RPC via API if needed
-    // For now, clear stats to show "no data" state until server re-renders
-    setStats(null)
+  // Month navigation pushes ?month=YYYY-MM so the page re-renders with fresh data
+  function handleMonthChange(y: number, m: number) {
+    const monthStr = `${y}-${String(m).padStart(2, '0')}`
+    const next = new URLSearchParams(params.toString())
+    next.set('month', monthStr)
+    router.push(`${pathname}?${next.toString()}`)
   }
 
   return (
@@ -60,11 +60,11 @@ export function ReportsClient({
 
       <TabsContent value="monthly">
         <MonthlySummaryTab
-          stats={stats}
+          stats={initialStats}
           currency={currency}
           locale={locale}
-          year={year}
-          month={month}
+          year={initialYear}
+          month={initialMonth}
           onMonthChange={handleMonthChange}
         />
       </TabsContent>

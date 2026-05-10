@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useTransition } from 'react'
 import {
@@ -99,32 +99,32 @@ export function CashFlowTab({ flow, currency, locale }: Props) {
           <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
             <defs>
               <linearGradient id="cf-income" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="cf-expenses" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={52}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} width={52}
               tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
             <Tooltip
               formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
               contentStyle={{
                 fontSize: 11,
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
                 borderRadius: '8px',
-                color: 'hsl(var(--foreground))',
+                color: 'var(--foreground)',
               }}
             />
-            <Legend wrapperStyle={{ fontSize: 11, color: 'hsl(var(--foreground))' }} />
-            <Area type="monotone" dataKey="Ingresos" stroke="hsl(var(--chart-2))" fill="url(#cf-income)" strokeWidth={2} dot={false} />
-            <Area type="monotone" dataKey="Gastos" stroke="hsl(var(--chart-1))" fill="url(#cf-expenses)" strokeWidth={2} dot={false} />
-            <Area type="monotone" dataKey="Neto" stroke="hsl(var(--chart-3))" fill="none" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+            <Legend wrapperStyle={{ fontSize: 11, color: 'var(--foreground)' }} />
+            <Area type="monotone" dataKey="Ingresos" stroke="var(--chart-2)" fill="url(#cf-income)" strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="Gastos" stroke="var(--chart-1)" fill="url(#cf-expenses)" strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="Neto" stroke="var(--chart-3)" fill="none" strokeWidth={2} dot={false} strokeDasharray="4 2" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

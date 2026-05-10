@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import type { DashboardStats } from '@/lib/supabase/queries/dashboard'
