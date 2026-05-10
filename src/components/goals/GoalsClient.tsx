@@ -214,7 +214,7 @@ function ContributeModal({ goal, accounts, currency, onClose, onSubmit, isPendin
           {/* Account — creates a transaction deducting from this account */}
           <div>
             <Label>Descontar de cuenta</Label>
-            <Select value={accountId} onValueChange={(v) => setAccountId(v)}>
+            <Select value={accountId} onValueChange={(v) => setAccountId(v ?? '')}>
               <SelectTrigger className="mt-1 w-full">
                 <SelectValue>
                   {selectedAccount ? selectedAccount.name : <span className="text-muted-foreground">Sin transacción</span>}
