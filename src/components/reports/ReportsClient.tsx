@@ -81,6 +81,7 @@ export function ReportsClient({
         <NetWorthTab
           snapshots={snapshots}
           accounts={accounts}
+          stats={initialStats}
           currency={currency}
           locale={locale}
         />
