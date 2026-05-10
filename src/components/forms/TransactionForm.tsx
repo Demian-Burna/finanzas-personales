@@ -119,7 +119,7 @@ export function TransactionForm({
           <DialogTitle>{isEdit ? 'Editar transacción' : 'Nueva transacción'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2" noValidate>
           {/* Type toggle */}
           <div className="flex gap-1 rounded-lg border p-1">
             {(['income', 'expense', 'transfer'] as const).map((t) => (
@@ -153,7 +153,7 @@ export function TransactionForm({
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                {...form.register('amount', { valueAsNumber: true, min: 0.01 })}
+                {...form.register('amount', { valueAsNumber: true })}
                 className="mt-1"
               />
               {form.formState.errors.amount && (
@@ -192,20 +192,25 @@ export function TransactionForm({
             <Controller
               control={form.control}
               name="account_id"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
-                  <SelectTrigger className="mt-1 w-full">
-                    <SelectValue placeholder="Seleccioná una cuenta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>
-                        {a.icon ?? ''} {a.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              render={({ field }) => {
+                const selected = accounts.find((a) => a.id === field.value)
+                return (
+                  <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="Seleccioná una cuenta">
+                        {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.icon ?? ''} {a.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )
+              }}
             />
             {form.formState.errors.account_id && (
               <p className="mt-1 text-xs text-destructive">{form.formState.errors.account_id.message}</p>
@@ -219,23 +224,25 @@ export function TransactionForm({
               <Controller
                 control={form.control}
                 name="transfer_account_id"
-                render={({ field }) => (
-                  <Select
-                    value={field.value ?? ''}
-                    onValueChange={(v) => field.onChange(v || null)}
-                  >
-                    <SelectTrigger className="mt-1 w-full">
-                      <SelectValue placeholder="Seleccioná cuenta destino" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>
-                          {a.icon ?? ''} {a.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field }) => {
+                  const selected = accounts.find((a) => a.id === field.value)
+                  return (
+                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
+                      <SelectTrigger className="mt-1 w-full">
+                        <SelectValue placeholder="Seleccioná cuenta destino">
+                          {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.icon ?? ''} {a.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }}
               />
               {form.formState.errors.transfer_account_id && (
                 <p className="mt-1 text-xs text-destructive">{form.formState.errors.transfer_account_id.message}</p>
@@ -247,23 +254,25 @@ export function TransactionForm({
               <Controller
                 control={form.control}
                 name="category_id"
-                render={({ field }) => (
-                  <Select
-                    value={field.value ?? ''}
-                    onValueChange={(v) => field.onChange(v || null)}
-                  >
-                    <SelectTrigger className="mt-1 w-full">
-                      <SelectValue placeholder="Seleccioná una categoría" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredCategories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.icon ?? ''} {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field }) => {
+                  const selected = filteredCategories.find((c) => c.id === field.value)
+                  return (
+                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
+                      <SelectTrigger className="mt-1 w-full">
+                        <SelectValue placeholder="Seleccioná una categoría">
+                          {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredCategories.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.icon ?? ''} {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }}
               />
               {form.formState.errors.category_id && (
                 <p className="mt-1 text-xs text-destructive">{form.formState.errors.category_id.message}</p>

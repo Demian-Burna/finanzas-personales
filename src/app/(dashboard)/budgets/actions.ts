@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -10,7 +10,7 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstIssue(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
+  return err.issues[0]?.message ?? 'Datos inválidos'
 }
 
 export async function createBudgetAction(raw: unknown): Promise<ActionResult<{ id: string }>> {

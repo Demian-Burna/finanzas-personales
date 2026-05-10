@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -15,7 +15,7 @@ export type ActionResult<T = void> =
   | { ok: false; error: string }
 
 function firstError(err: { issues: Array<{ message: string }> }): string {
-  return err.issues[0]?.message ?? 'Datos invÃ¡lidos'
+  return err.issues[0]?.message ?? 'Datos inválidos'
 }
 
 export async function createTransactionAction(
@@ -45,7 +45,7 @@ export async function createTransactionAction(
     notes: rest.notes ?? null,
   } as never)
 
-  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear transacciÃ³n' }
+  if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear transacción' }
 
   revalidatePath('/')
   revalidatePath('/transactions')
@@ -94,7 +94,7 @@ export async function duplicateTransactionAction(id: string): Promise<ActionResu
   if (!user) return { ok: false, error: 'No autenticado' }
 
   const { data: original } = await getTransactionById(supabase, id)
-  if (!original) return { ok: false, error: 'TransacciÃ³n no encontrada' }
+  if (!original) return { ok: false, error: 'Transacción no encontrada' }
 
   const today = new Date().toISOString().split('T')[0] ?? original.transaction_date
 
