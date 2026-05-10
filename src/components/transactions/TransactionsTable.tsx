@@ -154,7 +154,7 @@ export function TransactionsTable({
           <div
             ref={parentRef}
             className="overflow-y-auto"
-            style={{ height: Math.max(Math.min(transactions.length * 48, 600), 300) }}
+            style={{ height: 'calc(100svh - 280px)', minHeight: 240 }}
           >
             <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
               {items.map((vRow) => {

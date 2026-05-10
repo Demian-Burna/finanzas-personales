@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CurrencySelect } from '@/components/shared/CurrencySelect'
 import { cn } from '@/lib/utils'
 import {
   createAccountAction, updateAccountAction,
@@ -36,6 +37,21 @@ interface Props {
   currency: string
 }
 
+// Spanish labels for DB account type names
+const TYPE_LABELS: Record<string, string> = {
+  cash: 'Efectivo',
+  checking: 'Cuenta corriente / Caja de ahorro',
+  credit_card: 'Tarjeta de crédito',
+  investment: 'Inversión',
+  loan: 'Préstamo / Deuda',
+  savings: 'Ahorro',
+}
+
+const ACCOUNT_EMOJIS = [
+  '🏦', '💳', '💵', '💰', '🏧', '💎', '🏛️', '🐷',
+  '📈', '🤝', '💼', '🏠', '🚗', '✈️', '🎯', '⭐',
+]
+
 function SortableRow({ account, onEdit, onArchive }: {
   account: AccountWithType
   onEdit: (a: AccountWithType) => void
@@ -43,6 +59,7 @@ function SortableRow({ account, onEdit, onArchive }: {
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: account.id })
   const style = { transform: CSS.Transform.toString(transform), transition }
+  const typeName = TYPE_LABELS[account.account_type?.name ?? ''] ?? account.account_type?.name ?? '—'
 
   return (
     <div ref={setNodeRef} style={style}
@@ -55,7 +72,7 @@ function SortableRow({ account, onEdit, onArchive }: {
       </span>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium">{account.name}</p>
-        <p className="text-xs text-muted-foreground">{account.account_type?.name} · {account.currency_code}</p>
+        <p className="text-xs text-muted-foreground">{typeName} · {account.currency_code}</p>
       </div>
       <p className="text-sm font-semibold tabular-nums shrink-0">
         {new Intl.NumberFormat('es-AR', { style: 'currency', currency: account.currency_code, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(account.current_balance)}
@@ -77,6 +94,8 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
   isPending: boolean
 }) {
   const isEdit = !!account
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+
   const form = useForm<AccountInput>({
     resolver: zodResolver(accountSchema) as Resolver<AccountInput>,
     defaultValues: {
@@ -85,54 +104,109 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
       name: account?.name ?? '',
       description: account?.description ?? '',
       initial_balance: account?.initial_balance ?? 0,
-      color: account?.color ?? null,
-      icon: account?.icon ?? null,
+      color: account?.color ?? '#6366f1',
+      icon: account?.icon ?? '🏦',
       include_in_net_worth: account?.include_in_net_worth ?? true,
       sort_order: account?.sort_order ?? 0,
     },
   })
+
+  const selectedIcon = form.watch('icon')
+  const selectedTypeId = form.watch('account_type_id')
+  const selectedTypeName = (() => {
+    const t = accountTypes.find((x) => x.id === selectedTypeId)
+    if (!t) return undefined
+    return TYPE_LABELS[t.name] ?? t.name
+  })()
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle>{isEdit ? 'Editar cuenta' : 'Nueva cuenta'}</DialogTitle></DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+          {/* Name */}
           <div>
             <Label>Nombre</Label>
             <Input {...form.register('name')} className="mt-1" placeholder="Ej: Banco Galicia" />
             {form.formState.errors.name && <p className="mt-1 text-xs text-destructive">{form.formState.errors.name.message}</p>}
           </div>
+
+          {/* Account type */}
           <div>
             <Label>Tipo de cuenta</Label>
             <Controller control={form.control} name="account_type_id" render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Seleccioná el tipo" /></SelectTrigger>
+              <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
+                <SelectTrigger className="mt-1 w-full">
+                  <SelectValue placeholder="Seleccioná el tipo">
+                    {selectedTypeName ?? undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
-                  {accountTypes.map((t) => <SelectItem key={t.id} value={t.id}>{t.icon ?? ''} {t.name}</SelectItem>)}
+                  {accountTypes.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.icon ?? ''} {TYPE_LABELS[t.name] ?? t.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )} />
           </div>
+
+          {/* Balance + currency */}
           <div className="flex gap-2">
             <div className="flex-1">
               <Label>Saldo inicial</Label>
-              <Input type="number" step="0.01" {...form.register('initial_balance', { valueAsNumber: true })} className="mt-1" />
+              <Controller control={form.control} name="initial_balance" render={({ field }) => (
+                <Input
+                  type="text" inputMode="decimal" placeholder="0.00"
+                  value={field.value === 0 ? '' : String(field.value)}
+                  onChange={(e) => {
+                    const n = parseFloat(e.target.value.replace(',', '.'))
+                    field.onChange(isNaN(n) ? 0 : n)
+                  }}
+                  onBlur={field.onBlur}
+                  className="mt-1"
+                />
+              )} />
             </div>
-            <div className="w-24">
+            <div className="w-36">
               <Label>Moneda</Label>
-              <Input {...form.register('currency_code')} className="mt-1 uppercase" maxLength={3} />
+              <Controller control={form.control} name="currency_code" render={({ field }) => (
+                <CurrencySelect value={field.value} onValueChange={field.onChange} className="mt-1 w-full" />
+              )} />
             </div>
           </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
+
+          {/* Color + Emoji */}
+          <div className="flex gap-3">
+            <div>
               <Label>Color</Label>
-              <Input type="color" {...form.register('color')} className="mt-1 h-8 cursor-pointer" />
+              <Input type="color" {...form.register('color')} className="mt-1 h-9 w-16 cursor-pointer p-0.5" />
             </div>
             <div className="flex-1">
-              <Label>Ícono (emoji)</Label>
-              <Input {...form.register('icon')} className="mt-1" placeholder="🏦" maxLength={4} />
+              <Label>Ícono</Label>
+              <div className="mt-1 flex items-center gap-2">
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="flex size-9 items-center justify-center rounded-lg border text-xl hover:bg-muted transition-colors">
+                  {selectedIcon ?? '🏦'}
+                </button>
+                <span className="text-xs text-muted-foreground">Hacé clic para cambiar</span>
+              </div>
+              {showEmojiPicker && (
+                <div className="mt-2 grid grid-cols-8 gap-1 rounded-lg border p-2">
+                  {ACCOUNT_EMOJIS.map((e) => (
+                    <button key={e} type="button"
+                      onClick={() => { form.setValue('icon', e); setShowEmojiPicker(false) }}
+                      className={cn('flex size-8 items-center justify-center rounded text-lg hover:bg-muted transition-colors', selectedIcon === e && 'bg-primary/10 ring-1 ring-primary')}>
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Net worth toggle */}
           <div className="flex items-center justify-between rounded-lg border px-4 py-3">
             <div>
               <p className="text-sm font-medium">Incluir en patrimonio neto</p>
@@ -141,11 +215,12 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
             <Controller control={form.control} name="include_in_net_worth" render={({ field }) => (
               <button type="button" role="switch" aria-checked={field.value ?? true}
                 onClick={() => field.onChange(!(field.value ?? true))}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${(field.value ?? true) ? 'bg-primary' : 'bg-muted'}`}>
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${(field.value ?? true) ? 'bg-primary' : 'bg-muted'}`}>
                 <span className={`inline-block size-3.5 rounded-full bg-white shadow transition-transform ${(field.value ?? true) ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             )} />
           </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={isPending}>{isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}</Button>
@@ -171,9 +246,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
     const newIndex = accounts.findIndex((a) => a.id === over.id)
     const reordered = arrayMove(accounts, oldIndex, newIndex)
     setAccounts(reordered)
-    startTransition(async () => {
-      await reorderAccountsAction(reordered.map((a) => a.id))
-    })
+    startTransition(async () => { await reorderAccountsAction(reordered.map((a) => a.id)) })
   }
 
   function handleCreate(values: AccountInput) {
@@ -182,7 +255,6 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Cuenta creada')
       setFormOpen(false)
-      // Optimistic: reload will refresh
     })
   }
 

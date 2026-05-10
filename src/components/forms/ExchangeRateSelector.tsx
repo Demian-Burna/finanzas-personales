@@ -63,7 +63,7 @@ export function ExchangeRateSelector({
       )}
 
       {data && (
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="flex flex-wrap gap-1.5">
           {data.options.map((opt) => {
             const converted = amount * opt.rate
             const isSelected = opt.type === selectedType
@@ -73,7 +73,7 @@ export function ExchangeRateSelector({
                 type="button"
                 onClick={() => onSelect(opt)}
                 className={cn(
-                  'rounded-md border p-2 text-left text-xs transition-all',
+                  'flex-1 min-w-[100px] rounded-md border p-2 text-left text-xs transition-all',
                   isSelected
                     ? 'border-primary bg-primary/10 text-foreground'
                     : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
