@@ -64,7 +64,7 @@ export function TransactionFilters({ accounts, categories }: Props) {
           placeholder="Buscar por descripción..."
           defaultValue={params.get('q') ?? ''}
           onChange={(e) => update('q', e.target.value || null)}
-          className="pl-8 h-9 text-sm"
+          className="pl-8 h-7 text-sm"
         />
       </div>
 
@@ -72,7 +72,7 @@ export function TransactionFilters({ accounts, categories }: Props) {
       <div className="flex flex-wrap gap-2">
         {/* Type */}
         <Select value={typeValue} onValueChange={(v) => update('type', v || null)}>
-          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[160px] h-9">
+          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[160px] h-7">
             <SelectValue>
               {selectedType
                 ? selectedType.label
@@ -88,7 +88,7 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
         {/* Account */}
         <Select value={accountValue} onValueChange={(v) => update('account', v || null)}>
-          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[180px] h-9">
+          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[180px] h-7">
             <SelectValue>
               {selectedAccount
                 ? selectedAccount.name
@@ -108,7 +108,7 @@ export function TransactionFilters({ accounts, categories }: Props) {
           value={categoryValue}
           onChange={(id) => update('category', id)}
           placeholder="Categoría"
-          className="flex-1 min-w-[90px] max-w-[200px]"
+          className="flex-1 min-w-[90px] max-w-[200px] h-7"
         />
 
         {hasFilters && (
@@ -116,7 +116,7 @@ export function TransactionFilters({ accounts, categories }: Props) {
             variant="ghost"
             size="sm"
             onClick={() => router.replace(pathname)}
-            className="gap-1 h-9 text-xs shrink-0"
+            className="gap-1 h-7 text-xs shrink-0"
           >
             <X className="size-3" />
             Limpiar
