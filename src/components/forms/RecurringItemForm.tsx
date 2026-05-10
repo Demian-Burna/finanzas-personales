@@ -317,8 +317,9 @@ export function RecurringItemForm({
               form.handleSubmit(
                 onSubmit,
                 (errors) => {
-                  const first = Object.values(errors)[0]?.message
-                  toast.error(first ?? 'Revisá los campos del formulario')
+                  const entries = Object.entries(errors)
+                  const msg = entries.map(([f, e]) => `${f}: ${String(e?.message)}`).join(' · ')
+                  toast.error(msg || 'Revisá los campos del formulario')
                 }
               )().catch((e: unknown) => {
                 toast.error('Error inesperado: ' + String(e))

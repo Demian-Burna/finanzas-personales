@@ -16,8 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { createGoalAction, updateGoalAction, addContributionAction, updateGoalStatusAction } from '@/app/(dashboard)/goals/actions'
-import { createTransactionAction } from '@/app/(dashboard)/transactions/actions'
+import { createGoalAction, updateGoalAction, addContributionAction, updateGoalStatusAction, createGoalTransactionAction } from '@/app/(dashboard)/goals/actions'
 
 interface Props {
   goals: SavingGoalWithContributions[]
@@ -294,22 +293,16 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
       // 2. If an account was selected, create a matching expense transaction
       if (accountId) {
         const goal = goals.find((g) => g.id === values.goal_id)
-        const txRes = await createTransactionAction({
-          transaction_type: 'expense',
+        const txRes = await createGoalTransactionAction({
           account_id: accountId,
-          category_id: null,
           currency_code: goal?.currency_code ?? currency,
           amount: values.amount,
-          exchange_rate: 1,
-          exchange_rate_type: undefined,
           description: `Aporte: ${goal?.name ?? 'Meta de ahorro'}`,
-          notes: values.note ?? null,
           transaction_date: values.contribution_date,
-          is_reconciled: false,
-          transfer_account_id: null,
+          note: values.note ?? null,
         })
         if (!txRes.ok) {
-          toast.warning('Aporte registrado pero hubo un error al crear la transacción')
+          toast.warning('Aporte registrado, pero hubo un error al crear la transacción: ' + txRes.error)
         } else {
           toast.success('Aporte registrado y transacción creada')
         }
