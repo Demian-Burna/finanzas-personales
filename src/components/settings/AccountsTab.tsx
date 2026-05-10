@@ -38,7 +38,7 @@ import { CurrencySelect } from '@/components/shared/CurrencySelect'
 import { cn } from '@/lib/utils'
 import {
   createAccountAction, updateAccountAction,
-  reorderAccountsAction, archiveAccountAction,
+  reorderAccountsAction,
 } from '@/app/(dashboard)/settings/actions'
 
 interface AccountType { id: string; name: string; nature: string; icon: string | null }
@@ -301,15 +301,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
     })
   }
 
-  function handleArchive(id: string) {
-    startTransition(async () => {
-      const res = await archiveAccountAction(id)
-      if (!res.ok) { toast.error(res.error); return }
-      setAccounts((prev) => prev.filter((a) => a.id !== id))
-      toast.success('Cuenta archivada')
-      router.refresh()
-    })
-  }
+
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto lg:mx-0">
