@@ -6,6 +6,7 @@ import { ChartsSection, ChartsSectionSkeleton } from './_sections/ChartsSection'
 import { AccountsSection, AccountsSkeleton } from './_sections/AccountsSection'
 import { RecentTransactionsSection, RecentTransactionsSkeleton } from './_sections/RecentTransactionsSection'
 import { AlertsSection } from './_sections/AlertsSection'
+import { RefMarker } from './_components/RefMarker'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -68,6 +69,9 @@ export default async function OverviewPage() {
           <RecentTransactionsSection currency={currency} locale={locale} />
         </Suspense>
       </div>
+
+      {/* Zero-render marker — ensures Next.js emits page_client-reference-manifest.js */}
+      <RefMarker />
     </div>
   )
 }
