@@ -1,0 +1,94 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Plus } from 'lucide-react'
+import { useTransactions } from '@/hooks/useTransactions'
+import { useCreateTransaction } from '@/hooks/useTransactionMutations'
+import { TransactionFilters } from '@/components/transactions/TransactionFilters'
+import { TransactionsTable } from '@/components/transactions/TransactionsTable'
+import { TransactionForm } from '@/components/forms/TransactionForm'
+import { Button } from '@/components/ui/button'
+import type { AccountWithType } from '@/lib/supabase/queries/accounts'
+import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
+import type { TransactionFormValues } from '@/lib/validations/transaction'
+
+interface Props {
+  accounts: AccountWithType[]
+  categories: CategoryWithParent[]
+  currency: string
+  locale: string
+}
+
+export function TransactionsClient({ accounts, categories, currency, locale }: Props) {
+  const params = useSearchParams()
+  const [createOpen, setCreateOpen] = useState(false)
+  const createMutation = useCreateTransaction()
+
+  const filters = {
+    type: (params.get('type') as 'income' | 'expense' | 'transfer' | undefined) ?? undefined,
+    accountId: params.get('account') ?? undefined,
+    categoryId: params.get('category') ?? undefined,
+    search: params.get('q') ?? undefined,
+    dateFrom: params.get('from') ?? undefined,
+    dateTo: params.get('to') ?? undefined,
+  }
+
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useTransactions(filters)
+
+  const transactions = data?.pages.flat() ?? []
+
+  const handleCreate = useCallback(
+    (values: TransactionFormValues) => {
+      createMutation.mutate(values, {
+        onSuccess: (r) => { if (r.ok) setCreateOpen(false) },
+      })
+    },
+    [createMutation],
+  )
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-start gap-3">
+        <TransactionFilters accounts={accounts} categories={categories} />
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="ml-auto gap-1.5 h-8">
+          <Plus className="size-4" />
+          Nueva
+        </Button>
+      </div>
+
+      {/* Table */}
+      <TransactionsTable
+        transactions={transactions}
+        accounts={accounts}
+        categories={categories}
+        currency={currency}
+        locale={locale}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={() => void fetchNextPage()}
+      />
+
+      {/* Create dialog */}
+      <TransactionForm
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        accounts={accounts}
+        categories={categories}
+        defaultCurrency={currency}
+        onSubmit={handleCreate}
+        isPending={createMutation.isPending}
+      />
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => setCreateOpen(true)}
+        className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden"
+        aria-label="Nueva transacción"
+      >
+        <Plus className="size-5" />
+      </button>
+    </div>
+  )
+}
