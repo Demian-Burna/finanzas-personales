@@ -10,6 +10,9 @@ const supabaseHostname = rawSupabaseUrl ? new URL(rawSupabaseUrl).hostname : '*.
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disable output file tracing to avoid ENOENT bug with route groups in Next.js 14 on Vercel
+  outputFileTracing: false,
+
   experimental: {
     optimizePackageImports: [
       'lucide-react',
