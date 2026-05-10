@@ -98,7 +98,7 @@ function PortalSelect({
       <button
         ref={triggerRef}
         type="button"
-        onPointerDown={(e) => { e.preventDefault(); open ? setOpen(false) : open_() }}
+        onPointerDown={(e) => { e.preventDefault(); if (open) setOpen(false); else open_() }}
         className={cn(PILL, !selected && 'text-muted-foreground', open && 'ring-2 ring-ring border-ring')}
       >
         <span className="flex-1 truncate text-left">{selected ? selected.label : placeholder}</span>
