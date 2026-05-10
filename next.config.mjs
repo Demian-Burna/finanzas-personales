@@ -4,9 +4,9 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
-const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : '*.supabase.co'
+// Strip BOM and whitespace that PowerShell/shells can introduce via env var piping
+const rawSupabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/^﻿/, '').trim()
+const supabaseHostname = rawSupabaseUrl ? new URL(rawSupabaseUrl).hostname : '*.supabase.co'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
