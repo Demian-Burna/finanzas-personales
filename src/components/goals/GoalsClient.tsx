@@ -381,7 +381,7 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
       <GoalForm open={formOpen} onOpenChange={setFormOpen} defaultCurrency={currency} onSubmit={handleCreate} isPending={isPending} />
       <GoalForm open={!!editGoal} onOpenChange={(o) => { if (!o) setEditGoal(null) }} defaultCurrency={currency} goal={editGoal ?? undefined} onSubmit={handleUpdate} isPending={isPending} />
       {contributeGoal && (
-        <ContributeModal goal={contributeGoal} accounts={accounts} currency={currency} locale={locale} onClose={() => setContributeGoal(null)} onSubmit={handleContribute} isPending={isPending} />
+        <ContributeModal goal={contributeGoal} accounts={accounts} currency={currency} onClose={() => setContributeGoal(null)} onSubmit={handleContribute} isPending={isPending} />
       )}
     </div>
   )
