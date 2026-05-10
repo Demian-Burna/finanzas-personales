@@ -9,6 +9,7 @@ import {
   getTransactionById,
 } from '@/lib/supabase/queries/transactions'
 import { transactionSchema } from '@/lib/validations/transaction'
+import { syncExchangeRates } from '@/lib/sync-exchange-rates'
 
 export type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -48,6 +49,9 @@ export async function createTransactionAction(
   } as never)
 
   if (error || !data) return { ok: false, error: error?.message ?? 'Error al crear transacción' }
+
+  // Sync exchange rates to DB so dashboard_stats RPC can convert currencies
+  void syncExchangeRates()
 
   revalidatePath('/')
   revalidatePath('/transactions')

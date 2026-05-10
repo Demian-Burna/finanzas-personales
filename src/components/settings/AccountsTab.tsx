@@ -213,11 +213,6 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
                 className="font-mono flex-1"
                 maxLength={7}
               />
-              {/* Live preview */}
-              <span
-                className="size-9 shrink-0 rounded-full border"
-                style={{ background: form.watch('color') ?? '#6366f1' }}
-              />
             </div>
           </div>
 

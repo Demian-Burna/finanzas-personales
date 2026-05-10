@@ -95,6 +95,16 @@ export function TransactionForm({
 
   const watchedCurrency = form.watch('currency_code')
   const watchedAmount = form.watch('amount')
+  const watchedAccountId = form.watch('account_id')
+
+  // Auto-fill currency when account changes
+  useEffect(() => {
+    if (!watchedAccountId) return
+    const account = accounts.find((a) => a.id === watchedAccountId)
+    if (account?.currency_code) {
+      form.setValue('currency_code', account.currency_code)
+    }
+  }, [watchedAccountId, accounts, form])
 
   function handleRateSelect(opt: RateOption) {
     form.setValue('exchange_rate', opt.rate)
