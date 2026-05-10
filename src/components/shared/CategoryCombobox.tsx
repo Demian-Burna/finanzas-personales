@@ -72,12 +72,8 @@ export function CategoryCombobox({
     if (open) setTimeout(() => inputRef.current?.focus(), 10)
   }, [open])
 
-  useEffect(() => {
-    if (!open) return
-    const close = () => { setOpen(false); setSearch('') }
-    window.addEventListener('resize', close)
-    return () => window.removeEventListener('resize', close)
-  }, [open])
+  // No resize listener — iOS keyboard opening fires a resize event which
+  // would close the dropdown while the user is typing in the search box
 
   function select(id: string) {
     onChange(id)

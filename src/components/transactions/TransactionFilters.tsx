@@ -1,17 +1,12 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { Search, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Search, X, ChevronDown, Check } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { CategoryCombobox } from '@/components/shared/CategoryCombobox'
+import { cn } from '@/lib/utils'
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 
@@ -26,8 +21,95 @@ const TYPE_OPTIONS = [
   { value: 'transfer', label: 'Transferencias' },
 ]
 
-// Shared pill class for all three filter triggers
-const PILL = 'flex-1 h-8 rounded-full border border-input text-sm font-normal'
+const PILL = 'flex h-8 w-full items-center justify-between gap-1 rounded-full border border-input bg-transparent px-3 text-sm transition-colors select-none dark:bg-input/30 dark:hover:bg-input/50 hover:bg-accent/30'
+
+// Lightweight portal select — same visual as CategoryCombobox pill trigger
+function PortalSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  className,
+}: {
+  options: { value: string; label: string }[]
+  value: string | undefined
+  onChange: (v: string | null) => void
+  placeholder: string
+  className?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 })
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  const selected = options.find((o) => o.value === value)
+
+  function open_() {
+    if (!triggerRef.current) return
+    const r = triggerRef.current.getBoundingClientRect()
+    const w = Math.max(180, r.width)
+    const left = window.innerWidth < 640
+      ? Math.max(8, (window.innerWidth - w) / 2)
+      : Math.min(r.left, window.innerWidth - w - 8)
+    setPos({ top: r.bottom + 6, left, width: w })
+    setOpen(true)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    function h(e: PointerEvent) {
+      const t = e.target as Node
+      if (!triggerRef.current?.contains(t) && !dropRef.current?.contains(t)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', h)
+    return () => document.removeEventListener('pointerdown', h)
+  }, [open])
+
+  const dropdown = (
+    <div
+      ref={dropRef}
+      className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10 py-1"
+      style={{ top: pos.top, left: pos.left, width: pos.width }}
+    >
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onPointerDown={(e) => { e.preventDefault(); onChange(o.value); setOpen(false) }}
+          className={cn(
+            'flex w-full items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+            o.value === value && 'bg-accent/50',
+          )}
+        >
+          <span className="flex-1 text-left">{o.label}</span>
+          {o.value === value && <Check className="size-3.5 text-primary shrink-0" />}
+        </button>
+      ))}
+    </div>
+  )
+
+  return (
+    <div className={cn('relative flex-1', className)}>
+      <button
+        ref={triggerRef}
+        type="button"
+        onPointerDown={(e) => { e.preventDefault(); open ? setOpen(false) : open_() }}
+        className={cn(PILL, !selected && 'text-muted-foreground', open && 'ring-2 ring-ring border-ring')}
+      >
+        <span className="flex-1 truncate text-left">{selected ? selected.label : placeholder}</span>
+        {selected
+          ? <X className="size-3.5 shrink-0 text-muted-foreground" onPointerDown={(e) => { e.stopPropagation(); onChange(null) }} />
+          : <ChevronDown className="size-4 shrink-0 text-muted-foreground pointer-events-none" />}
+      </button>
+      {mounted && open && createPortal(dropdown, document.body)}
+    </div>
+  )
+}
 
 export function TransactionFilters({ accounts, categories }: Props) {
   const router = useRouter()
@@ -37,11 +119,8 @@ export function TransactionFilters({ accounts, categories }: Props) {
   const update = useCallback(
     (key: string, value: string | null) => {
       const next = new URLSearchParams(params.toString())
-      if (value) {
-        next.set(key, value)
-      } else {
-        next.delete(key)
-      }
+      if (value) next.set(key, value)
+      else next.delete(key)
       next.delete('cursor')
       router.replace(`${pathname}?${next.toString()}`)
     },
@@ -49,13 +128,9 @@ export function TransactionFilters({ accounts, categories }: Props) {
   )
 
   const hasFilters = ['type', 'account', 'category', 'q'].some((k) => params.has(k))
-
   const typeValue     = params.get('type') ?? undefined
   const accountValue  = params.get('account') ?? undefined
   const categoryValue = params.get('category') ?? undefined
-
-  const selectedAccount = accounts.find((a) => a.id === accountValue)
-  const selectedType    = TYPE_OPTIONS.find((o) => o.value === typeValue)
 
   return (
     <div className="flex-1 min-w-0 space-y-2">
@@ -70,41 +145,22 @@ export function TransactionFilters({ accounts, categories }: Props) {
         />
       </div>
 
-      {/* Filter pills — all three identical pill shape, equal flex-1 */}
+      {/* Filter pills — all three use the same portal dropdown, all centered on mobile */}
       <div className="flex gap-1.5">
-        {/* Tipo */}
-        <Select value={typeValue} onValueChange={(v) => update('type', v || null)}>
-          <SelectTrigger className={PILL}>
-            <SelectValue>
-              {selectedType
-                ? selectedType.label
-                : <span className="text-muted-foreground">Tipo</span>}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {TYPE_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <PortalSelect
+          options={TYPE_OPTIONS}
+          value={typeValue}
+          onChange={(v) => update('type', v)}
+          placeholder="Tipo"
+        />
 
-        {/* Cuenta */}
-        <Select value={accountValue} onValueChange={(v) => update('account', v || null)}>
-          <SelectTrigger className={PILL}>
-            <SelectValue>
-              {selectedAccount
-                ? selectedAccount.name
-                : <span className="text-muted-foreground">Cuenta</span>}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((a) => (
-              <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <PortalSelect
+          options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+          value={accountValue}
+          onChange={(v) => update('account', v)}
+          placeholder="Cuenta"
+        />
 
-        {/* Categoría — pill prop makes it match the SelectTrigger style */}
         <CategoryCombobox
           categories={categories}
           value={categoryValue}
