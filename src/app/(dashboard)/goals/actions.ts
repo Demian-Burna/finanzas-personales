@@ -121,7 +121,8 @@ export async function createGoalTransactionAction(input: {
   const { data, error } = await createTransaction(supabase, {
     user_id: user.id,
     account_id: input.account_id,
-    category_id: null,
+    // System category for goal contributions
+    category_id: '00000000-0000-0000-0002-000000000093',
     transfer_account_id: null,
     transfer_transaction_id: null,
     currency_code: input.currency_code,

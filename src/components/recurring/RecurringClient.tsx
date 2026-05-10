@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Edit, Power, PowerOff, Trash2, Clock } from 'lucide-react'
+import { Plus, Edit, Power, PowerOff, Trash2, Clock, CreditCard, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -17,6 +17,7 @@ import {
   updateRecurringItemAction,
   toggleRecurringItemAction,
   deleteRecurringItemAction,
+  registerRecurringNowAction,
 } from '@/app/(dashboard)/recurring/actions'
 
 interface Props {
@@ -53,6 +54,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
   const [formOpen, setFormOpen] = useState(false)
   const [editItem, setEditItem] = useState<RecurringItemWithRelations | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [payNowConfirm, setPayNowConfirm] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // Group by frequency
@@ -87,9 +89,19 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
   }
 
   function handleToggle(id: string, isActive: boolean) {
+    setPayNowConfirm(null)
     startTransition(async () => {
       const res = await toggleRecurringItemAction(id, isActive)
       if (!res.ok) toast.error(res.error)
+    })
+  }
+
+  function handlePayNow(id: string) {
+    startTransition(async () => {
+      const res = await registerRecurringNowAction(id)
+      if (!res.ok) { toast.error(res.error); return }
+      toast.success('Pago registrado y próxima fecha actualizada')
+      setPayNowConfirm(null)
     })
   }
 
@@ -159,6 +171,27 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 shrink-0">
+                    {/* Pay now — only for active expense/income items */}
+                    {item.is_active && (
+                      payNowConfirm === item.id ? (
+                        <button
+                          onClick={() => handlePayNow(item.id)}
+                          disabled={isPending}
+                          className="flex size-7 items-center justify-center rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 transition-colors"
+                          title="Confirmar pago"
+                        >
+                          <Check className="size-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setPayNowConfirm(item.id)}
+                          className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors"
+                          title="Registrar pago ahora"
+                        >
+                          <CreditCard className="size-3.5" />
+                        </button>
+                      )
+                    )}
                     <button onClick={() => setEditItem(item)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors" title="Editar">
                       <Edit className="size-3.5" />
                     </button>
