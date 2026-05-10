@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
+import { CurrencySelect } from '@/components/shared/CurrencySelect'
 import { transactionSchema, type TransactionFormValues } from '@/lib/validations/transaction'
 
 // Custom resolver: calls Zod directly, bypassing @hookform/resolvers v5 quirks with Zod v4
@@ -186,14 +187,18 @@ export function TransactionForm({
                 <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>
               )}
             </div>
-            <div className="w-24">
-              <Label htmlFor="currency">Moneda</Label>
-              <Input
-                id="currency"
-                placeholder="ARS"
-                {...form.register('currency_code')}
-                className="mt-1 uppercase"
-                maxLength={3}
+            <div className="w-32">
+              <Label>Moneda</Label>
+              <Controller
+                control={form.control}
+                name="currency_code"
+                render={({ field }) => (
+                  <CurrencySelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="mt-1 w-full"
+                  />
+                )}
               />
             </div>
           </div>

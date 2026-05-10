@@ -1,17 +1,17 @@
 'use client'
 
 import { useRef, useTransition } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Camera } from 'lucide-react'
 import { profileSchema, type ProfileInput } from '@/lib/validations/profile'
 import { Button } from '@/components/ui/button'
+import { CurrencySelect } from '@/components/shared/CurrencySelect'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Controller } from 'react-hook-form'
 import { updateProfileAction, uploadAvatarAction } from '@/app/(dashboard)/settings/actions'
 
 const TIMEZONES = [
@@ -116,7 +116,13 @@ export function ProfileTab({ profile, userEmail }: Props) {
       {/* Currency */}
       <div>
         <Label>Moneda base</Label>
-        <Input placeholder="ARS" {...form.register('currency_code')} className="mt-1 uppercase w-32" maxLength={3} />
+        <Controller
+          control={form.control}
+          name="currency_code"
+          render={({ field }) => (
+            <CurrencySelect value={field.value} onValueChange={field.onChange} className="mt-1 w-48" />
+          )}
+        />
         {form.formState.errors.currency_code && <p className="mt-1 text-xs text-destructive">{form.formState.errors.currency_code.message}</p>}
       </div>
 
