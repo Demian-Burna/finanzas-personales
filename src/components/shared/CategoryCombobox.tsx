@@ -134,7 +134,7 @@ export function CategoryCombobox({
   )
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative min-w-0', className)}>
       <button
         ref={triggerRef}
         type="button"

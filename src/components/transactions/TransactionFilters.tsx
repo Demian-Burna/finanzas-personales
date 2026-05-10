@@ -94,7 +94,7 @@ function PortalSelect({
   )
 
   return (
-    <div className={cn('relative flex-1', className)}>
+    <div className={cn('relative flex-1 min-w-0 overflow-hidden', className)}>
       <button
         ref={triggerRef}
         type="button"
@@ -145,8 +145,8 @@ export function TransactionFilters({ accounts, categories }: Props) {
         />
       </div>
 
-      {/* Filter pills — all three use the same portal dropdown, all centered on mobile */}
-      <div className="flex gap-1.5">
+      {/* Filter pills — flex-nowrap + min-w-0 so all three always stay on one row */}
+      <div className="flex flex-nowrap gap-1.5 overflow-hidden">
         <PortalSelect
           options={TYPE_OPTIONS}
           value={typeValue}
