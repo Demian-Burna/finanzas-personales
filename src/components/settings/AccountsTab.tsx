@@ -206,7 +206,7 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
   }
 
   return (
-    <div className="space-y-4 max-w-lg">
+    <div className="space-y-4 max-w-2xl">
       <div className="flex justify-end">
         <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5">
           <Plus className="size-4" /> Nueva cuenta

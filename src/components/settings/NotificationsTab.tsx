@@ -43,7 +43,7 @@ export function NotificationsTab() {
   }
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-2xl">
       <div className="space-y-3">
         {prefs.map((pref) => (
           <div key={pref.key} className="rounded-xl border bg-card p-4 shadow-sm space-y-3">

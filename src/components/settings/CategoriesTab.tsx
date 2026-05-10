@@ -139,7 +139,7 @@ function CategoryRow({ category, subCategories, onEdit, onDelete }: {
   onEdit: (c: CategoryWithParent) => void
   onDelete: (id: string) => void
 }) {
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   const hasChildren = (subCategories?.length ?? 0) > 0
 
   return (

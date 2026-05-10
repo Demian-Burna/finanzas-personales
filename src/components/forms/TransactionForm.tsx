@@ -7,6 +7,10 @@ import { transactionSchema, type TransactionFormValues } from '@/lib/validations
 
 // Custom resolver: calls Zod directly, bypassing @hookform/resolvers v5 quirks with Zod v4
 const transactionResolver: Resolver<TransactionFormValues> = async (values) => {
+  // Debug — visible in Vercel runtime logs to diagnose NaN/empty issues
+  if (typeof window !== 'undefined') {
+    console.log('[TransactionForm] submit values:', JSON.stringify(values))
+  }
   const result = transactionSchema.safeParse(values)
   if (result.success) return { values: result.data, errors: {} }
   const errors: Record<string, { type: string; message: string }> = {}
@@ -14,6 +18,7 @@ const transactionResolver: Resolver<TransactionFormValues> = async (values) => {
     const key = issue.path.join('.') || 'root'
     if (!errors[key]) errors[key] = { type: 'validation', message: issue.message }
   }
+  console.log('[TransactionForm] errors:', JSON.stringify(errors))
   return { values: {}, errors }
 }
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
@@ -156,14 +161,26 @@ export function TransactionForm({
           <div className="flex gap-2">
             <div className="flex-1">
               <Label htmlFor="amount">Monto</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                {...form.register('amount', { valueAsNumber: true })}
-                className="mt-1"
+              {/* Use Controller + text input to avoid valueAsNumber NaN inside Dialog */}
+              <Controller
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <Input
+                    id="amount"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={field.value === 0 ? '' : String(field.value)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(',', '.')
+                      const parsed = parseFloat(raw)
+                      field.onChange(isNaN(parsed) ? 0 : parsed)
+                    }}
+                    onBlur={field.onBlur}
+                    className="mt-1"
+                  />
+                )}
               />
               {form.formState.errors.amount && (
                 <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>

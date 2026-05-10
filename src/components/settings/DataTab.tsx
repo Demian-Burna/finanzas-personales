@@ -43,7 +43,7 @@ export function DataTab() {
   }
 
   return (
-    <div className="space-y-8 max-w-lg">
+    <div className="space-y-8 max-w-2xl">
       {/* Export */}
       <section className="space-y-3">
         <h3 className="text-sm font-semibold">Exportar datos</h3>

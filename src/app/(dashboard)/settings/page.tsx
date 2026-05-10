@@ -55,18 +55,20 @@ export default async function SettingsPage() {
         {/* Desktop: sidebar nav + content. Mobile: tabs on top */}
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
           {/* Sidebar nav */}
-          <aside className="lg:w-48 shrink-0">
-            <TabsList variant="line" className="flex-col items-start w-full bg-transparent h-auto gap-0.5 border-0 p-0">
-              <TabsTrigger value="profile"       className="w-full justify-start rounded-lg px-3 py-2 text-sm">Perfil</TabsTrigger>
-              <TabsTrigger value="accounts"      className="w-full justify-start rounded-lg px-3 py-2 text-sm">Cuentas</TabsTrigger>
-              <TabsTrigger value="categories"    className="w-full justify-start rounded-lg px-3 py-2 text-sm">Categorías</TabsTrigger>
-              <TabsTrigger value="notifications" className="w-full justify-start rounded-lg px-3 py-2 text-sm">Notificaciones</TabsTrigger>
-              <TabsTrigger value="data"          className="w-full justify-start rounded-lg px-3 py-2 text-sm">Datos</TabsTrigger>
-            </TabsList>
+          <aside className="lg:w-40 shrink-0">
+            <nav className="flex flex-col gap-0.5">
+              <TabsList variant="line" className="flex-col items-start w-full bg-transparent h-auto gap-0.5 border-0 p-0">
+                <TabsTrigger value="profile"       className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Perfil</TabsTrigger>
+                <TabsTrigger value="accounts"      className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Cuentas</TabsTrigger>
+                <TabsTrigger value="categories"    className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Categorías</TabsTrigger>
+                <TabsTrigger value="notifications" className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Notificaciones</TabsTrigger>
+                <TabsTrigger value="data"          className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Datos</TabsTrigger>
+              </TabsList>
+            </nav>
           </aside>
 
-          {/* Content area — takes all remaining space */}
-          <div className="flex-1 min-w-0">
+          {/* Content area — full remaining width, no max-w restriction */}
+          <div className="flex-1 min-w-0 w-full">
             <TabsContent value="profile">
               <ProfileTab profile={profile} userEmail={user?.email ?? null} />
             </TabsContent>
