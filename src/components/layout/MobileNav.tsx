@@ -2,15 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ArrowLeftRight, PieChart, Target, Settings } from 'lucide-react'
+import { Home, ArrowLeftRight, PieChart, BarChart3, Target, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  { href: '/',             label: 'Inicio',         icon: Home },
-  { href: '/transactions', label: 'Movimientos',    icon: ArrowLeftRight },
-  { href: '/budgets',      label: 'Presupuestos',   icon: PieChart },
-  { href: '/goals',        label: 'Metas',           icon: Target },
-  { href: '/settings',     label: 'Config.',         icon: Settings },
+  { href: '/',             label: 'Inicio',       icon: Home },
+  { href: '/transactions', label: 'Movimientos',  icon: ArrowLeftRight },
+  { href: '/budgets',      label: 'Presupuestos', icon: PieChart },
+  { href: '/reports',      label: 'Reportes',     icon: BarChart3 },
+  { href: '/goals',        label: 'Metas',        icon: Target },
+  { href: '/settings',     label: 'Config.',      icon: Settings },
 ] as const
 
 export function MobileNav() {
@@ -26,11 +27,11 @@ export function MobileNav() {
               key={href}
               href={href}
               className={cn(
-                'flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium transition-colors',
+                'flex flex-1 flex-col items-center gap-0.5 py-2 text-[9px] font-medium transition-colors',
                 active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <Icon className="size-5" />
+              <Icon className="size-[18px]" />
               <span>{label}</span>
             </Link>
           )

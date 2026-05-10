@@ -59,19 +59,20 @@ export default async function SettingsPage({
       </div>
 
       <SettingsTabs>
-        {/* Desktop: sidebar nav + content. Mobile: tabs on top */}
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-          {/* Sidebar nav */}
-          <aside className="lg:w-40 shrink-0">
-            <nav className="flex flex-col gap-0.5">
-              <TabsList variant="line" className="flex-col items-start w-full bg-transparent h-auto gap-0.5 border-0 p-0">
-                <TabsTrigger value="profile"       className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Perfil</TabsTrigger>
-                <TabsTrigger value="accounts"      className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Cuentas</TabsTrigger>
-                <TabsTrigger value="categories"    className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Categorías</TabsTrigger>
-                <TabsTrigger value="notifications" className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Notificaciones</TabsTrigger>
-                <TabsTrigger value="data"          className="w-full justify-start rounded-lg px-3 py-2 text-sm font-medium">Datos</TabsTrigger>
-              </TabsList>
-            </nav>
+        {/* Desktop: sidebar nav + content. Mobile: scrollable tab bar at top */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
+          {/* Nav — horizontal scroll on mobile, vertical sidebar on desktop */}
+          <aside className="shrink-0 lg:w-40">
+            <TabsList variant="line" className="
+              flex flex-row gap-1 overflow-x-auto w-full h-auto rounded-xl border bg-muted/30 p-1
+              lg:flex-col lg:overflow-visible lg:gap-0.5 lg:border-0 lg:bg-transparent lg:rounded-none lg:p-0
+            ">
+              <TabsTrigger value="profile"       className="whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium lg:w-full lg:justify-start lg:py-2">Perfil</TabsTrigger>
+              <TabsTrigger value="accounts"      className="whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium lg:w-full lg:justify-start lg:py-2">Cuentas</TabsTrigger>
+              <TabsTrigger value="categories"    className="whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium lg:w-full lg:justify-start lg:py-2">Categorías</TabsTrigger>
+              <TabsTrigger value="notifications" className="whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium lg:w-full lg:justify-start lg:py-2">Notificaciones</TabsTrigger>
+              <TabsTrigger value="data"          className="whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium lg:w-full lg:justify-start lg:py-2">Datos</TabsTrigger>
+            </TabsList>
           </aside>
 
           {/* Content area — full remaining width, no max-w restriction */}

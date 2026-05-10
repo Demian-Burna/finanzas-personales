@@ -5,8 +5,9 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Camera, LogOut } from 'lucide-react'
+import { Camera, LogOut, Sun, Moon } from 'lucide-react'
 import { useTransition as useSignOutTransition } from 'react'
+import { useTheme } from 'next-themes'
 import { signOut } from '@/app/(dashboard)/actions'
 import { profileSchema, type ProfileInput } from '@/lib/validations/profile'
 import { Button } from '@/components/ui/button'
@@ -46,6 +47,7 @@ export function ProfileTab({ profile, userEmail }: Props) {
   const [isPending, startTransition] = useTransition()
   const [isUploading, startUpload] = useTransition()
   const [isSigningOut, startSignOut] = useSignOutTransition()
+  const { resolvedTheme, setTheme } = useTheme()
 
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema) as Resolver<ProfileInput>,
@@ -160,17 +162,28 @@ export function ProfileTab({ profile, userEmail }: Props) {
           {isPending ? 'Guardando...' : 'Guardar cambios'}
         </Button>
 
-        {/* Sign-out — visible on mobile where the sidebar is hidden */}
-        <Button
-          type="button"
-          variant="outline"
-          className="lg:hidden gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
-          disabled={isSigningOut}
-          onClick={() => startSignOut(async () => { await signOut() })}
-        >
-          <LogOut className="size-4" />
-          {isSigningOut ? 'Saliendo...' : 'Cerrar sesión'}
-        </Button>
+        {/* Mobile-only actions: theme toggle + sign-out (sidebar hidden on mobile) */}
+        <div className="lg:hidden flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            aria-label="Cambiar modo"
+          >
+            {resolvedTheme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+            disabled={isSigningOut}
+            onClick={() => startSignOut(async () => { await signOut() })}
+          >
+            <LogOut className="size-4" />
+            {isSigningOut ? 'Saliendo...' : 'Cerrar sesión'}
+          </Button>
+        </div>
       </div>
     </form>
   )

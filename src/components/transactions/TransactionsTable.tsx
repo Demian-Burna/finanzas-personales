@@ -131,7 +131,7 @@ export function TransactionsTable({
       {/* Table container */}
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         {/* Sticky header */}
-        <div className="sticky top-0 z-10 grid grid-cols-[2rem_1fr_minmax(120px,1fr)_minmax(100px,1fr)_minmax(80px,auto)_2.5rem] gap-x-3 border-b bg-card/95 backdrop-blur px-4 py-2.5 text-xs font-medium text-muted-foreground">
+        <div className="sticky top-0 z-10 grid grid-cols-[1.5rem_1fr_auto_2rem] sm:grid-cols-[2rem_1fr_minmax(120px,1fr)_minmax(100px,1fr)_minmax(80px,auto)_2.5rem] gap-x-3 border-b bg-card/95 backdrop-blur px-3 sm:px-4 py-2.5 text-xs font-medium text-muted-foreground">
           <input
             type="checkbox"
             className="rounded"
@@ -140,8 +140,8 @@ export function TransactionsTable({
             title="Seleccionar todas"
           />
           <span>Descripción</span>
-          <span>Categoría</span>
-          <span>Cuenta</span>
+          <span className="hidden sm:block">Categoría</span>
+          <span className="hidden sm:block">Cuenta</span>
           <span className="text-right">Monto</span>
           <span />
         </div>
@@ -176,8 +176,8 @@ export function TransactionsTable({
                       width: '100%',
                     }}
                     className={cn(
-                      'grid grid-cols-[2rem_1fr_minmax(120px,1fr)_minmax(100px,1fr)_minmax(80px,auto)_2.5rem]',
-                      'gap-x-3 items-center border-b px-4 py-2 text-sm transition-colors last:border-0',
+                      'grid grid-cols-[1.5rem_1fr_auto_2rem] sm:grid-cols-[2rem_1fr_minmax(120px,1fr)_minmax(100px,1fr)_minmax(80px,auto)_2.5rem]',
+                      'gap-x-3 items-center border-b px-3 sm:px-4 py-2 text-sm transition-colors last:border-0',
                       isSelected ? 'bg-primary/5' : 'hover:bg-muted/40',
                     )}
                   >
@@ -190,12 +190,15 @@ export function TransactionsTable({
 
                     <div className="min-w-0">
                       <p className="truncate font-medium text-foreground">{tx.description ?? '—'}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        {/* Show category inline on mobile only */}
+                        {tx.category?.icon && <span className="sm:hidden">{tx.category.icon}</span>}
                         {format(new Date(tx.transaction_date + 'T00:00:00'), 'd MMM yyyy', { locale: es })}
+                        {tx.account?.name && <span className="sm:hidden">· {tx.account.name}</span>}
                       </p>
                     </div>
 
-                    <div className="min-w-0">
+                    <div className="hidden sm:block min-w-0">
                       {tx.category ? (
                         <span
                           className="inline-flex items-center gap-1 truncate text-xs"
@@ -211,7 +214,7 @@ export function TransactionsTable({
                       )}
                     </div>
 
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="hidden sm:block truncate text-xs text-muted-foreground">
                       {tx.account?.name ?? '—'}
                     </span>
 
