@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
-import { Menu, Sun, Moon, Monitor, LogOut, Settings } from 'lucide-react'
+import { Sun, Moon, Monitor, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import type { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { PeriodSelector } from '@/components/layout/PeriodSelector'
-import { useUIStore } from '@/stores/ui.store'
 import { signOut } from '@/app/(dashboard)/actions'
 
 interface Props {
@@ -31,7 +30,6 @@ const avatarLetter = (user: User | null) => {
 }
 
 export function Header({ user }: Props) {
-  const { toggleSidebar } = useUIStore()
   const { setTheme, resolvedTheme } = useTheme()
   const pathname = usePathname()
   const [, startTransition] = useTransition()
@@ -51,17 +49,6 @@ export function Header({ user }: Props) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
-      {/* Mobile sidebar toggle */}
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="lg:hidden"
-        onClick={toggleSidebar}
-        aria-label="Abrir menú"
-      >
-        <Menu className="size-5" />
-      </Button>
-
       {/* Period selector — centered, only on dashboard home */}
       <div className="flex flex-1 items-center justify-center">
         {showPeriodSelector && <PeriodSelector />}

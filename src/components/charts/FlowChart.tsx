@@ -90,18 +90,18 @@ export function FlowChart({ data, currency, locale }: Props) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
           <YAxis
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(v: number) =>
               new Intl.NumberFormat(locale, { notation: 'compact', currency, style: 'currency', maximumFractionDigits: 0 }).format(v)
             }
-            width={64}
+            width={52}
           />
           <Tooltip content={<CustomTooltip currency={currency} locale={locale} />} />
-          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8, color: 'hsl(var(--foreground))' }} />
           <Area type="monotone" dataKey="Ingresos" stroke="hsl(var(--chart-2))" fill="url(#gradIncome)" strokeWidth={2} dot={false} />
           <Area type="monotone" dataKey="Gastos" stroke="hsl(var(--chart-1))" fill="url(#gradExpenses)" strokeWidth={2} dot={false} />
           <Area type="monotone" dataKey="Neto" stroke="hsl(var(--chart-3))" fill="url(#gradNet)" strokeWidth={2} dot={false} strokeDasharray="4 2" />

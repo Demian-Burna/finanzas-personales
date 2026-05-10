@@ -51,7 +51,7 @@ export function ReportsClient({
 
   return (
     <Tabs defaultValue="monthly" className="flex-col space-y-6">
-      <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0">
+      <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0 overflow-x-auto flex-nowrap">
         <TabsTrigger value="monthly" className="rounded-none px-4 pb-3">Resumen mensual</TabsTrigger>
         <TabsTrigger value="category" className="rounded-none px-4 pb-3">Por categoría</TabsTrigger>
         <TabsTrigger value="cashflow" className="rounded-none px-4 pb-3">Flujo de caja</TabsTrigger>

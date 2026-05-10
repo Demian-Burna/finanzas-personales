@@ -177,7 +177,16 @@ export function CategoryBreakdownTab({ currency, locale }: Props) {
                     if (found) setDrillCat(found)
                   }}
                 >
-                  <Tooltip formatter={(v) => fmt(Number(v ?? 0), currency, locale)} />
+                  <Tooltip
+                    formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                    contentStyle={{
+                      fontSize: 11,
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      color: 'hsl(var(--foreground))',
+                    }}
+                  />
                 </Treemap>
               </ResponsiveContainer>
             </div>

@@ -124,11 +124,20 @@ export function MonthlySummaryTab({ stats, currency, locale, year, month, onMont
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weeklyData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="semana" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) =>
-                new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} width={64} />
-              <Tooltip formatter={(v) => fmt(Number(v ?? 0), currency, locale)} contentStyle={{ fontSize: 11 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} tickFormatter={(v: number) =>
+                new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} width={52} />
+              <Tooltip
+                formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                contentStyle={{
+                  fontSize: 11,
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  color: 'hsl(var(--foreground))',
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11, color: 'hsl(var(--foreground))' }} />
               <Bar dataKey="Ingresos" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Gastos" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
             </BarChart>

@@ -98,10 +98,19 @@ export function NetWorthTab({ snapshots, accounts, currency, locale }: Props) {
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={64}
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={52}
                 tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
-              <Tooltip formatter={(v) => fmt(Number(v ?? 0), currency, locale)} contentStyle={{ fontSize: 11 }} />
+              <Tooltip
+                formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                contentStyle={{
+                  fontSize: 11,
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  color: 'hsl(var(--foreground))',
+                }}
+              />
               <Line type="monotone" dataKey="Activos" stroke="#10b981" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="Pasivos" stroke="#ef4444" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="Patrimonio neto" stroke="#6366f1" strokeWidth={2.5} dot={false} />
@@ -122,10 +131,19 @@ export function NetWorthTab({ snapshots, accounts, currency, locale }: Props) {
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={waterfallData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={64}
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} width={52}
               tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} />
-            <Tooltip formatter={(v) => fmt(Math.abs(Number(v ?? 0)), currency, locale)} contentStyle={{ fontSize: 11 }} />
+            <Tooltip
+              formatter={(v) => fmt(Math.abs(Number(v ?? 0)), currency, locale)}
+              contentStyle={{
+                fontSize: 11,
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px',
+                color: 'hsl(var(--foreground))',
+              }}
+            />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {waterfallData.map((entry, i) => (
                 <Cell key={i} fill={entry.fill} />
