@@ -153,7 +153,7 @@ export function TransactionForm({
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                {...form.register('amount', { valueAsNumber: true })}
+                {...form.register('amount', { valueAsNumber: true, min: 0.01 })}
                 className="mt-1"
               />
               {form.formState.errors.amount && (
@@ -193,7 +193,7 @@ export function TransactionForm({
               control={form.control}
               name="account_id"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
                   <SelectTrigger className="mt-1 w-full">
                     <SelectValue placeholder="Seleccioná una cuenta" />
                   </SelectTrigger>

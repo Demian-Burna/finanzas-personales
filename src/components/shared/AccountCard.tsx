@@ -65,7 +65,7 @@ export function AccountsSection({ accounts, locale }: { accounts: AccountWithTyp
     <div className="rounded-xl border bg-card p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">Cuentas</h2>
-        <Link href="/accounts" className="text-xs text-primary hover:underline">
+        <Link href="/settings" className="text-xs text-primary hover:underline">
           Ver todas
         </Link>
       </div>
