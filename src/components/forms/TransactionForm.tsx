@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
 import { CurrencySelect } from '@/components/shared/CurrencySelect'
+import { ExchangeRateSelector } from './ExchangeRateSelector'
+import type { RateOption } from '@/lib/exchange-rates'
 import { transactionSchema, type TransactionFormValues } from '@/lib/validations/transaction'
 
 // Custom resolver: calls Zod directly, bypassing @hookform/resolvers v5 quirks with Zod v4
@@ -71,6 +73,7 @@ export function TransactionForm({
   isPending,
 }: Props) {
   const isEdit = !!transaction
+  const [selectedRateType, setSelectedRateType] = useState('oficial')
 
   const form = useForm<TransactionFormValues>({
     resolver: transactionResolver,
@@ -80,6 +83,8 @@ export function TransactionForm({
       transfer_account_id: null,
       category_id: null,
       currency_code: defaultCurrency,
+      exchange_rate: 1,
+      exchange_rate_type: 'oficial',
       amount: 0,
       description: '',
       notes: '',
@@ -87,6 +92,15 @@ export function TransactionForm({
       is_reconciled: false,
     },
   })
+
+  const watchedCurrency = form.watch('currency_code')
+  const watchedAmount = form.watch('amount')
+
+  function handleRateSelect(opt: RateOption) {
+    form.setValue('exchange_rate', opt.rate)
+    form.setValue('exchange_rate_type', opt.type)
+    setSelectedRateType(opt.type)
+  }
 
   const txType = form.watch('transaction_type')
   const isTransfer = txType === 'transfer'
@@ -202,6 +216,17 @@ export function TransactionForm({
               />
             </div>
           </div>
+
+          {/* Exchange rate selector — shown when currency differs from base */}
+          {watchedCurrency !== defaultCurrency && (
+            <ExchangeRateSelector
+              fromCurrency={watchedCurrency}
+              toCurrency={defaultCurrency}
+              amount={watchedAmount ?? 0}
+              selectedType={selectedRateType}
+              onSelect={handleRateSelect}
+            />
+          )}
 
           {/* Date */}
           <div>

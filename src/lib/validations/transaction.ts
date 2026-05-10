@@ -10,6 +10,8 @@ export const transactionSchema = z
     transfer_account_id: z.string().nullable().optional(),
     category_id: z.string().nullable().optional(),
     currency_code: z.string().min(3).max(3),
+    exchange_rate: z.coerce.number().positive().default(1),
+    exchange_rate_type: z.string().optional(),
     amount: z.coerce.number().positive('El monto debe ser mayor a 0'),
     description: z.string().min(1, 'La descripción es requerida').max(255),
     notes: z.string().max(1000).nullable().optional(),

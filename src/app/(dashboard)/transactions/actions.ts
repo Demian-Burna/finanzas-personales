@@ -28,7 +28,9 @@ export async function createTransactionAction(
   const { data: _authData } = await supabase.auth.getUser(); const user = _authData?.user ?? null
   if (!user) return { ok: false, error: 'No autenticado' }
 
-  const { transaction_type, transfer_account_id, ...rest } = parsed.data
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { transaction_type, transfer_account_id, exchange_rate, exchange_rate_type, ...rest } = parsed.data
+  const rate = exchange_rate ?? 1
 
   const { data, error } = await createTransaction(supabase, {
     ...rest,
@@ -36,9 +38,9 @@ export async function createTransactionAction(
     user_id: user.id,
     transfer_account_id: transaction_type === 'transfer' ? (transfer_account_id || null) : null,
     category_id: transaction_type === 'transfer' ? null : (rest.category_id || null),
-    amount_in_base_currency: rest.amount,
+    exchange_rate: rate,
+    amount_in_base_currency: Math.round(rest.amount * rate * 100) / 100,
     transfer_transaction_id: null,
-    exchange_rate: 1,
     value_date: null,
     recurring_item_id: null,
     attachment_url: null,
