@@ -22,7 +22,8 @@ interface Props {
 
 export function TransactionsClient({ accounts, categories, currency, locale }: Props) {
   const params = useSearchParams()
-  const [createOpen, setCreateOpen] = useState(false)
+  // Auto-open create form when navigated from the dashboard FAB (?new=1)
+  const [createOpen, setCreateOpen] = useState(() => params.get('new') === '1')
   const createMutation = useCreateTransaction()
 
   const filters = {

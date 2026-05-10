@@ -128,7 +128,7 @@ export function RecurringItemForm({
           <DialogTitle>{isEdit ? 'Editar recurrente' : 'Nuevo recurrente'}</DialogTitle>
         </DialogHeader>
 
-        <form noValidate className="space-y-4 pt-2">
+        <form noValidate className="space-y-4 pt-2 overflow-y-auto max-h-[70svh] pr-1">
           {/* Type toggle */}
           <div className="flex gap-1 rounded-lg border p-1">
             {(['income', 'expense'] as const).map((t) => (
@@ -200,7 +200,7 @@ export function RecurringItemForm({
               control={form.control}
               name="account_id"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={(v) => field.onChange(v)}>
                   <SelectTrigger className="mt-1 w-full">
                     <SelectValue>
                       {selectedAccount ? selectedAccount.name : <span className="text-muted-foreground">Seleccioná una cuenta</span>}
@@ -302,19 +302,21 @@ export function RecurringItemForm({
             </button>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={() => void form.handleSubmit(onSubmit)()}
-            >
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
-            </Button>
-          </div>
         </form>
+
+        {/* Actions outside the scroll container — always visible */}
+        <div className="flex justify-end gap-2 pt-3 border-t mt-3">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            disabled={isPending}
+            onClick={() => void form.handleSubmit(onSubmit)()}
+          >
+            {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )
