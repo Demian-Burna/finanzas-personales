@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { Search, X } from 'lucide-react'
+import { Search, X, ChevronDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,6 +27,9 @@ const TYPE_OPTIONS = [
   { value: 'transfer', label: 'Transferencias' },
 ]
 
+// Shared pill class for all three filter triggers
+const PILL = 'flex-1 h-8 rounded-full border border-input text-sm font-normal'
+
 export function TransactionFilters({ accounts, categories }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -48,8 +51,8 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
   const hasFilters = ['type', 'account', 'category', 'q'].some((k) => params.has(k))
 
-  const typeValue    = params.get('type') ?? undefined
-  const accountValue = params.get('account') ?? undefined
+  const typeValue     = params.get('type') ?? undefined
+  const accountValue  = params.get('account') ?? undefined
   const categoryValue = params.get('category') ?? undefined
 
   const selectedAccount = accounts.find((a) => a.id === accountValue)
@@ -57,22 +60,22 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
   return (
     <div className="flex-1 min-w-0 space-y-2">
-      {/* Row 1 — search */}
+      {/* Search */}
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <Input
           placeholder="Buscar por descripción..."
           defaultValue={params.get('q') ?? ''}
           onChange={(e) => update('q', e.target.value || null)}
-          className="pl-8 h-7 text-sm"
+          className="pl-8 h-8 text-sm rounded-full"
         />
       </div>
 
-      {/* Row 2 — type / account / category / clear */}
-      <div className="flex flex-wrap gap-2">
-        {/* Type */}
+      {/* Filter pills — all three identical pill shape, equal flex-1 */}
+      <div className="flex gap-1.5">
+        {/* Tipo */}
         <Select value={typeValue} onValueChange={(v) => update('type', v || null)}>
-          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[160px] h-7">
+          <SelectTrigger className={PILL}>
             <SelectValue>
               {selectedType
                 ? selectedType.label
@@ -86,9 +89,9 @@ export function TransactionFilters({ accounts, categories }: Props) {
           </SelectContent>
         </Select>
 
-        {/* Account */}
+        {/* Cuenta */}
         <Select value={accountValue} onValueChange={(v) => update('account', v || null)}>
-          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[180px] h-7">
+          <SelectTrigger className={PILL}>
             <SelectValue>
               {selectedAccount
                 ? selectedAccount.name
@@ -102,25 +105,24 @@ export function TransactionFilters({ accounts, categories }: Props) {
           </SelectContent>
         </Select>
 
-        {/* Category — searchable combobox, never overflows */}
+        {/* Categoría — pill prop makes it match the SelectTrigger style */}
         <CategoryCombobox
           categories={categories}
           value={categoryValue}
           onChange={(id) => update('category', id)}
           placeholder="Categoría"
-          className="flex-1 min-w-[90px] max-w-[200px] h-7"
+          pill
+          className="flex-1"
         />
 
         {hasFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={() => router.replace(pathname)}
-            className="gap-1 h-7 text-xs shrink-0"
+            className="flex items-center justify-center size-8 shrink-0 rounded-full border border-input text-muted-foreground hover:bg-muted transition-colors"
+            title="Limpiar filtros"
           >
-            <X className="size-3" />
-            Limpiar
-          </Button>
+            <X className="size-3.5" />
+          </button>
         )}
       </div>
     </div>

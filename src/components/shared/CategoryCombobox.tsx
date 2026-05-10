@@ -12,21 +12,19 @@ interface Props {
   onChange: (id: string | null) => void
   placeholder?: string
   className?: string
+  /** Use pill (rounded-full) trigger style — matches Tipo/Cuenta filters */
+  pill?: boolean
 }
 
 interface DropdownPos { top: number; left: number; width: number }
 
-/**
- * Searchable category picker — portal + fixed positioning so it is never
- * clipped by overflow:hidden parents or flex containers on mobile.
- * Trigger styled identically to the Base UI SelectTrigger (size=sm).
- */
 export function CategoryCombobox({
   categories,
   value,
   onChange,
   placeholder = 'Seleccioná una categoría',
   className,
+  pill = false,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -48,31 +46,32 @@ export function CategoryCombobox({
     if (!triggerRef.current) return
     const rect = triggerRef.current.getBoundingClientRect()
     const dropW = Math.max(240, rect.width)
-    const left = Math.min(rect.left, window.innerWidth - dropW - 8)
-    setPos({ top: rect.bottom + 4, left: Math.max(8, left), width: dropW })
+    // Center on narrow screens (<640), align to trigger on desktop
+    const left = window.innerWidth < 640
+      ? Math.max(8, (window.innerWidth - dropW) / 2)
+      : Math.min(rect.left, window.innerWidth - dropW - 8)
+    setPos({ top: rect.bottom + 6, left, width: dropW })
     setOpen(true)
   }
 
-  // Close on outside click — check both trigger and dropdown refs
+  // Outside-click: close when tapping outside trigger and dropdown
   useEffect(() => {
     if (!open) return
-    function handleClick(e: MouseEvent) {
+    function handler(e: PointerEvent) {
       const t = e.target as Node
       if (!triggerRef.current?.contains(t) && !dropdownRef.current?.contains(t)) {
         setOpen(false)
         setSearch('')
       }
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('pointerdown', handler)
+    return () => document.removeEventListener('pointerdown', handler)
   }, [open])
 
-  // Focus search input when opened
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 10)
   }, [open])
 
-  // Close on resize only (NOT scroll — iOS scroll fires on tap and closes immediately)
   useEffect(() => {
     if (!open) return
     const close = () => { setOpen(false); setSearch('') }
@@ -94,7 +93,7 @@ export function CategoryCombobox({
   const dropdown = (
     <div
       ref={dropdownRef}
-      className="fixed z-[200] rounded-lg bg-popover shadow-md ring-1 ring-foreground/10"
+      className="fixed z-[200] rounded-xl border bg-popover shadow-lg ring-1 ring-foreground/10"
       style={{ top: pos.top, left: pos.left, width: pos.width }}
     >
       <div className="border-b p-1.5">
@@ -103,7 +102,7 @@ export function CategoryCombobox({
           <input
             ref={inputRef}
             type="text"
-            placeholder="Buscar categoría..."
+            placeholder="Buscar..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-md bg-muted/30 py-1.5 pl-7 pr-2 text-sm outline-none"
@@ -118,14 +117,12 @@ export function CategoryCombobox({
             <button
               key={c.id}
               type="button"
-              onMouseDown={(e) => {
-                // Use mousedown + preventDefault to avoid the outside-click
-                // handler on document firing before onClick
-                e.preventDefault()
+              onPointerDown={(e) => {
+                e.preventDefault() // prevent outside-click handler from firing first
                 select(c.id)
               }}
               className={cn(
-                'flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm transition-colors',
+                'flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left text-sm transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
                 c.id === value && 'bg-accent/50',
               )}
@@ -142,34 +139,31 @@ export function CategoryCombobox({
 
   return (
     <div className={cn('relative', className)}>
-      {/* Trigger — styled identically to Base UI SelectTrigger size="sm" */}
       <button
         ref={triggerRef}
         type="button"
-        data-placeholder={!selected || undefined}
-        onClick={() => (open ? (setOpen(false), setSearch('')) : openDropdown())}
+        onPointerDown={(e) => {
+          // Use pointerDown + preventDefault to avoid double-fire on iOS
+          // (iOS fires both touchstart and a synthetic click from the same tap)
+          e.preventDefault()
+          if (open) { setOpen(false); setSearch('') } else openDropdown()
+        }}
         className={cn(
-          // Matches SelectTrigger base classes exactly
-          'flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none',
-          'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50',
+          'flex w-full items-center justify-between gap-1 border border-input bg-transparent text-sm transition-colors outline-none select-none',
+          'hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring',
           'dark:bg-input/30 dark:hover:bg-input/50',
-          // Size sm height
-          'h-7',
-          // Placeholder colour
+          pill
+            ? 'h-8 rounded-full px-3 py-1'
+            : 'h-9 rounded-lg px-2.5 py-2',
           !selected && 'text-muted-foreground',
-          open && 'border-ring ring-3 ring-ring/50',
-          // Allow parent to override width
-          'w-full',
+          open && 'ring-2 ring-ring border-ring',
         )}
       >
-        <span className="flex-1 truncate text-left line-clamp-1">
+        <span className="flex-1 truncate text-left">
           {selected ? `${selected.icon ?? ''} ${selected.name}` : placeholder}
         </span>
         {selected ? (
-          <X
-            className="size-4 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={clear}
-          />
+          <X className="size-3.5 shrink-0 text-muted-foreground" onClick={clear} />
         ) : (
           <ChevronDown className="size-4 shrink-0 text-muted-foreground pointer-events-none" />
         )}

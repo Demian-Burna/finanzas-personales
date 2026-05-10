@@ -41,7 +41,7 @@ export default function RecurringPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Recurrentes</h1>
-        <p className="text-sm text-muted-foreground">Ingresos y gastos que se repiten periÃ³dicamente</p>
+        <p className="text-sm text-muted-foreground">Ingresos y gastos que se repiten mensual o anualmente</p>
       </div>
       <Suspense fallback={<Skeleton />}>
         <RecurringData />

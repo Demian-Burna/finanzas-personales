@@ -2,7 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Edit, Power, PowerOff, Trash2, Clock, CreditCard, Check } from 'lucide-react'
+import { Plus, MoreHorizontal, Edit, Power, PowerOff, Trash2, Clock, CreditCard } from 'lucide-react'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -147,74 +150,89 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
               const isExpense = item.transaction_type === 'expense'
               return (
                 <div key={item.id} className={cn(
-                  'flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm transition-opacity',
+                  'flex items-center gap-2 rounded-xl border bg-card px-3 py-2.5 shadow-sm transition-opacity',
                   !item.is_active && 'opacity-50',
                 )}>
-                  {/* Category icon / color dot */}
-                  <span className="size-9 shrink-0 flex items-center justify-center rounded-full bg-muted text-base">
+                  {/* Icon */}
+                  <span className="size-8 shrink-0 flex items-center justify-center rounded-full bg-muted text-sm">
                     {item.category?.icon ?? (isExpense ? '💸' : '💰')}
                   </span>
 
+                  {/* Description + meta */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium truncate">{item.description}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-sm font-medium truncate leading-tight">{item.description}</p>
                       {badge && (
-                        <span className={cn('text-[10px] font-medium rounded-full px-2 py-0.5', badge.className)}>
+                        <span className={cn('shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 whitespace-nowrap', badge.className)}>
                           {badge.label}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                       {item.account?.name ?? '—'}
-                      {item.next_occurrence_date && ` · Próxima: ${format(parseISO(item.next_occurrence_date), 'd MMM', { locale: es })}`}
+                      {item.next_occurrence_date && ` · ${format(parseISO(item.next_occurrence_date), 'd MMM', { locale: es })}`}
                     </p>
                   </div>
 
-                  <span className={cn('text-sm font-semibold tabular-nums shrink-0',
+                  {/* Amount */}
+                  <span className={cn(
+                    'text-sm font-semibold tabular-nums shrink-0 whitespace-nowrap',
                     isExpense ? 'text-red-500 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400',
                   )}>
                     {isExpense ? '-' : '+'}{formatCurrency(item.amount, item.currency_code ?? currency, locale)}
                   </span>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* Pay now — only for active expense/income items */}
-                    {item.is_active && (
-                      payNowConfirm === item.id ? (
-                        <button
-                          onClick={() => handlePayNow(item.id)}
-                          disabled={isPending}
-                          className="flex size-7 items-center justify-center rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 transition-colors"
-                          title="Confirmar pago"
+                  {/* Actions — single "···" menu keeps card width consistent on mobile */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors focus:outline-none">
+                      <MoreHorizontal className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      {item.is_active && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handlePayNow(item.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <CreditCard className="size-3.5" />
+                            Registrar pago
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onClick={() => setEditItem(item)} className="flex items-center gap-2">
+                        <Edit className="size-3.5" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleToggle(item.id, !item.is_active)}
+                        className="flex items-center gap-2"
+                      >
+                        {item.is_active ? <PowerOff className="size-3.5" /> : <Power className="size-3.5" />}
+                        {item.is_active ? 'Desactivar' : 'Activar'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {deleteConfirm === item.id ? (
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(item.id)}
+                          variant="destructive"
+                          className="flex items-center gap-2"
                         >
-                          <Check className="size-3.5" />
-                        </button>
+                          <Trash2 className="size-3.5" />
+                          Confirmar eliminación
+                        </DropdownMenuItem>
                       ) : (
-                        <button
-                          onClick={() => setPayNowConfirm(item.id)}
-                          className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors"
-                          title="Registrar pago ahora"
+                        <DropdownMenuItem
+                          onClick={() => setDeleteConfirm(item.id)}
+                          variant="destructive"
+                          className="flex items-center gap-2"
                         >
-                          <CreditCard className="size-3.5" />
-                        </button>
-                      )
-                    )}
-                    <button onClick={() => setEditItem(item)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors" title="Editar">
-                      <Edit className="size-3.5" />
-                    </button>
-                    <button onClick={() => handleToggle(item.id, !item.is_active)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors" title={item.is_active ? 'Desactivar' : 'Activar'}>
-                      {item.is_active ? <PowerOff className="size-3.5" /> : <Power className="size-3.5" />}
-                    </button>
-                    {deleteConfirm === item.id ? (
-                      <button onClick={() => handleDelete(item.id)} className="flex size-7 items-center justify-center rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition-colors" title="Confirmar">
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    ) : (
-                      <button onClick={() => setDeleteConfirm(item.id)} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors" title="Eliminar">
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    )}
-                  </div>
+                          <Trash2 className="size-3.5" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )
             })}
