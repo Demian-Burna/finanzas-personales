@@ -21,9 +21,8 @@ interface Props {
 }
 
 const TYPE_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'income', label: 'Ingresos' },
-  { value: 'expense', label: 'Gastos' },
+  { value: 'income',   label: 'Ingresos' },
+  { value: 'expense',  label: 'Gastos' },
   { value: 'transfer', label: 'Transferencias' },
 ]
 
@@ -35,12 +34,12 @@ export function TransactionFilters({ accounts, categories }: Props) {
   const update = useCallback(
     (key: string, value: string | null) => {
       const next = new URLSearchParams(params.toString())
-      if (value && value !== 'all') {
+      if (value) {
         next.set(key, value)
       } else {
         next.delete(key)
       }
-      next.delete('cursor') // reset pagination on filter change
+      next.delete('cursor')
       router.replace(`${pathname}?${next.toString()}`)
     },
     [params, pathname, router],
@@ -48,82 +47,85 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
   const hasFilters = ['type', 'account', 'category', 'q'].some((k) => params.has(k))
 
-  function clearFilters() {
-    router.replace(pathname)
-  }
+  const typeValue   = params.get('type') ?? undefined
+  const accountValue   = params.get('account') ?? undefined
+  const categoryValue  = params.get('category') ?? undefined
+
+  const selectedAccount  = accounts.find(a => a.id === accountValue)
+  const selectedCategory = categories.find(c => c.id === categoryValue)
+  const selectedType     = TYPE_OPTIONS.find(o => o.value === typeValue)
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
-      {/* Search */}
-      <div className="relative flex-1 min-w-[180px] max-w-xs">
+    <div className="flex-1 min-w-0 space-y-2">
+      {/* Row 1 — search */}
+      <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <Input
-          placeholder="Buscar..."
+          placeholder="Buscar por descripción..."
           defaultValue={params.get('q') ?? ''}
           onChange={(e) => update('q', e.target.value || null)}
-          className="pl-8 h-8 text-sm"
+          className="pl-8 h-9 text-sm"
         />
       </div>
 
-      {/* Type */}
-      <Select
-        value={params.get('type') ?? 'all'}
-        onValueChange={(v) => update('type', v)}
-      >
-        <SelectTrigger size="sm" className="w-[130px]">
-          <SelectValue placeholder="Tipo" />
-        </SelectTrigger>
-        <SelectContent>
-          {TYPE_OPTIONS.map((o) => (
-            <SelectItem key={o.value} value={o.value}>
-              {o.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Row 2 — type / account / category / clear */}
+      <div className="flex flex-wrap gap-2">
+        {/* Type */}
+        <Select value={typeValue} onValueChange={(v) => update('type', v || null)}>
+          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[160px] h-9">
+            <SelectValue>
+              {selectedType ? selectedType.label : <span className="text-muted-foreground">Tipo</span>}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {TYPE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Account */}
-      <Select
-        value={params.get('account') ?? 'all'}
-        onValueChange={(v) => update('account', v)}
-      >
-        <SelectTrigger size="sm" className="w-[140px]">
-          <SelectValue placeholder="Cuenta" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todas las cuentas</SelectItem>
-          {accounts.map((a) => (
-            <SelectItem key={a.id} value={a.id}>
-              {a.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Account */}
+        <Select value={accountValue} onValueChange={(v) => update('account', v || null)}>
+          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[180px] h-9">
+            <SelectValue>
+              {selectedAccount ? selectedAccount.name : <span className="text-muted-foreground">Cuenta</span>}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {accounts.map((a) => (
+              <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Category */}
-      <Select
-        value={params.get('category') ?? 'all'}
-        onValueChange={(v) => update('category', v)}
-      >
-        <SelectTrigger size="sm" className="w-[150px]">
-          <SelectValue placeholder="Categoría" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todas las categorías</SelectItem>
-          {categories.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.icon ?? ''} {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Category */}
+        <Select value={categoryValue} onValueChange={(v) => update('category', v || null)}>
+          <SelectTrigger size="sm" className="flex-1 min-w-[90px] max-w-[200px] h-9">
+            <SelectValue>
+              {selectedCategory
+                ? <span>{selectedCategory.icon ?? ''} {selectedCategory.name}</span>
+                : <span className="text-muted-foreground">Categoría</span>}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.icon ?? ''} {c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 h-8 text-xs">
-          <X className="size-3" />
-          Limpiar
-        </Button>
-      )}
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.replace(pathname)}
+            className="gap-1 h-9 text-xs shrink-0"
+          >
+            <X className="size-3" />
+            Limpiar
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

@@ -220,7 +220,7 @@ export function TransactionsTable({
 
                     <span
                       className={cn(
-                        'text-right text-sm font-semibold tabular-nums',
+                        'text-right text-sm font-semibold tabular-nums whitespace-nowrap shrink-0',
                         isExpense
                           ? 'text-red-500 dark:text-red-400'
                           : 'text-emerald-600 dark:text-emerald-400',

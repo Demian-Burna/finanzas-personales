@@ -49,10 +49,15 @@ export function TransactionsClient({ accounts, categories, currency, locale }: P
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-start gap-3">
+      {/* Toolbar: filters take full width, Nueva button anchored top-right on desktop */}
+      <div className="flex items-start gap-3">
         <TransactionFilters accounts={accounts} categories={categories} />
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="ml-auto gap-1.5 h-8">
+        {/* Hidden on mobile — FAB handles it */}
+        <Button
+          onClick={() => setCreateOpen(true)}
+          size="sm"
+          className="hidden sm:inline-flex shrink-0 gap-1.5 h-9 mt-0"
+        >
           <Plus className="size-4" />
           Nueva
         </Button>
