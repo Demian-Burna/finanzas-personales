@@ -59,7 +59,6 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
   const [formOpen, setFormOpen] = useState(false)
   const [editItem, setEditItem] = useState<RecurringItemWithRelations | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [_payNowConfirm, setPayNowConfirm] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // Group by frequency
@@ -96,7 +95,6 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
   }
 
   function handleToggle(id: string, isActive: boolean) {
-    setPayNowConfirm(null)
     startTransition(async () => {
       const res = await toggleRecurringItemAction(id, isActive)
       if (!res.ok) toast.error(res.error)
@@ -109,8 +107,7 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
       const res = await registerRecurringNowAction(id)
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Pago registrado y próxima fecha actualizada')
-      setPayNowConfirm(null)
-      router.refresh()
+        router.refresh()
     })
   }
 
