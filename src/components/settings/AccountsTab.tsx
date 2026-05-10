@@ -313,12 +313,20 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4 max-w-2xl mx-auto lg:mx-0">
+      {/* Desktop: button in header. Mobile: FAB */}
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5">
+        <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 hidden sm:inline-flex">
           <Plus className="size-4" /> Nueva cuenta
         </Button>
       </div>
+      <button
+        onClick={() => setFormOpen(true)}
+        className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden"
+        aria-label="Nueva cuenta"
+      >
+        <Plus className="size-5" />
+      </button>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={accounts.map((a) => a.id)} strategy={verticalListSortingStrategy}>

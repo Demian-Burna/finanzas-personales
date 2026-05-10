@@ -146,6 +146,14 @@ export async function createGoalTransactionAction(input: {
   return { ok: true, data: { id: data.id } }
 }
 
+export async function deleteGoalAction(id: string): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { error } = await supabase.from('saving_goals').delete().eq('id', id)
+  if (error) return { ok: false, error: error.message }
+  revalidatePath('/goals')
+  return { ok: true, data: undefined }
+}
+
 export async function updateGoalStatusAction(id: string, status: 'active' | 'paused' | 'cancelled'): Promise<ActionResult> {
   const supabase = await createClient()
   const { error } = await updateSavingGoal(supabase, id, { status } as never)

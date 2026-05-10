@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Target } from 'lucide-react'
+import { Plus, Target, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { createGoalAction, updateGoalAction, addContributionAction, updateGoalStatusAction, createGoalTransactionAction } from '@/app/(dashboard)/goals/actions'
+import { createGoalAction, updateGoalAction, addContributionAction, updateGoalStatusAction, createGoalTransactionAction, deleteGoalAction } from '@/app/(dashboard)/goals/actions'
 
 interface Props {
   goals: SavingGoalWithContributions[]
@@ -30,13 +30,14 @@ function formatCurrency(value: number, currency: string, locale: string) {
 }
 
 
-function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
+function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause, onDelete }: {
   goal: SavingGoalWithContributions
   currency: string
   locale: string
   onContribute: (goal: SavingGoalWithContributions) => void
   onEdit: (goal: SavingGoalWithContributions) => void
   onPause: (id: string, status: 'active' | 'paused') => void
+  onDelete: (id: string) => void
 }) {
   const pct = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0
   const remaining = goal.target_amount - goal.current_amount
@@ -167,6 +168,15 @@ function GoalCard({ goal, currency, locale, onContribute, onEdit, onPause }: {
             </Button>
             <Button variant="ghost" size="sm" onClick={() => onPause(goal.id, isPaused ? 'active' : 'paused')} className="text-xs h-8">
               {isPaused ? 'Reanudar' : 'Pausar'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(goal.id)}
+              className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              title="Eliminar meta"
+            >
+              <Trash2 className="size-3.5" />
             </Button>
           </div>
         )}
@@ -314,6 +324,14 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
     })
   }
 
+  function handleDeleteGoal(id: string) {
+    startTransition(async () => {
+      const res = await deleteGoalAction(id)
+      if (!res.ok) { toast.error(res.error); return }
+      toast.success('Meta eliminada')
+    })
+  }
+
   function handlePause(id: string, status: 'active' | 'paused') {
     startTransition(async () => {
       const res = await updateGoalStatusAction(id, status)
@@ -349,7 +367,7 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {active.map((g) => (
               <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
-                onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} />
+                onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
             ))}
           </div>
           {completed.length > 0 && (
@@ -358,7 +376,7 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {completed.map((g) => (
                   <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
-                    onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} />
+                    onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
                 ))}
               </div>
             </div>

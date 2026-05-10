@@ -75,8 +75,8 @@ export default async function SettingsPage({
             </TabsList>
           </aside>
 
-          {/* Content area — full remaining width, no max-w restriction */}
-          <div className="flex-1 min-w-0 w-full">
+          {/* Content area */}
+          <div className="flex-1 min-w-0 w-full max-w-2xl lg:max-w-none">
             <TabsContent value="profile">
               <ProfileTab profile={profile} userEmail={user?.email ?? null} />
             </TabsContent>

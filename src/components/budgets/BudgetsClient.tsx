@@ -13,6 +13,7 @@ import {
   createBudgetAction,
   updateBudgetAction,
   toggleBudgetActiveAction,
+  deleteBudgetAction,
 } from '@/app/(dashboard)/budgets/actions'
 
 interface Props {
@@ -57,6 +58,14 @@ export function BudgetsClient({ budgets, categories, currency, locale }: Props) 
       if (!res.ok) { toast.error(res.error); return }
       toast.success('Presupuesto actualizado')
       setEditBudget(null)
+    })
+  }
+
+  function handleDelete(id: string) {
+    startTransition(async () => {
+      const res = await deleteBudgetAction(id)
+      if (!res.ok) { toast.error(res.error); return }
+      toast.success('Presupuesto eliminado')
     })
   }
 
@@ -142,6 +151,7 @@ export function BudgetsClient({ budgets, categories, currency, locale }: Props) 
               locale={locale}
               onEdit={(budget) => setEditBudget(budget)}
               onToggleActive={handleToggleActive}
+              onDelete={handleDelete}
             />
           ))}
         </div>

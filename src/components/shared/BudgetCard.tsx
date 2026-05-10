@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MoreHorizontal, Edit, PowerOff, Power } from 'lucide-react'
+import { MoreHorizontal, Edit, PowerOff, Power, Trash2 } from 'lucide-react'
 import type { BudgetWithProgress } from '@/lib/supabase/queries/budgets'
 import {
   DropdownMenu,
@@ -47,9 +47,10 @@ interface Props {
   locale: string
   onEdit: (budget: BudgetWithProgress) => void
   onToggleActive: (id: string, isActive: boolean) => void
+  onDelete: (id: string) => void
 }
 
-export function BudgetCard({ budget, locale, onEdit, onToggleActive }: Props) {
+export function BudgetCard({ budget, locale, onEdit, onToggleActive, onDelete }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const currency = budget.currency_code
@@ -108,6 +109,15 @@ export function BudgetCard({ budget, locale, onEdit, onToggleActive }: Props) {
                 ? <><PowerOff className="size-3.5" /> Desactivar</>
                 : <><Power className="size-3.5" /> Activar</>
               }
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => { setMenuOpen(false); onDelete(budget.id) }}
+              variant="destructive"
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="size-3.5" />
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
