@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import { getTransactions } from '@/lib/supabase/queries/transactions'
+import type { TransactionWithRelations } from '@/lib/supabase/queries/transactions'
 import { cn } from '@/lib/utils'
 
 interface Props {
+  transactions: TransactionWithRelations[]
   currency: string
   locale: string
 }
@@ -24,10 +24,7 @@ function formatCurrency(value: number, currency: string, locale: string) {
   }).format(value)
 }
 
-export async function RecentTransactionsSection({ currency, locale }: Props) {
-  const supabase = await createClient()
-  const { data: transactions } = await getTransactions(supabase, { pageSize: 5 })
-
+export function RecentTransactionsSection({ transactions, currency, locale }: Props) {
   return (
     <div className="rounded-xl border bg-card p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
@@ -56,12 +53,17 @@ export async function RecentTransactionsSection({ currency, locale }: Props) {
                 const isExpense = tx.transaction_type === 'expense'
                 const txCurrency = tx.currency_code ?? currency
                 return (
-                  <tr key={tx.id} className="border-b last:border-0 hover:bg-muted/40 transition-colors">
+                  <tr
+                    key={tx.id}
+                    className="border-b last:border-0 hover:bg-muted/40 transition-colors"
+                  >
                     <td className="py-2 pl-1 text-muted-foreground whitespace-nowrap">
                       {formatDate(tx.transaction_date, locale)}
                     </td>
                     <td className="py-2 max-w-[140px]">
-                      <span className="truncate block text-foreground">{tx.description ?? '—'}</span>
+                      <span className="truncate block text-foreground">
+                        {tx.description ?? '—'}
+                      </span>
                     </td>
                     <td className="py-2 hidden sm:table-cell">
                       {tx.category ? (
@@ -84,10 +86,13 @@ export async function RecentTransactionsSection({ currency, locale }: Props) {
                     <td
                       className={cn(
                         'py-2 pr-1 text-right tabular-nums font-medium whitespace-nowrap',
-                        isExpense ? 'text-red-500 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400',
+                        isExpense
+                          ? 'text-red-500 dark:text-red-400'
+                          : 'text-emerald-600 dark:text-emerald-400',
                       )}
                     >
-                      {isExpense ? '-' : '+'}{formatCurrency(Math.abs(tx.amount), txCurrency, locale)}
+                      {isExpense ? '-' : '+'}
+                      {formatCurrency(Math.abs(tx.amount), txCurrency, locale)}
                     </td>
                   </tr>
                 )

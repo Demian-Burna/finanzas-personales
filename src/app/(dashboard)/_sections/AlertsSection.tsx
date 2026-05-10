@@ -1,17 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
-import { getBudgetsWithProgress } from '@/lib/supabase/queries/budgets'
+import type { BudgetWithProgress } from '@/lib/supabase/queries/budgets'
 import { AlertBanner } from '@/components/shared/AlertBanner'
 
 interface Props {
-  referenceDate: string
+  budgets: BudgetWithProgress[]
   locale: string
 }
 
-export async function AlertsSection({ referenceDate, locale }: Props) {
-  const supabase = await createClient()
-  const { data: budgets } = await getBudgetsWithProgress(supabase, referenceDate)
-
-  // Budgets at or above 80% of limit
+export function AlertsSection({ budgets, locale }: Props) {
   const budgetsOverLimit = budgets.filter(
     (b) => b.amount > 0 && b.spent_amount / b.amount >= 0.8,
   )

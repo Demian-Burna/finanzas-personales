@@ -1,19 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import { getAccounts } from '@/lib/supabase/queries/accounts'
+import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import { AccountsSection as AccountsSectionUI, AccountsSkeleton } from '@/components/shared/AccountCard'
 
 interface Props {
+  accounts: AccountWithType[]
   locale: string
 }
 
-export async function AccountsSection({ locale }: Props) {
-  const supabase = await createClient()
-  const { data: accounts } = await getAccounts(supabase)
-
+export function AccountsSection({ accounts, locale }: Props) {
   if (!accounts.length) {
     return <AccountsSkeleton />
   }
-
   return <AccountsSectionUI accounts={accounts} locale={locale} />
 }
 

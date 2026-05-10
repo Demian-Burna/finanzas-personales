@@ -1,30 +1,25 @@
-import { createClient } from '@/lib/supabase/server'
-import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
 import { StatCard, StatCardSkeleton } from '@/components/shared/StatCard'
+import type { DashboardStats } from '@/lib/supabase/queries/dashboard'
 
 interface Props {
-  referenceDate: string
+  data: DashboardStats | null
   currency: string
   locale: string
 }
 
-export async function StatsSection({ referenceDate, currency, locale }: Props) {
-  const supabase = await createClient()
-  const { data } = await getDashboardStats(supabase, referenceDate)
-
+export function StatsSection({ data, currency, locale }: Props) {
   if (!data) {
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
-      </div>
-    )
+    return <StatsSectionSkeleton />
   }
 
-  // RPC already returns savings_rate as a percentage (e.g. 35.5 means 35.5%)
+  // RPC returns savings_rate as a percentage already (e.g. 35.5 = 35.5%)
   const savingsRate = data.current_month.savings_rate
-  const prevSavingsRate = data.previous_month.income > 0
-    ? ((data.previous_month.income - data.previous_month.expenses) / data.previous_month.income) * 100
-    : 0
+  const prevSavingsRate =
+    data.previous_month.income > 0
+      ? ((data.previous_month.income - data.previous_month.expenses) /
+          data.previous_month.income) *
+        100
+      : 0
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -64,7 +59,9 @@ export async function StatsSection({ referenceDate, currency, locale }: Props) {
 export function StatsSectionSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
+      {Array.from({ length: 4 }).map((_, i) => (
+        <StatCardSkeleton key={i} />
+      ))}
     </div>
   )
 }
