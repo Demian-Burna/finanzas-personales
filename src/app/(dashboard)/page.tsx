@@ -65,26 +65,26 @@ export default async function OverviewPage({
       </div>
 
       {/* Alerts */}
-      <Suspense fallback={null}>
+      <Suspense key={`alerts-${referenceDate}`} fallback={null}>
         <AlertsSection referenceDate={referenceDate} locale={locale} />
       </Suspense>
 
       {/* Stats cards */}
-      <Suspense fallback={<StatsSectionSkeleton />}>
+      <Suspense key={`stats-${referenceDate}`} fallback={<StatsSectionSkeleton />}>
         <StatsSection referenceDate={referenceDate} currency={currency} locale={locale} />
       </Suspense>
 
       {/* Charts */}
-      <Suspense fallback={<ChartsSectionSkeleton />}>
+      <Suspense key={`charts-${referenceDate}`} fallback={<ChartsSectionSkeleton />}>
         <ChartsSection referenceDate={referenceDate} currency={currency} locale={locale} />
       </Suspense>
 
       {/* Accounts + recent transactions */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <Suspense fallback={<AccountsSkeleton />}>
+        <Suspense key={`accounts-${referenceDate}`} fallback={<AccountsSkeleton />}>
           <AccountsSection locale={locale} />
         </Suspense>
-        <Suspense fallback={<RecentTransactionsSkeleton />}>
+        <Suspense key={`recent-${referenceDate}`} fallback={<RecentTransactionsSkeleton />}>
           <RecentTransactionsSection currency={currency} locale={locale} />
         </Suspense>
       </div>

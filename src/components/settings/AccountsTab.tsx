@@ -197,14 +197,22 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
             </div>
           </div>
 
-          {/* Color — full width with hex preview */}
+          {/* Color — circle preview + color picker */}
           <div>
             <Label>Color de identificación</Label>
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex items-center gap-3">
+              {/* Live preview circle — shows exactly how the account avatar will look */}
+              <span
+                className="flex size-10 shrink-0 items-center justify-center rounded-full text-lg shadow-sm ring-1 ring-border"
+                style={{ background: form.watch('color') ?? '#6366f1' }}
+              >
+                {accountTypes.find((t) => t.id === selectedTypeId)?.icon ?? '🏦'}
+              </span>
+              {/* Color picker + hex input */}
               <input
                 type="color"
                 {...form.register('color')}
-                className="h-9 w-12 shrink-0 cursor-pointer rounded-md border p-0.5"
+                className="h-9 w-10 shrink-0 cursor-pointer rounded-md border p-0.5"
               />
               <Input
                 value={form.watch('color') ?? '#6366f1'}
