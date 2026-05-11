@@ -37,9 +37,7 @@ export default function AuthCompletePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-primary text-2xl text-primary-foreground shadow-sm">
-        💰
-      </div>
+      <img src="/logo-icono.svg" alt="Finanzas Personales" width={56} height={56} />
       <div className="space-y-1">
         <p className="text-lg font-semibold">Inicio de sesión exitoso</p>
         <p className="text-sm text-muted-foreground">Volvé a la pestaña anterior para continuar.</p>

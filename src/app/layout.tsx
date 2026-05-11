@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     title: 'Finanzas Personales',
     description: 'Gestiona tus finanzas personales de forma inteligente',
     type: 'website',
+    images: [{ url: '/og', width: 600, height: 180 }],
   },
 }
 

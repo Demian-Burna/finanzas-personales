@@ -50,9 +50,7 @@ export default async function LoginPage({
       <MagicLinkListener />
       <div className="w-full max-w-sm space-y-8">
         <div className="space-y-3 text-center">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary text-2xl text-primary-foreground shadow-sm">
-            💰
-          </div>
+          <img src="/logo-icono.svg" alt="Finanzas Personales" width={56} height={56} className="mx-auto" />
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">Finanzas Personales</h1>
             <p className="text-sm text-muted-foreground">Controlá tus finanzas de forma inteligente</p>

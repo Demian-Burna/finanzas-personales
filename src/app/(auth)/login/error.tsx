@@ -10,9 +10,7 @@ export default function LoginError({
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6 text-center">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary text-2xl text-primary-foreground shadow-sm">
-          💰
-        </div>
+        <img src="/logo-icono.svg" alt="Finanzas Personales" width={56} height={56} className="mx-auto" />
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Error al cargar</h2>
           <p className="text-sm text-muted-foreground">{error.message}</p>
