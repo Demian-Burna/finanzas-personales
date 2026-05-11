@@ -57,6 +57,7 @@ export async function signInWithMagicLink(formData: FormData) {
   })
 
   if (error) {
+    console.error('[magic-link] signInWithOtp error:', error.message, error.status)
     redirect('/login?error=magic_link_error')
   }
 
