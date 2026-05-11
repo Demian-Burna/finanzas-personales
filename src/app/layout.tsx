@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   description: 'Gestiona tus finanzas personales de forma inteligente',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo-icono.svg',
+    apple: '/logo-icono.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
