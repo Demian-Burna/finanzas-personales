@@ -58,6 +58,10 @@ export async function signInWithMagicLink(formData: FormData) {
 
   if (error) {
     console.error('[magic-link] signInWithOtp error:', error.message, error.status)
+    // 429 means an email was already sent recently — treat as success since the link is still valid
+    if (error.status === 429) {
+      redirect(`/login?magic_sent=1&email=${encodeURIComponent(email)}`)
+    }
     redirect('/login?error=magic_link_error')
   }
 
