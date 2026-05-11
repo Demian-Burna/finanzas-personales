@@ -6,11 +6,12 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase/env'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/'
 
-  if (!tokenHash || !type) {
+  if (!code && (!tokenHash || !type)) {
     return NextResponse.redirect(new URL('/login?error=invalid_link', origin))
   }
 
@@ -30,10 +31,18 @@ export async function GET(request: NextRequest) {
   })
 
   try {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+    let authError: { message: string } | null = null
 
-    if (error) {
-      console.error('[confirm] verifyOtp:', error.message)
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      authError = error
+    } else {
+      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: type! })
+      authError = error
+    }
+
+    if (authError) {
+      console.error('[confirm] auth error:', authError.message)
       return NextResponse.redirect(new URL('/login?error=auth_error', origin))
     }
 
