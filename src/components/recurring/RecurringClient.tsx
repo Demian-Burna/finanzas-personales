@@ -136,6 +136,11 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
 
   return (
     <div className="space-y-6">
+      <div className="hidden lg:flex justify-end">
+        <Button onClick={() => setFormOpen(true)} size="sm" className="gap-1.5">
+          <Plus className="size-4" /> Nuevo recurrente
+        </Button>
+      </div>
       {sortedGroups.map(([freq, freqItems]) => (
         <section key={freq}>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
