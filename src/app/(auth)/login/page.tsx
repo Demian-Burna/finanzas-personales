@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { signInWithGoogle, signInWithMagicLink } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { MagicLinkListener } from './MagicLinkListener'
 
 export const metadata: Metadata = { title: 'Iniciar sesión' }
 
@@ -82,6 +83,7 @@ export default async function LoginPage({
 
           {magicSent ? (
             <div className="rounded-lg bg-muted px-4 py-4 text-center text-sm space-y-1">
+              <MagicLinkListener />
               <p className="font-medium">Revisá tu bandeja de entrada</p>
               {sentEmail && (
                 <p className="text-muted-foreground">

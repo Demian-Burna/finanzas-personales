@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
     const profile = profileRaw as { onboarding_completed_at: string | null } | null
     const destination = profile?.onboarding_completed_at ? next : '/onboarding'
 
-    redirectResponse.headers.set('location', new URL(destination, origin).toString())
+    const completeUrl = new URL('/auth/complete', origin)
+    completeUrl.searchParams.set('next', destination)
+    redirectResponse.headers.set('location', completeUrl.toString())
     return redirectResponse
   } catch (err) {
     console.error('[confirm] unexpected error:', err)
