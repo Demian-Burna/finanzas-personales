@@ -47,6 +47,7 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <MagicLinkListener />
       <div className="w-full max-w-sm space-y-8">
         <div className="space-y-3 text-center">
           <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary text-2xl text-primary-foreground shadow-sm">
@@ -83,7 +84,6 @@ export default async function LoginPage({
 
           {magicSent ? (
             <div className="rounded-lg bg-muted px-4 py-4 text-center text-sm space-y-1">
-              <MagicLinkListener />
               <p className="font-medium">Revisá tu bandeja de entrada</p>
               {sentEmail && (
                 <p className="text-muted-foreground">
