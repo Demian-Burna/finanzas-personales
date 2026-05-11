@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { signInWithGoogle } from './actions'
+import { signInWithGoogle, signInWithMagicLink } from './actions'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const metadata: Metadata = { title: 'Iniciar sesión' }
 
@@ -15,40 +16,32 @@ function GoogleIcon() {
   )
 }
 
-function GoogleSignInButton({ error }: { error?: string }) {
-  return (
-    <div className="space-y-4">
-      {error && (
-        <p className="rounded-lg bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
-          {error === 'oauth_error' && 'Error al conectar con Google. Intentá de nuevo.'}
-          {error === 'auth_error' && 'Error de autenticación. Intentá de nuevo.'}
-          {!['oauth_error', 'auth_error'].includes(error) && 'Ocurrió un error. Intentá de nuevo.'}
-        </p>
-      )}
-      <form action={signInWithGoogle}>
-        <Button type="submit" variant="outline" size="lg" className="w-full gap-3 text-sm font-medium">
-          <GoogleIcon />
-          Continuar con Google
-        </Button>
-      </form>
-    </div>
-  )
+const ERROR_MESSAGES: Record<string, string> = {
+  oauth_error: 'Error al conectar con Google. Intentá de nuevo.',
+  auth_error: 'Error de autenticación. Intentá de nuevo.',
+  magic_link_error: 'No pudimos enviar el email. Intentá de nuevo.',
+  invalid_email: 'Ingresá un email válido.',
+  invalid_link: 'El link es inválido o expiró.',
 }
 
-// searchParams can be sync (Next.js 14) or async (Next.js 15+)
-// Being defensive here supports both and avoids TypeError in serverless
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>
 }) {
   let error: string | undefined
+  let magicSent = false
+  let sentEmail: string | undefined
+
   try {
     const params = await Promise.resolve(searchParams)
     const raw = params?.error
     error = Array.isArray(raw) ? raw[0] : raw
+    magicSent = params?.magic_sent === '1'
+    const rawEmail = params?.email
+    sentEmail = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail
   } catch {
-    error = undefined
+    // ignore
   }
 
   return (
@@ -64,7 +57,54 @@ export default async function LoginPage({
           </div>
         </div>
 
-        <GoogleSignInButton error={error} />
+        <div className="space-y-4">
+          {error && (
+            <p className="rounded-lg bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+              {ERROR_MESSAGES[error] ?? 'Ocurrió un error. Intentá de nuevo.'}
+            </p>
+          )}
+
+          <form action={signInWithGoogle}>
+            <Button type="submit" variant="outline" size="lg" className="w-full gap-3 text-sm font-medium">
+              <GoogleIcon />
+              Continuar con Google
+            </Button>
+          </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">o</span>
+            </div>
+          </div>
+
+          {magicSent ? (
+            <div className="rounded-lg bg-muted px-4 py-4 text-center text-sm space-y-1">
+              <p className="font-medium">Revisá tu bandeja de entrada</p>
+              {sentEmail && (
+                <p className="text-muted-foreground">
+                  Te enviamos un link a <span className="font-medium text-foreground">{sentEmail}</span>
+                </p>
+              )}
+            </div>
+          ) : (
+            <form action={signInWithMagicLink} className="space-y-2">
+              <Input
+                type="email"
+                name="email"
+                placeholder="tu@email.com"
+                required
+                autoComplete="email"
+                className="text-sm"
+              />
+              <Button type="submit" variant="secondary" size="lg" className="w-full text-sm font-medium">
+                Continuar con email
+              </Button>
+            </form>
+          )}
+        </div>
 
         <p className="text-center text-xs text-muted-foreground">
           🔒 Tus datos son privados y solo vos los podés ver
