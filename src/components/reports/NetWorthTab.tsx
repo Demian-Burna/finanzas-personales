@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { DashboardStats } from '@/lib/supabase/queries/dashboard'
 import { exportNetWorthAction } from '@/app/(dashboard)/reports/actions'
