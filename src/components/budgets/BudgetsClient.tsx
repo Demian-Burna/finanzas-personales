@@ -7,6 +7,7 @@ import type { BudgetWithProgress } from '@/lib/supabase/queries/budgets'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { BudgetInput } from '@/lib/validations/budget'
 import { BudgetCard, BudgetCardSkeleton } from '@/components/shared/BudgetCard'
+import { EmptyCard } from '@/components/shared/EmptyCard'
 import { BudgetForm } from '@/components/forms/BudgetForm'
 import { Button } from '@/components/ui/button'
 import {
@@ -135,13 +136,13 @@ export function BudgetsClient({ budgets, categories, currency, locale }: Props) 
 
       {/* Grid */}
       {sorted.length === 0 ? (
-        <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
-          <p className="text-sm text-muted-foreground">Todavía no tenés presupuestos.</p>
-          <Button onClick={() => setFormOpen(true)} size="sm" className="mt-4 gap-1.5">
-            <Plus className="size-4" />
-            Crear el primero
-          </Button>
-        </div>
+        <EmptyCard
+          emoji="🎯"
+          title="Sin presupuestos activos"
+          description="Definí un tope mensual para tus categorías más gastonas. Te avisamos cuando estés cerca del límite."
+          ctaLabel="Crear el primero"
+          onCta={() => setFormOpen(true)}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((b) => (

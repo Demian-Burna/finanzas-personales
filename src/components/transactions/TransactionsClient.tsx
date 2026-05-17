@@ -2,12 +2,13 @@
 
 import { useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useCreateTransaction } from '@/hooks/useTransactionMutations'
 import { TransactionFilters } from '@/components/transactions/TransactionFilters'
 import { TransactionsTable } from '@/components/transactions/TransactionsTable'
 import { TransactionForm } from '@/components/forms/TransactionForm'
+import { SearchOverlay } from '@/components/transactions/SearchOverlay'
 import { Button } from '@/components/ui/button'
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
@@ -24,6 +25,7 @@ export function TransactionsClient({ accounts, categories, currency, locale }: P
   const params = useSearchParams()
   // Auto-open create form when navigated from the dashboard FAB (?new=1)
   const [createOpen, setCreateOpen] = useState(() => params.get('new') === '1')
+  const [searchOpen, setSearchOpen] = useState(false)
   const createMutation = useCreateTransaction()
 
   const filters = {
@@ -50,10 +52,29 @@ export function TransactionsClient({ accounts, categories, currency, locale }: P
 
   return (
     <div className="space-y-4">
-      {/* Toolbar: filters take full width, Nueva button anchored top-right on desktop */}
-      <div className="flex items-start gap-3">
+      {/* Search overlay — mobile full-screen */}
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        currency={currency}
+        locale={locale}
+      />
+
+      {/* Toolbar */}
+      <div className="flex items-start gap-2">
+        {/* Mobile: search icon button */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="lg:hidden size-8 shrink-0 rounded-full mt-0.5"
+          onClick={() => setSearchOpen(true)}
+          aria-label="Buscar"
+        >
+          <Search className="size-3.5" />
+        </Button>
+
         <TransactionFilters accounts={accounts} categories={categories} />
-        {/* Hidden on mobile — FAB handles it */}
+
         <Button
           onClick={() => setCreateOpen(true)}
           size="sm"

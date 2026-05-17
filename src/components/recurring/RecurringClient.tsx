@@ -14,6 +14,7 @@ import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { RecurringItemInput } from '@/lib/validations/recurring-item'
 import { RecurringItemForm } from '@/components/forms/RecurringItemForm'
+import { EmptyCard } from '@/components/shared/EmptyCard'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -123,14 +124,16 @@ export function RecurringClient({ items, accounts, categories, currency, locale 
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
-        <Clock className="size-10 mx-auto text-muted-foreground/40 mb-3" />
-        <p className="text-sm text-muted-foreground">Todavía no tenés gastos recurrentes.</p>
-        <Button onClick={() => setFormOpen(true)} size="sm" className="mt-4 gap-1.5">
-          <Plus className="size-4" /> Agregar el primero
-        </Button>
+      <>
+        <EmptyCard
+          emoji="🔄"
+          title="Sin recurrentes todavía"
+          description="Registrá tus gastos fijos — alquiler, streaming, servicios — y la app te avisa antes de que venzan."
+          ctaLabel="Agregar el primero"
+          onCta={() => setFormOpen(true)}
+        />
         <RecurringItemForm open={formOpen} onOpenChange={setFormOpen} accounts={accounts} categories={categories} defaultCurrency={currency} onSubmit={handleCreate} isPending={isPending} />
-      </div>
+      </>
     )
   }
 

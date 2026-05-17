@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { EmptyCard } from '@/components/shared/EmptyCard'
 import { cn } from '@/lib/utils'
 import {
   useUpdateTransaction,
@@ -147,9 +148,12 @@ export function TransactionsTable({
         </div>
 
         {transactions.length === 0 ? (
-          <div className="py-16 text-center text-sm text-muted-foreground">
-            No hay transacciones que coincidan con los filtros.
-          </div>
+          <EmptyCard
+            emoji="🔍"
+            title="Sin resultados"
+            description="No hay transacciones que coincidan con los filtros activos. Probá ajustando la búsqueda."
+            className="my-4 border-dashed"
+          />
         ) : (
           <div
             ref={parentRef}

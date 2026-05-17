@@ -10,6 +10,7 @@ import type { SavingGoalWithContributions } from '@/lib/supabase/queries/saving-
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { SavingGoalInput, GoalContributionInput } from '@/lib/validations/saving-goal'
 import { GoalForm } from '@/components/forms/GoalForm'
+import { EmptyCard } from '@/components/shared/EmptyCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -355,13 +356,13 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
       )}
 
       {goals.length === 0 ? (
-        <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
-          <Target className="size-10 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm text-muted-foreground">Todavía no tenés metas de ahorro.</p>
-          <Button onClick={() => setFormOpen(true)} size="sm" className="mt-4 gap-1.5">
-            <Plus className="size-4" /> Crear la primera
-          </Button>
-        </div>
+        <EmptyCard
+          emoji="🚀"
+          title="Sin metas todavía"
+          description="Ponete un objetivo, mirá tu progreso y la app te dice cuánto aportar cada mes para llegar a tiempo."
+          ctaLabel="Crear la primera meta"
+          onCta={() => setFormOpen(true)}
+        />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
