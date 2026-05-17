@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui/button'
+import { ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { completeOnboarding } from '../actions'
 
 interface AccountType {
@@ -16,269 +17,275 @@ interface Props {
   completeOnboardingAction: typeof completeOnboarding
 }
 
-const CURRENCIES = [
-  { code: 'ARS', label: 'Peso Argentino (ARS)' },
-  { code: 'USD', label: 'Dólar Estadounidense (USD)' },
-  { code: 'EUR', label: 'Euro (EUR)' },
-  { code: 'BRL', label: 'Real Brasileño (BRL)' },
-  { code: 'UYU', label: 'Peso Uruguayo (UYU)' },
-  { code: 'CLP', label: 'Peso Chileno (CLP)' },
-  { code: 'COP', label: 'Peso Colombiano (COP)' },
-  { code: 'MXN', label: 'Peso Mexicano (MXN)' },
-  { code: 'GBP', label: 'Libra Esterlina (GBP)' },
-]
+// ── Slide visuals ─────────────────────────────────────────────────────────────
 
-const TIMEZONES = [
-  { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (GMT-3)' },
-  { value: 'America/Montevideo', label: 'Montevideo (GMT-3)' },
-  { value: 'America/Sao_Paulo', label: 'São Paulo (GMT-3)' },
-  { value: 'America/Santiago', label: 'Santiago (GMT-4)' },
-  { value: 'America/Bogota', label: 'Bogotá (GMT-5)' },
-  { value: 'America/Lima', label: 'Lima (GMT-5)' },
-  { value: 'America/Mexico_City', label: 'Ciudad de México (GMT-6)' },
-  { value: 'Europe/Madrid', label: 'Madrid (GMT+1)' },
-  { value: 'UTC', label: 'UTC (GMT+0)' },
-]
-
-const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  checking: 'Cuenta corriente',
-  savings: 'Caja de ahorro',
-  cash: 'Efectivo',
-  credit_card: 'Tarjeta de crédito',
-  investment: 'Inversiones',
-  loan: 'Préstamo',
+function PatrimonyIllustration() {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="w-56 rounded-2xl px-5 py-4 text-white" style={{ background: 'linear-gradient(155deg, oklch(0.28 0 0), oklch(0.18 0 0))' }}>
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-white/40">Patrimonio neto</p>
+        <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight">$8.420.500</p>
+        <div className="mt-3 h-px bg-white/10" />
+        <div className="mt-2.5 grid grid-cols-3 gap-1">
+          {[['Ingresos','$1.850k'],['Gastos','$1.245k'],['Ahorro','32.7%']].map(([l,v]) => (
+            <div key={l}>
+              <p className="text-[8px] text-white/40">{l}</p>
+              <p className="text-[10px] font-semibold text-white/80">{v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
 
-const STEP_LABELS = ['Preferencias', 'Primera cuenta', 'Listo']
+function BudgetsIllustration() {
+  const rings = [
+    { color: '#ef4444', pct: 109, label: 'Supermercado' },
+    { color: '#f59e0b', pct: 75,  label: 'Restaurantes' },
+    { color: '#10b981', pct: 38,  label: 'Transporte' },
+  ]
+  return (
+    <div className="flex items-center justify-center gap-5">
+      {rings.map(({ color, pct, label }) => {
+        const r = 28
+        const circ = 2 * Math.PI * r
+        const dash = (Math.min(pct, 100) / 100) * circ
+        return (
+          <div key={label} className="flex flex-col items-center gap-2">
+            <svg width={72} height={72} viewBox="0 0 72 72">
+              <circle cx={36} cy={36} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={7} />
+              <circle
+                cx={36} cy={36} r={r} fill="none"
+                stroke={color} strokeWidth={7}
+                strokeDasharray={`${dash} ${circ}`}
+                strokeLinecap="round"
+                transform="rotate(-90 36 36)"
+              />
+              <text x={36} y={40} textAnchor="middle" fontSize={11} fontWeight={700} fill="white">
+                {pct}%
+              </text>
+            </svg>
+            <p className="text-[9px] text-white/50 text-center max-w-[60px] leading-tight">{label}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function GoalsIllustration() {
+  const goals = [
+    { icon: '✈️', name: 'Viaje a Japón',   pct: 82 },
+    { icon: '🏠', name: 'Fondo emergencia', pct: 77 },
+    { icon: '💻', name: 'Notebook nueva',  pct: 60 },
+  ]
+  return (
+    <div className="flex flex-col gap-2 w-56">
+      {goals.map(({ icon, name, pct }) => (
+        <div key={name} className="rounded-xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm">{icon}</span>
+              <span className="text-xs font-medium text-white/80">{name}</span>
+            </div>
+            <span className="text-[10px] font-bold text-white/60">{pct}%</span>
+          </div>
+          <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full rounded-full bg-emerald-400" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Slide definitions ─────────────────────────────────────────────────────────
+
+const SLIDES = [
+  {
+    title: 'Todas tus cuentas\nen un mismo lugar',
+    subtitle: 'Cuentas bancarias, tarjetas, billeteras, efectivo. Sumá todo y mirá tu patrimonio crecer.',
+    illustration: <PatrimonyIllustration />,
+  },
+  {
+    title: 'Presupuestos que\nte avisan a tiempo',
+    subtitle: 'Definí topes por categoría y recibí alertas cuando estés cerca. Sin sustos a fin de mes.',
+    illustration: <BudgetsIllustration />,
+  },
+  {
+    title: 'Metas que se\nsienten posibles',
+    subtitle: 'Ponete objetivos, mirá tu progreso y dejá que la app te diga cuánto tenés que aportar cada mes.',
+    illustration: <GoalsIllustration />,
+  },
+]
+
+// ── Account type rows ─────────────────────────────────────────────────────────
+
+const ACCOUNT_DISPLAY: Record<string, { label: string; subtitle: string; emoji: string }> = {
+  cash:        { label: 'Efectivo',          subtitle: 'Lo que llevás en el bolsillo',       emoji: '💵' },
+  checking:    { label: 'Banco',             subtitle: 'Caja de ahorro o cuenta corriente',  emoji: '🏦' },
+  savings:     { label: 'Banco',             subtitle: 'Caja de ahorro o cuenta corriente',  emoji: '🏦' },
+  credit_card: { label: 'Tarjeta de crédito', subtitle: 'Visa, Master, Amex...',             emoji: '💳' },
+  investment:  { label: 'Inversión',         subtitle: 'IOL, Balanz, Cocos...',              emoji: '📈' },
+  loan:        { label: 'Billetera virtual', subtitle: 'Mercado Pago, Ualá, Naranja X',      emoji: '📱' },
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export function OnboardingWizard({ accountTypes, completeOnboardingAction }: Props) {
-  const [step, setStep] = useState(1)
+  // slide 0-2 = intro, slide 3 = account picker
+  const [slide, setSlide] = useState(0)
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const [currency, setCurrency] = useState('ARS')
-  const [timezone, setTimezone] = useState('America/Argentina/Buenos_Aires')
-  const [accountTypeId, setAccountTypeId] = useState(accountTypes[0]?.id ?? '')
-  const [accountName, setAccountName] = useState('')
-  const [initialBalance, setInitialBalance] = useState('0')
-
+  const isIntro = slide < 3
   const assetTypes = accountTypes.filter((t) => t.nature === 'asset')
 
-  function handleFinish() {
+  function next() {
+    if (slide < 3) setSlide((s) => s + 1)
+  }
+
+  function skip() {
+    setSlide(3)
+  }
+
+  function finish(typeId: string | null) {
     startTransition(async () => {
       await completeOnboardingAction({
-        currency_code: currency,
-        timezone,
+        currency_code: 'ARS',
+        timezone: 'America/Argentina/Buenos_Aires',
         locale: 'es-AR',
-        account_type_id: accountTypeId,
-        account_name: accountName.trim() || 'Mi cuenta',
-        initial_balance: parseFloat(initialBalance) || 0,
+        account_type_id: typeId ?? (assetTypes[0]?.id ?? ''),
+        account_name: 'Mi cuenta',
+        initial_balance: 0,
       })
     })
   }
 
+  // ── Intro slides ──────────────────────────────────────────────────────────
+  if (isIntro) {
+    const s = SLIDES[slide]!
+    return (
+      <div className="flex min-h-screen flex-col bg-black text-white">
+        {/* Progress + skip */}
+        <div className="flex items-center justify-between px-6 pt-12 pb-4">
+          <div className="flex gap-1.5">
+            {SLIDES.map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'h-1 rounded-full transition-all duration-300',
+                  i === slide ? 'w-8 bg-white' : i < slide ? 'w-8 bg-white/40' : 'w-8 bg-white/20',
+                )}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={skip}
+            className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+          >
+            Saltar
+          </button>
+        </div>
+
+        {/* Illustration */}
+        <div className="flex flex-1 flex-col items-center justify-center gap-10 px-6">
+          <div className="flex items-center justify-center min-h-[200px]">
+            {s.illustration}
+          </div>
+
+          {/* Text */}
+          <div className="space-y-3 text-center max-w-xs">
+            <h1 className="text-2xl font-bold leading-tight whitespace-pre-line">
+              {s.title}
+            </h1>
+            <p className="text-sm text-white/60 leading-relaxed">{s.subtitle}</p>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="px-6 pb-12">
+          <button
+            type="button"
+            onClick={next}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-4 text-sm font-semibold text-black hover:bg-white/90 active:bg-white/80 transition-colors"
+          >
+            {slide < 2 ? 'Siguiente' : 'Empezar'}
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Account picker ────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto w-full max-w-md">
-      {/* Step indicator */}
-      <div className="mb-8 flex items-center justify-between">
-        {STEP_LABELS.map((label, i) => {
-          const num = i + 1
-          const active = num === step
-          const done = num < step
+    <div className="flex min-h-screen flex-col bg-background px-5 pt-12 pb-10">
+      <div className="mb-2">
+        <div className="flex gap-1.5 mb-8">
+          {SLIDES.map((_, i) => (
+            <div key={i} className="h-1 w-8 rounded-full bg-muted" />
+          ))}
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Agregá tu primera cuenta</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Podés sumar más después. Empezá por donde llega tu sueldo o tu billetera principal.
+        </p>
+      </div>
+
+      <div className="mt-6 space-y-2">
+        {assetTypes.map((t) => {
+          const display = ACCOUNT_DISPLAY[t.name] ?? { label: t.name, subtitle: '', emoji: t.icon ?? '🏦' }
+          const selected = selectedTypeId === t.id
           return (
-            <div key={label} className="flex flex-1 items-center">
-              <div className="flex flex-col items-center gap-1">
-                <div
-                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
-                    done
-                      ? 'bg-primary text-primary-foreground'
-                      : active
-                        ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
-                        : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {done ? '✓' : num}
-                </div>
-                <span className={`text-xs ${active ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                  {label}
-                </span>
-              </div>
-              {i < STEP_LABELS.length - 1 && (
-                <div className={`mx-2 mb-4 h-px flex-1 ${done ? 'bg-primary' : 'bg-border'}`} />
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setSelectedTypeId(t.id)}
+              className={cn(
+                'flex w-full items-center gap-4 rounded-2xl border px-5 py-4 text-left transition-colors',
+                selected
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-muted-foreground/40 hover:bg-muted/30',
               )}
-            </div>
+            >
+              <span className="text-2xl shrink-0">{display.emoji}</span>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm">{display.label}</p>
+                <p className="text-xs-plus text-muted-foreground mt-0.5">{display.subtitle}</p>
+              </div>
+              <ChevronRight className={cn('ml-auto size-4 shrink-0 transition-colors', selected ? 'text-primary' : 'text-muted-foreground/40')} />
+            </button>
           )
         })}
       </div>
 
-      {/* Step 1 — Currency & timezone */}
-      {step === 1 && (
-        <div className="space-y-5">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">¿Dónde estás?</h2>
-            <p className="text-sm text-muted-foreground">Elegí tu moneda principal y zona horaria</p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="currency">
-                Moneda principal
-              </label>
-              <select
-                id="currency"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="timezone">
-                Zona horaria
-              </label>
-              <select
-                id="timezone"
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {TIMEZONES.map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <Button className="w-full" onClick={() => setStep(2)}>
-            Continuar →
-          </Button>
-        </div>
-      )}
-
-      {/* Step 2 — First account */}
-      {step === 2 && (
-        <div className="space-y-5">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Tu primera cuenta</h2>
-            <p className="text-sm text-muted-foreground">
-              Podés agregar más cuentas después en Configuración
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Tipo de cuenta</label>
-              <div className="grid grid-cols-2 gap-2">
-                {assetTypes.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setAccountTypeId(t.id)}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
-                      accountTypeId === t.id
-                        ? 'border-primary bg-primary/5 text-primary font-medium'
-                        : 'border-border hover:border-muted-foreground/50'
-                    }`}
-                  >
-                    {ACCOUNT_TYPE_LABELS[t.name] ?? t.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="account-name">
-                Nombre de la cuenta
-              </label>
-              <input
-                id="account-name"
-                type="text"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="Ej: Banco Nación, Cuenta en efectivo…"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium" htmlFor="balance">
-                Saldo inicial ({currency})
-              </label>
-              <input
-                id="balance"
-                type="number"
-                value={initialBalance}
-                onChange={(e) => setInitialBalance(e.target.value)}
-                min="0"
-                step="0.01"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
-              ← Atrás
-            </Button>
-            <Button className="flex-1" onClick={() => setStep(3)}>
-              Continuar →
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3 — Confirm */}
-      {step === 3 && (
-        <div className="space-y-5">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">¡Todo listo! 🎉</h2>
-            <p className="text-sm text-muted-foreground">Revisá tu configuración antes de empezar</p>
-          </div>
-
-          <div className="rounded-xl border bg-muted/40 p-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Moneda</span>
-              <span className="font-medium">{currency}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Zona horaria</span>
-              <span className="font-medium">
-                {TIMEZONES.find((t) => t.value === timezone)?.label ?? timezone}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Primera cuenta</span>
-              <span className="font-medium">{accountName.trim() || 'Mi cuenta'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Saldo inicial</span>
-              <span className="font-medium">
-                {parseFloat(initialBalance || '0').toLocaleString('es-AR', {
-                  style: 'currency',
-                  currency,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(2)} disabled={isPending}>
-              ← Atrás
-            </Button>
-            <Button className="flex-1" onClick={handleFinish} disabled={isPending}>
-              {isPending ? 'Guardando…' : 'Comenzar →'}
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="mt-auto pt-8 space-y-3">
+        <button
+          type="button"
+          disabled={isPending || !selectedTypeId}
+          onClick={() => finish(selectedTypeId)}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold transition-colors',
+            selectedTypeId
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80'
+              : 'bg-muted text-muted-foreground cursor-not-allowed',
+          )}
+        >
+          {isPending ? 'Configurando...' : 'Continuar'}
+          {!isPending && <ChevronRight className="size-4" />}
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => finish(null)}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        >
+          Lo hago después
+        </button>
+      </div>
     </div>
   )
 }

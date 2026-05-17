@@ -36,20 +36,11 @@ export default async function OnboardingPage() {
     icon: string | null
   }> | null
 
+  // The wizard handles its own full-screen layout (dark intro slides + light account picker)
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-lg space-y-10">
-        {/* Header */}
-        <div className="space-y-1 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Bienvenido/a ðŸ‘‹</h1>
-          <p className="text-muted-foreground">Configuremos tu cuenta en 3 pasos rápidos</p>
-        </div>
-
-        <OnboardingWizard
-          accountTypes={accountTypes ?? []}
-          completeOnboardingAction={completeOnboarding}
-        />
-      </div>
-    </div>
+    <OnboardingWizard
+      accountTypes={accountTypes ?? []}
+      completeOnboardingAction={completeOnboarding}
+    />
   )
 }
