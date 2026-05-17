@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { Treemap, ResponsiveContainer, Tooltip } from 'recharts'
+import { Treemap, PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { Download, ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -151,56 +151,110 @@ export function CategoryBreakdownTab({ currency, locale }: Props) {
             </button>
           )}
 
-          {/* Treemap */}
+          {/* Charts */}
           {!drillCat && rows.length > 0 && (
-            <div className="rounded-xl border bg-card p-5 shadow-sm">
-              <h3 className="text-sm font-semibold mb-4">Distribución de gastos</h3>
-              <ResponsiveContainer width="100%" height={280}>
-                <Treemap
-                  data={treemapData}
-                  dataKey="size"
-                  stroke="var(--background)"
-                  content={({ x, y, width, height, name, color }: {
-                    x?: number; y?: number; width?: number; height?: number; name?: string; color?: string
-                  }) => {
-                    if (!width || !height || width < 30 || height < 20) return <g />
-                    return (
-                      <g>
-                        <rect x={x} y={y} width={width} height={height} style={{ fill: color ?? '#6366f1', stroke: 'var(--background)', strokeWidth: 2, cursor: 'pointer' }} />
-                        {width > 60 && height > 30 && (
-                          <text x={(x ?? 0) + 8} y={(y ?? 0) + 20} fill="#fff" fontSize={11} fontWeight={500}>
-                            {(name ?? '').length > 14 ? (name ?? '').slice(0, 13) + '…' : name}
-                          </text>
-                        )}
-                      </g>
-                    )
-                  }}
-                  onClick={(data) => {
-                    const found = rows.find((r) => r.name === (data as { name?: string }).name)
-                    if (found) setDrillCat(found)
-                  }}
-                >
-                  <Tooltip
-                    formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
-                    contentStyle={{
-                      fontSize: 11,
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                      color: 'var(--foreground)',
+            <>
+              {/* Mobile: donut chart */}
+              <div className="lg:hidden rounded-xl border bg-card p-5 shadow-sm">
+                <h3 className="text-sm font-semibold mb-1">Distribución de gastos</h3>
+                <p className="text-xs-plus text-muted-foreground mb-4">{fmt(total, currency, locale)} total</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={rows}
+                      dataKey="total"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={2}
+                      strokeWidth={0}
+                    >
+                      {rows.map((r, i) => (
+                        <Cell key={i} fill={r.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                      contentStyle={{ fontSize: 11, backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Desktop: treemap */}
+              <div className="hidden lg:block rounded-xl border bg-card p-5 shadow-sm">
+                <h3 className="text-sm font-semibold mb-4">Distribución de gastos</h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <Treemap
+                    data={treemapData}
+                    dataKey="size"
+                    stroke="var(--background)"
+                    content={({ x, y, width, height, name, color }: {
+                      x?: number; y?: number; width?: number; height?: number; name?: string; color?: string
+                    }) => {
+                      if (!width || !height || width < 30 || height < 20) return <g />
+                      return (
+                        <g>
+                          <rect x={x} y={y} width={width} height={height} style={{ fill: color ?? '#6366f1', stroke: 'var(--background)', strokeWidth: 2, cursor: 'pointer' }} />
+                          {width > 60 && height > 30 && (
+                            <text x={(x ?? 0) + 8} y={(y ?? 0) + 20} fill="#fff" fontSize={11} fontWeight={500}>
+                              {(name ?? '').length > 14 ? (name ?? '').slice(0, 13) + '…' : name}
+                            </text>
+                          )}
+                        </g>
+                      )
                     }}
-                  />
-                </Treemap>
-              </ResponsiveContainer>
-            </div>
+                    onClick={(data) => {
+                      const found = rows.find((r) => r.name === (data as { name?: string }).name)
+                      if (found) setDrillCat(found)
+                    }}
+                  >
+                    <Tooltip
+                      formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                      contentStyle={{ fontSize: 11, backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }}
+                    />
+                  </Treemap>
+                </ResponsiveContainer>
+              </div>
+            </>
           )}
 
-          {/* Top 10 table */}
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          {/* Mobile: list with color bars */}
+          <div className="lg:hidden rounded-xl border bg-card shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <h3 className="text-sm font-semibold">{drillCat ? `Detalle: ${drillCat.name}` : 'Top categorías'}</h3>
+            </div>
+            <div className="divide-y divide-border">
+              {rows.map((r) => {
+                const pct = total > 0 ? (r.total / total) * 100 : 0
+                return (
+                  <div key={r.id} className="px-4 py-3 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="size-2.5 rounded-full shrink-0" style={{ background: r.color }} />
+                        <span className="text-xs-plus font-medium truncate">{r.name}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0">{r.count}x</span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-xs-plus font-semibold tabular-nums">{fmt(r.total, currency, locale)}</span>
+                        <span className="ml-1.5 text-[10px] text-muted-foreground">{pct.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: r.color }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Desktop: full table */}
+          <div className="hidden lg:block rounded-xl border bg-card shadow-sm overflow-hidden">
             <div className="px-5 py-3 border-b">
-              <h3 className="text-sm font-semibold">
-                {drillCat ? `Detalle: ${drillCat.name}` : 'Top categorías'}
-              </h3>
+              <h3 className="text-sm font-semibold">{drillCat ? `Detalle: ${drillCat.name}` : 'Top categorías'}</h3>
             </div>
             <table className="w-full text-xs">
               <thead className="border-b text-muted-foreground">

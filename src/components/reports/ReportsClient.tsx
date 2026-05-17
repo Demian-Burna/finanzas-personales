@@ -52,10 +52,22 @@ export function ReportsClient({
   return (
     <Tabs defaultValue="monthly" className="flex-col space-y-6">
       <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0 overflow-x-auto flex-nowrap">
-        <TabsTrigger value="monthly" className="rounded-none px-4 pb-3">Resumen mensual</TabsTrigger>
-        <TabsTrigger value="category" className="rounded-none px-4 pb-3">Por categoría</TabsTrigger>
-        <TabsTrigger value="cashflow" className="rounded-none px-4 pb-3">Flujo de caja</TabsTrigger>
-        <TabsTrigger value="networth" className="rounded-none px-4 pb-3">Patrimonio neto</TabsTrigger>
+        <TabsTrigger value="monthly"  className="rounded-none px-3 pb-3 lg:px-4">
+          <span className="lg:hidden">Mensual</span>
+          <span className="hidden lg:inline">Resumen mensual</span>
+        </TabsTrigger>
+        <TabsTrigger value="category" className="rounded-none px-3 pb-3 lg:px-4">
+          <span className="lg:hidden">Categoría</span>
+          <span className="hidden lg:inline">Por categoría</span>
+        </TabsTrigger>
+        <TabsTrigger value="cashflow" className="rounded-none px-3 pb-3 lg:px-4">
+          <span className="lg:hidden">Flujo</span>
+          <span className="hidden lg:inline">Flujo de caja</span>
+        </TabsTrigger>
+        <TabsTrigger value="networth" className="rounded-none px-3 pb-3 lg:px-4">
+          <span className="lg:hidden">Patrimonio</span>
+          <span className="hidden lg:inline">Patrimonio neto</span>
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="monthly">
