@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
 import { savingGoalSchema, type SavingGoalInput } from '@/lib/validations/saving-goal'
 import type { SavingGoalWithContributions } from '@/lib/supabase/queries/saving-goals'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -73,14 +73,23 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
     }
   }, [open, goal, form, defaultCurrency])
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar meta' : 'Nueva meta'}</DialogTitle>
-        </DialogHeader>
+  function handleSubmit() {
+    void form.handleSubmit(onSubmit)()
+  }
 
-        <form noValidate className="space-y-4 pt-2">
+  return (
+    <FormShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? 'Editar meta' : 'Nueva meta'}
+      maxWidth="max-w-md"
+      primaryAction={
+        <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+          {isPending ? 'Guardando...' : 'Guardar'}
+        </Button>
+      }
+    >
+        <form noValidate className="space-y-4">
           {/* Emoji picker */}
           <div>
             <Label>Ícono</Label>
@@ -169,20 +178,7 @@ export function GoalForm({ open, onOpenChange, defaultCurrency = 'ARS', goal, on
             <Input type="date" {...form.register('target_date')} className="mt-1" />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={() => void form.handleSubmit(onSubmit)()}
-            >
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear meta'}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }

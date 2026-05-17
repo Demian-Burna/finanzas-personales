@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -85,20 +85,23 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
     return TYPE_LABELS[t.name] ?? t.name
   })()
 
+  const titleEmoji = selectedTypeId
+    ? (accountTypes.find((t) => t.id === selectedTypeId)?.icon ?? '🏦')
+    : ''
+
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {selectedTypeId && (
-              <span className="text-xl">
-                {accountTypes.find((t) => t.id === selectedTypeId)?.icon ?? '🏦'}
-              </span>
-            )}
-            {isEdit ? 'Editar cuenta' : 'Nueva cuenta'}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-2">
+    <FormShell
+      open
+      onOpenChange={(o) => { if (!o) onClose() }}
+      title={`${titleEmoji ? titleEmoji + ' ' : ''}${isEdit ? 'Editar cuenta' : 'Nueva cuenta'}`}
+      maxWidth="max-w-md"
+      primaryAction={
+        <Button size="sm" disabled={isPending} onClick={() => void form.handleSubmit(onSubmit)()}>
+          {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+        </Button>
+      }
+    >
+        <div className="space-y-4">
           <div>
             <Label>Nombre</Label>
             <Input {...form.register('name')} className="mt-1" placeholder="Ej: Banco Galicia" />
@@ -192,19 +195,8 @@ function AccountForm({ account, accountTypes, defaultCurrency, onSubmit, onClose
             )} />
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={() => void form.handleSubmit(onSubmit)()}
-            >
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }
 

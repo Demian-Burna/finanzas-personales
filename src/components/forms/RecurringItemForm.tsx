@@ -8,7 +8,7 @@ import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { RecurringItemWithRelations } from '@/lib/supabase/queries/recurring-items'
 import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -122,14 +122,31 @@ export function RecurringItemForm({
   const selectedAccount  = accounts.find((a) => a.id === form.watch('account_id'))
   const selectedFrequency = FREQUENCY_OPTIONS.find((o) => o.value === frequency)
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar recurrente' : 'Nuevo recurrente'}</DialogTitle>
-        </DialogHeader>
+  function handleSubmit() {
+    form.handleSubmit(
+      onSubmit,
+      (errors) => {
+        const entries = Object.entries(errors)
+        const msg = entries.map(([f, e]) => `${f}: ${String(e?.message)}`).join(' · ')
+        toast.error(msg || 'Revisá los campos del formulario')
+      }
+    )().catch((e: unknown) => {
+      toast.error('Error inesperado: ' + String(e))
+    })
+  }
 
-        <form noValidate className="space-y-4 pt-2 overflow-y-auto max-h-[70svh] pr-1">
+  return (
+    <FormShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? 'Editar recurrente' : 'Nuevo recurrente'}
+      primaryAction={
+        <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+          {isPending ? 'Guardando...' : 'Guardar'}
+        </Button>
+      }
+    >
+        <form noValidate className="space-y-4">
           {/* Type toggle */}
           <div className="flex gap-1 rounded-lg border p-1">
             {(['income', 'expense'] as const).map((t) => (
@@ -304,32 +321,6 @@ export function RecurringItemForm({
           </div>
 
         </form>
-
-        {/* Actions outside the scroll container — always visible */}
-        <div className="flex justify-end gap-2 pt-3 border-t mt-3">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            disabled={isPending}
-            onClick={() => {
-              form.handleSubmit(
-                onSubmit,
-                (errors) => {
-                  const entries = Object.entries(errors)
-                  const msg = entries.map(([f, e]) => `${f}: ${String(e?.message)}`).join(' · ')
-                  toast.error(msg || 'Revisá los campos del formulario')
-                }
-              )().catch((e: unknown) => {
-                toast.error('Error inesperado: ' + String(e))
-              })
-            }}
-          >
-            {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }

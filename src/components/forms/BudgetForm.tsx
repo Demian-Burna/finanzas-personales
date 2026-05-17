@@ -6,12 +6,7 @@ import type { Resolver } from 'react-hook-form'
 import { budgetSchema, type BudgetInput } from '@/lib/validations/budget'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { BudgetWithProgress } from '@/lib/supabase/queries/budgets'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -119,14 +114,22 @@ export function BudgetForm({
   const periodValue = form.watch('period_type')
   const selectedPeriod = PERIOD_OPTIONS.find((o) => o.value === periodValue)
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}</DialogTitle>
-        </DialogHeader>
+  function handleSubmit() {
+    void form.handleSubmit(onSubmit)()
+  }
 
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4 pt-2">
+  return (
+    <FormShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto'}
+      primaryAction={
+        <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+          {isPending ? 'Guardando...' : 'Guardar'}
+        </Button>
+      }
+    >
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
           {/* Category — searchable combobox */}
           <div>
             <Label>Categoría</Label>
@@ -265,21 +268,7 @@ export function BudgetForm({
             </button>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={() => void form.handleSubmit(onSubmit)()}
-            >
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }

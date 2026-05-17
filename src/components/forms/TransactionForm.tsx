@@ -27,12 +27,7 @@ const transactionResolver: Resolver<TransactionFormValues> = async (values) => {
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { CategoryWithParent } from '@/lib/supabase/queries/categories'
 import type { TransactionWithRelations } from '@/lib/supabase/queries/transactions'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -151,14 +146,22 @@ export function TransactionForm({
         (c) => c.transaction_type === txType || c.transaction_type === null,
       )
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar transacción' : 'Nueva transacción'}</DialogTitle>
-        </DialogHeader>
+  function handleSubmit() {
+    void form.handleSubmit(onSubmit)()
+  }
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2" noValidate>
+  return (
+    <FormShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? 'Editar transacción' : 'Nueva transacción'}
+      primaryAction={
+        <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+          {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Guardar'}
+        </Button>
+      }
+    >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {/* Type toggle */}
           <div className="flex gap-1 rounded-lg border p-1">
             {(['income', 'expense', 'transfer'] as const).map((t) => (
@@ -371,21 +374,7 @@ export function TransactionForm({
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear transacción'}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }

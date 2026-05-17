@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { FormShell } from '@/components/ui/form-shell'
 import { cn } from '@/lib/utils'
 import { createCategoryAction, updateCategoryAction, deleteCategoryAction } from '@/app/(dashboard)/settings/actions'
 
@@ -57,10 +57,18 @@ function CategoryForm({ category, categories, onSubmit, onClose, isPending }: {
   const parents = categories.filter((c) => !c.parent_id && c.id !== category?.id)
 
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>{isEdit ? 'Editar categoría' : 'Nueva categoría'}</DialogTitle></DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+    <FormShell
+      open
+      onOpenChange={(o) => { if (!o) onClose() }}
+      title={isEdit ? 'Editar categoría' : 'Nueva categoría'}
+      maxWidth="max-w-md"
+      primaryAction={
+        <Button size="sm" type="button" disabled={isPending} onClick={() => void form.handleSubmit(onSubmit)()}>
+          {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}
+        </Button>
+      }
+    >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label>Nombre</Label>
             <Input {...form.register('name')} className="mt-1" placeholder="Ej: Supermercado" />
@@ -123,13 +131,8 @@ function CategoryForm({ category, categories, onSubmit, onClose, isPending }: {
             <Input {...form.register('icon')} className="mt-1 w-24" placeholder="o escribí" maxLength={4} />
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Crear'}</Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </FormShell>
   )
 }
 

@@ -3,8 +3,10 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { createPortal } from 'react-dom'
-import { Search, X, ChevronDown, Check } from 'lucide-react'
+import { Search, X, ChevronDown, Check, SlidersHorizontal } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { FormShell } from '@/components/ui/form-shell'
 import { CategoryCombobox } from '@/components/shared/CategoryCombobox'
 import { cn } from '@/lib/utils'
 import type { AccountWithType } from '@/lib/supabase/queries/accounts'
@@ -102,10 +104,98 @@ function PortalSelect({
   )
 }
 
+function FilterContent({
+  accounts,
+  categories,
+  update,
+  params,
+  typeValue,
+  accountValue,
+  categoryValue,
+}: {
+  accounts: AccountWithType[]
+  categories: CategoryWithParent[]
+  update: (key: string, value: string | null) => void
+  params: URLSearchParams
+  typeValue: string | undefined
+  accountValue: string | undefined
+  categoryValue: string | undefined
+}) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  return (
+    <div className="space-y-5 py-1">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo de movimiento</p>
+        <div className="flex flex-wrap gap-2">
+          {TYPE_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => update('type', typeValue === o.value ? null : o.value)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-sm transition-colors',
+                typeValue === o.value
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:bg-muted',
+              )}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cuenta</p>
+        <div className="flex flex-wrap gap-2">
+          {accounts.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => update('account', accountValue === a.id ? null : a.id)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-sm transition-colors',
+                accountValue === a.id
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border hover:bg-muted',
+              )}
+            >
+              {a.icon ? `${a.icon} ` : ''}{a.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Categoría</p>
+        <CategoryCombobox
+          categories={categories}
+          value={categoryValue}
+          onChange={(id) => update('category', id)}
+          placeholder="Todas las categorías"
+        />
+      </div>
+
+      {['type', 'account', 'category', 'q'].some((k) => params.has(k)) && (
+        <button
+          type="button"
+          onClick={() => router.replace(pathname)}
+          className="text-sm text-muted-foreground underline-offset-2 hover:underline"
+        >
+          Limpiar todos los filtros
+        </button>
+      )}
+    </div>
+  )
+}
+
 export function TransactionFilters({ accounts, categories }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const update = useCallback(
     (key: string, value: string | null) => {
@@ -125,19 +215,35 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
   return (
     <div className="flex-1 min-w-0 space-y-2">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por descripción..."
-          defaultValue={params.get('q') ?? ''}
-          onChange={(e) => update('q', e.target.value || null)}
-          className="pl-8 h-8 text-sm rounded-full"
-        />
+      {/* Search row — always visible */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por descripción..."
+            defaultValue={params.get('q') ?? ''}
+            onChange={(e) => update('q', e.target.value || null)}
+            className="pl-8 h-8 text-sm rounded-full"
+          />
+        </div>
+
+        {/* Mobile: filter icon button → sheet */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="lg:hidden size-8 shrink-0 rounded-full relative"
+          onClick={() => setSheetOpen(true)}
+          aria-label="Filtros"
+        >
+          <SlidersHorizontal className="size-3.5" />
+          {hasFilters && (
+            <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
+          )}
+        </Button>
       </div>
 
-      {/* Filter pills — flex-nowrap + min-w-0 so all three always stay on one row */}
-      <div className="flex flex-nowrap gap-1.5 overflow-hidden">
+      {/* Desktop: inline filter pills */}
+      <div className="hidden lg:flex flex-nowrap gap-1.5 overflow-hidden">
         <PortalSelect
           options={TYPE_OPTIONS}
           value={typeValue}
@@ -171,6 +277,28 @@ export function TransactionFilters({ accounts, categories }: Props) {
           </button>
         )}
       </div>
+
+      {/* Mobile filter sheet */}
+      <FormShell
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Filtros"
+        primaryAction={
+          <Button size="sm" variant="outline" onClick={() => setSheetOpen(false)}>
+            Aplicar
+          </Button>
+        }
+      >
+        <FilterContent
+          accounts={accounts}
+          categories={categories}
+          update={update}
+          params={params}
+          typeValue={typeValue}
+          accountValue={accountValue}
+          categoryValue={categoryValue}
+        />
+      </FormShell>
     </div>
   )
 }
