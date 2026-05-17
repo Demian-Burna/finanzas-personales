@@ -150,6 +150,8 @@ export function TransactionForm({
     void form.handleSubmit(onSubmit)()
   }
 
+  const saveLabel = txType === 'income' ? 'Guardar ingreso' : txType === 'transfer' ? 'Guardar transferencia' : 'Guardar gasto'
+
   return (
     <FormShell
       open={open}
@@ -157,224 +159,222 @@ export function TransactionForm({
       title={isEdit ? 'Editar transacción' : 'Nueva transacción'}
       primaryAction={
         <Button size="sm" onClick={handleSubmit} disabled={isPending}>
-          {isPending ? 'Guardando...' : isEdit ? 'Guardar' : 'Guardar'}
+          {isPending ? 'Guardando...' : 'Guardar'}
         </Button>
       }
     >
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          {/* Type toggle */}
-          <div className="flex gap-1 rounded-lg border p-1">
-            {(['income', 'expense', 'transfer'] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => {
-                  form.setValue('transaction_type', t, { shouldValidate: true })
-                  form.setValue('category_id', null)
-                  form.setValue('transfer_account_id', null)
-                }}
-                className={cn(
-                  'flex-1 rounded-md py-1.5 text-xs font-medium transition-colors',
-                  txType === t
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+
+        {/* ── Mobile layout ── */}
+        <div className="lg:hidden space-y-0">
+          {/* Type segmented */}
+          <div className="grid mb-5" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: 4, padding: 4, background: 'var(--muted)', borderRadius: 10 }}>
+            {(['expense', 'income', 'transfer'] as const).map((t) => (
+              <button key={t} type="button"
+                onClick={() => { form.setValue('transaction_type', t, { shouldValidate: true }); form.setValue('category_id', null); form.setValue('transfer_account_id', null) }}
+                className={cn('rounded-lg py-2 text-[13px] font-medium transition-colors', txType === t ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground')}
+                style={{ boxShadow: txType === t ? '0 1px 3px oklch(0 0 0 / 0.08)' : 'none' }}
               >
                 {TYPE_LABELS[t]}
               </button>
             ))}
           </div>
 
-          {/* Amount + currency row */}
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Label htmlFor="amount">Monto</Label>
-              {/* Use Controller + text input to avoid valueAsNumber NaN inside Dialog */}
-              <Controller
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <Input
-                    id="amount"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={field.value === 0 ? '' : String(field.value)}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(',', '.')
-                      const parsed = parseFloat(raw)
-                      field.onChange(isNaN(parsed) ? 0 : parsed)
-                    }}
-                    onBlur={field.onBlur}
-                    className="mt-1"
-                  />
-                )}
-              />
-              {form.formState.errors.amount && (
-                <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>
-              )}
+          {/* Big amount */}
+          <div className="text-center pb-6">
+            <Controller control={form.control} name="amount" render={({ field }) => (
+              <div className="flex items-start justify-center">
+                <span className="text-muted-foreground mr-1 mt-2" style={{ fontSize: 22 }}>$</span>
+                <input
+                  type="text" inputMode="decimal"
+                  placeholder="0"
+                  value={field.value === 0 ? '' : String(field.value)}
+                  onChange={(e) => { const n = parseFloat(e.target.value.replace(',', '.')); field.onChange(isNaN(n) ? 0 : n) }}
+                  onBlur={field.onBlur}
+                  className="bg-transparent border-0 outline-none text-center tabular-nums"
+                  style={{ fontSize: 44, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1, width: '6ch', minWidth: '3ch', maxWidth: '10ch' }}
+                />
+              </div>
+            )} />
+            <p className="text-xs-plus text-muted-foreground mt-2">{watchedCurrency} · {watchedCurrency !== defaultCurrency ? 'Tipo de cambio actual' : 'Moneda base'}</p>
+            {form.formState.errors.amount && <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>}
+          </div>
+
+          {/* Field rows */}
+          <div className="rounded-xl border bg-card overflow-hidden divide-y divide-border">
+            {/* Description */}
+            <div className="flex items-center gap-3 px-4 py-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0">Descripción</span>
+              <input {...form.register('description')} placeholder="Ej: Supermercado Día" className="flex-1 text-sm text-right bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground/50" />
             </div>
-            <div className="w-32">
-              <Label>Moneda</Label>
-              <Controller
-                control={form.control}
-                name="currency_code"
-                render={({ field }) => (
-                  <CurrencySelect
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    className="mt-1 w-full"
-                  />
-                )}
-              />
-            </div>
-          </div>
 
-          {/* Exchange rate selector — shown when currency differs from base */}
-          {watchedCurrency !== defaultCurrency && (
-            <ExchangeRateSelector
-              fromCurrency={watchedCurrency}
-              toCurrency={defaultCurrency}
-              amount={watchedAmount ?? 0}
-              selectedType={selectedRateType}
-              onSelect={handleRateSelect}
-            />
-          )}
-
-          {/* Date */}
-          <div>
-            <Label htmlFor="transaction_date">Fecha</Label>
-            <Input
-              id="transaction_date"
-              type="date"
-              {...form.register('transaction_date')}
-              className="mt-1"
-            />
-            {form.formState.errors.transaction_date && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.transaction_date.message}</p>
-            )}
-          </div>
-
-          {/* Origin account */}
-          <div>
-            <Label>Cuenta {isTransfer ? 'origen' : ''}</Label>
-            <Controller
-              control={form.control}
-              name="account_id"
-              render={({ field }) => {
-                const selected = accounts.find((a) => a.id === field.value)
-                return (
-                  <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
-                    <SelectTrigger className="mt-1 w-full">
-                      <SelectValue placeholder="Seleccioná una cuenta">
-                        {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>
-                          {a.icon ?? ''} {a.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )
-              }}
-            />
-            {form.formState.errors.account_id && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.account_id.message}</p>
-            )}
-          </div>
-
-          {/* Transfer destination OR category */}
-          {isTransfer ? (
-            <div>
-              <Label>Cuenta destino</Label>
-              <Controller
-                control={form.control}
-                name="transfer_account_id"
-                render={({ field }) => {
+            {/* Category or transfer dest */}
+            {!isTransfer ? (
+              <div className="flex items-center gap-3 px-4 py-0">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0">Categoría</span>
+                <Controller control={form.control} name="category_id" render={({ field }) => {
+                  const selected = filteredCategories.find((c) => c.id === field.value)
+                  return (
+                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
+                      <SelectTrigger className="flex-1 border-0 shadow-none bg-transparent pr-0 text-sm text-right justify-end h-12">
+                        <SelectValue placeholder="Sin categoría">{selected ? `${selected.icon ?? ''} ${selected.name}` : 'Sin categoría'}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>{filteredCategories.map((c) => <SelectItem key={c.id} value={c.id}>{c.icon ?? ''} {c.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  )
+                }} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 px-4 py-0">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0">Destino</span>
+                <Controller control={form.control} name="transfer_account_id" render={({ field }) => {
                   const selected = accounts.find((a) => a.id === field.value)
                   return (
                     <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
-                      <SelectTrigger className="mt-1 w-full">
-                        <SelectValue placeholder="Seleccioná cuenta destino">
-                          {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
-                        </SelectValue>
+                      <SelectTrigger className="flex-1 border-0 shadow-none bg-transparent pr-0 text-sm text-right justify-end h-12">
+                        <SelectValue placeholder="Cuenta destino">{selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}</SelectValue>
                       </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.icon ?? ''} {a.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                      <SelectContent>{accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon ?? ''} {a.name}</SelectItem>)}</SelectContent>
                     </Select>
                   )
-                }}
-              />
-              {form.formState.errors.transfer_account_id && (
-                <p className="mt-1 text-xs text-destructive">{form.formState.errors.transfer_account_id.message}</p>
-              )}
+                }} />
+              </div>
+            )}
+
+            {/* Account */}
+            <div className="flex items-center gap-3 px-4 py-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0">Cuenta</span>
+              <Controller control={form.control} name="account_id" render={({ field }) => {
+                const selected = accounts.find((a) => a.id === field.value)
+                return (
+                  <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
+                    <SelectTrigger className="flex-1 border-0 shadow-none bg-transparent pr-0 text-sm text-right justify-end h-12">
+                      <SelectValue placeholder="Seleccioná una cuenta">{selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>{accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon ?? ''} {a.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                )
+              }} />
+            </div>
+
+            {/* Date */}
+            <div className="flex items-center gap-3 px-4 py-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0">Fecha</span>
+              <input type="date" {...form.register('transaction_date')} className="flex-1 text-sm text-right bg-transparent border-0 outline-none text-foreground" />
+            </div>
+          </div>
+
+          {/* Exchange rate (if needed) */}
+          {watchedCurrency !== defaultCurrency && (
+            <div className="mt-4">
+              <ExchangeRateSelector fromCurrency={watchedCurrency} toCurrency={defaultCurrency} amount={watchedAmount ?? 0} selectedType={selectedRateType} onSelect={handleRateSelect} />
+            </div>
+          )}
+
+          {/* Save button at bottom */}
+          <button type="button" onClick={handleSubmit} disabled={isPending}
+            className="mt-5 w-full rounded-xl py-3.5 text-[15px] font-semibold transition-colors"
+            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+          >
+            {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : saveLabel}
+          </button>
+        </div>
+
+        {/* ── Desktop layout ── */}
+        <div className="hidden lg:block space-y-4">
+          {/* Type toggle */}
+          <div className="flex gap-1 rounded-lg border p-1">
+            {(['income', 'expense', 'transfer'] as const).map((t) => (
+              <button key={t} type="button"
+                onClick={() => { form.setValue('transaction_type', t, { shouldValidate: true }); form.setValue('category_id', null); form.setValue('transfer_account_id', null) }}
+                className={cn('flex-1 rounded-md py-1.5 text-xs font-medium transition-colors', txType === t ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground')}
+              >
+                {TYPE_LABELS[t]}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label htmlFor="amount-d">Monto</Label>
+              <Controller control={form.control} name="amount" render={({ field }) => (
+                <Input id="amount-d" type="text" inputMode="decimal" placeholder="0.00"
+                  value={field.value === 0 ? '' : String(field.value)}
+                  onChange={(e) => { const n = parseFloat(e.target.value.replace(',', '.')); field.onChange(isNaN(n) ? 0 : n) }}
+                  onBlur={field.onBlur} className="mt-1" />
+              )} />
+              {form.formState.errors.amount && <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>}
+            </div>
+            <div className="w-32">
+              <Label>Moneda</Label>
+              <Controller control={form.control} name="currency_code" render={({ field }) => (
+                <CurrencySelect value={field.value} onValueChange={field.onChange} className="mt-1 w-full" />
+              )} />
+            </div>
+          </div>
+
+          {watchedCurrency !== defaultCurrency && (
+            <ExchangeRateSelector fromCurrency={watchedCurrency} toCurrency={defaultCurrency} amount={watchedAmount ?? 0} selectedType={selectedRateType} onSelect={handleRateSelect} />
+          )}
+
+          <div>
+            <Label htmlFor="transaction_date-d">Fecha</Label>
+            <Input id="transaction_date-d" type="date" {...form.register('transaction_date')} className="mt-1" />
+          </div>
+
+          <div>
+            <Label>Cuenta {isTransfer ? 'origen' : ''}</Label>
+            <Controller control={form.control} name="account_id" render={({ field }) => {
+              const selected = accounts.find((a) => a.id === field.value)
+              return (
+                <Select value={field.value} onValueChange={(v) => field.onChange(v ?? '')}>
+                  <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Seleccioná una cuenta">{selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}</SelectValue></SelectTrigger>
+                  <SelectContent>{accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon ?? ''} {a.name}</SelectItem>)}</SelectContent>
+                </Select>
+              )
+            }} />
+          </div>
+
+          {isTransfer ? (
+            <div>
+              <Label>Cuenta destino</Label>
+              <Controller control={form.control} name="transfer_account_id" render={({ field }) => {
+                const selected = accounts.find((a) => a.id === field.value)
+                return (
+                  <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
+                    <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Seleccioná cuenta destino">{selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}</SelectValue></SelectTrigger>
+                    <SelectContent>{accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon ?? ''} {a.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                )
+              }} />
             </div>
           ) : (
             <div>
               <Label>Categoría</Label>
-              <Controller
-                control={form.control}
-                name="category_id"
-                render={({ field }) => {
-                  const selected = filteredCategories.find((c) => c.id === field.value)
-                  return (
-                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
-                      <SelectTrigger className="mt-1 w-full">
-                        <SelectValue placeholder="Seleccioná una categoría">
-                          {selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredCategories.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.icon ?? ''} {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )
-                }}
-              />
-              {form.formState.errors.category_id && (
-                <p className="mt-1 text-xs text-destructive">{form.formState.errors.category_id.message}</p>
-              )}
+              <Controller control={form.control} name="category_id" render={({ field }) => {
+                const selected = filteredCategories.find((c) => c.id === field.value)
+                return (
+                  <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v || null)}>
+                    <SelectTrigger className="mt-1 w-full"><SelectValue placeholder="Seleccioná una categoría">{selected ? `${selected.icon ?? ''} ${selected.name}` : undefined}</SelectValue></SelectTrigger>
+                    <SelectContent>{filteredCategories.map((c) => <SelectItem key={c.id} value={c.id}>{c.icon ?? ''} {c.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                )
+              }} />
             </div>
           )}
 
-          {/* Description */}
           <div>
-            <Label htmlFor="description">Descripción</Label>
-            <Input
-              id="description"
-              placeholder="Ej: Supermercado Día"
-              {...form.register('description')}
-              className="mt-1"
-            />
-            {form.formState.errors.description && (
-              <p className="mt-1 text-xs text-destructive">{form.formState.errors.description.message}</p>
-            )}
+            <Label htmlFor="description-d">Descripción</Label>
+            <Input id="description-d" placeholder="Ej: Supermercado Día" {...form.register('description')} className="mt-1" />
           </div>
 
-          {/* Notes */}
           <div>
-            <Label htmlFor="notes">Notas (opcional)</Label>
-            <Input
-              id="notes"
-              placeholder="Notas adicionales..."
-              {...form.register('notes')}
-              className="mt-1"
-            />
+            <Label htmlFor="notes-d">Notas (opcional)</Label>
+            <Input id="notes-d" placeholder="Notas adicionales..." {...form.register('notes')} className="mt-1" />
           </div>
+        </div>
 
-        </form>
+      </form>
     </FormShell>
   )
 }

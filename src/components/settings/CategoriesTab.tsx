@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Edit, Trash2, ChevronRight, ChevronDown, Lock } from 'lucide-react'
+import { Plus, Edit, Trash2, ChevronRight, ChevronDown, Lock, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -214,21 +214,89 @@ export function CategoriesTab({ categories }: Props) {
     })
   }
 
+  const [mobileType, setMobileType] = useState<'expense' | 'income' | 'transfer'>('expense')
+  const mobileRoots = roots.filter(c => c.transaction_type === mobileType || c.transaction_type === null)
+
   return (
-    <div className="space-y-4 max-w-2xl">
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">Las categorías con 🔒 son del sistema y no se pueden editar.</p>
-        <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 shrink-0">
-          <Plus className="size-4" /> Nueva
-        </Button>
+    <div className="max-w-2xl">
+      {/* ── Mobile layout ── */}
+      <div className="lg:hidden px-4 pt-2 pb-6 space-y-4">
+        {/* Segmented control */}
+        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: 4, padding: 4, background: 'oklch(0.96 0 0)', borderRadius: 10 }}>
+          {(['expense', 'income', 'transfer'] as const).map((t) => (
+            <button key={t} type="button" onClick={() => setMobileType(t)}
+              className="rounded-lg py-2 text-[12.5px] font-medium transition-colors"
+              style={{
+                background: mobileType === t ? 'var(--background)' : 'transparent',
+                boxShadow: mobileType === t ? '0 1px 3px oklch(0 0 0 / 0.08)' : 'none',
+                color: mobileType === t ? 'var(--foreground)' : 'var(--muted-foreground)',
+              }}
+            >
+              {t === 'expense' ? 'Gastos' : t === 'income' ? 'Ingresos' : 'Transfer.'}
+            </button>
+          ))}
+        </div>
+
+        <p className="text-xs-plus text-muted-foreground px-0.5">Las categorías del sistema (🔒) no se pueden eliminar pero sí renombrar o reasignar ícono.</p>
+
+        {/* Category cards */}
+        <div className="space-y-2">
+          {mobileRoots.map((cat) => {
+            const kids = childrenOf(cat.id)
+            return (
+              <div key={cat.id} className="rounded-xl border bg-card px-3.5 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-muted text-base">{cat.icon ?? '•'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-semibold">{cat.name}</span>
+                      {cat.is_system && <span className="text-[10px] text-muted-foreground">🔒</span>}
+                    </div>
+                    <p className="text-xs-plus text-muted-foreground">{kids.length > 0 ? `${kids.length} subcategoría${kids.length !== 1 ? 's' : ''}` : 'Sin subcategorías'}</p>
+                  </div>
+                  {!cat.is_system && (
+                    <button onClick={() => setEditCat(cat)} className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <MoreHorizontal className="size-4" />
+                    </button>
+                  )}
+                </div>
+                {kids.length > 0 && (
+                  <div className="mt-2.5 pl-12 flex flex-wrap gap-1.5">
+                    {kids.slice(0, 3).map((k) => (
+                      <span key={k.id} className="rounded-full bg-muted px-2.5 py-1 text-[11.5px] text-muted-foreground">{k.name}</span>
+                    ))}
+                    {kids.length > 3 && (
+                      <span className="rounded-full bg-muted px-2.5 py-1 text-[11.5px] text-muted-foreground">+{kids.length - 3} Sub</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Add button */}
+        <button onClick={() => setFormOpen(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-xl py-3.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+          style={{ border: '1.5px dashed var(--border)' }}
+        >
+          <Plus className="size-4" strokeWidth={1.75} /> Nueva categoría
+        </button>
       </div>
 
-      <div className="rounded-xl border bg-card p-3 shadow-sm space-y-0.5">
-        {roots.map((cat) => (
-          <CategoryRow key={cat.id} category={cat} subCategories={childrenOf(cat.id)}
-            onEdit={setEditCat}
-            onDelete={handleDelete} />
-        ))}
+      {/* ── Desktop layout ── */}
+      <div className="hidden lg:block space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">Las categorías con 🔒 son del sistema y no se pueden editar.</p>
+          <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 shrink-0">
+            <Plus className="size-4" /> Nueva
+          </Button>
+        </div>
+        <div className="rounded-xl border bg-card p-3 space-y-0.5">
+          {roots.map((cat) => (
+            <CategoryRow key={cat.id} category={cat} subCategories={childrenOf(cat.id)} onEdit={setEditCat} onDelete={handleDelete} />
+          ))}
+        </div>
       </div>
 
       {formOpen && (

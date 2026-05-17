@@ -232,76 +232,109 @@ export function AccountsTab({ accounts: initialAccounts, accountTypes, currency 
     })
   }
 
+  const fmtBal = (v: number, cur: string) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+
+  const totalBalance = accounts
+    .filter(a => a.account_type?.nature !== 'liability' && a.include_in_net_worth)
+    .reduce((s, a) => s + a.current_balance, 0)
+  const activeCount = accounts.filter(a => a.account_type?.nature !== 'liability').length
+  const liabilityCount = accounts.filter(a => a.account_type?.nature === 'liability').length
+  const currencies = Array.from(new Set(accounts.map(a => a.currency_code))).length
+
   return (
-    <div className="space-y-4 max-w-2xl">
-      {/* Desktop: new button in header. Mobile: FAB */}
-      <div className="hidden sm:flex justify-end">
-        <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5">
-          <Plus className="size-4" /> Nueva cuenta
-        </Button>
-      </div>
-      <button
-        onClick={() => setFormOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden"
-        aria-label="Nueva cuenta"
-      >
-        <Plus className="size-5" />
-      </button>
-
-      {/* Account list — same style as Recurrentes rows */}
-      <div className="space-y-2">
-        {accounts.map((a) => {
-          const typeName = TYPE_LABELS[a.account_type?.name ?? ''] ?? a.account_type?.name ?? '—'
-          const balance = new Intl.NumberFormat('es-AR', {
-            style: 'currency',
-            currency: a.currency_code,
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          }).format(a.current_balance)
-
-          return (
-            <div
-              key={a.id}
-              className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2.5 shadow-sm"
-            >
-              {/* Color / icon */}
-              <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-full text-base"
-                style={{ background: a.color ?? 'hsl(var(--muted))' }}
-              >
-                {a.icon ?? a.account_type?.icon ?? '🏦'}
-              </span>
-
-              {/* Name + type */}
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-medium">{a.name}</p>
-                <p className="truncate text-[11px] text-muted-foreground">{typeName} · {a.currency_code}</p>
-              </div>
-
-              {/* Balance */}
-              <span className="shrink-0 text-sm font-semibold tabular-nums whitespace-nowrap">
-                {balance}
-              </span>
-
-              {/* Actions */}
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors focus:outline-none">
-                  <MoreHorizontal className="size-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-36">
-                  <DropdownMenuItem onClick={() => setEditAccount(a)} className="flex items-center gap-2">
-                    <Edit className="size-3.5" />
-                    Editar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+    <div className="max-w-2xl">
+      {/* ── Mobile layout ── */}
+      <div className="lg:hidden px-4 pt-2 pb-6 space-y-4">
+        {/* Dark summary card */}
+        {accounts.length > 0 && (
+          <div className="rounded-2xl px-5 py-4 text-white" style={{ background: 'var(--foreground)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ opacity: 0.7 }}>Balance total</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight">{fmtBal(totalBalance, currency)}</p>
+            <div className="flex gap-2 mt-2 text-[11px]" style={{ opacity: 0.85 }}>
+              <span>{activeCount} activo{activeCount !== 1 ? 's' : ''}</span>
+              <span style={{ opacity: 0.5 }}>·</span>
+              <span>{liabilityCount} pasivo{liabilityCount !== 1 ? 's' : ''}</span>
+              <span style={{ opacity: 0.5 }}>·</span>
+              <span>{currencies} moneda{currencies !== 1 ? 's' : ''}</span>
             </div>
-          )
-        })}
-
-        {accounts.length === 0 && (
-          <p className="text-sm text-center text-muted-foreground py-8">No hay cuentas activas.</p>
+          </div>
         )}
+
+        {/* Account rows */}
+        {accounts.length > 0 && (
+          <div>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Activas</p>
+            <div className="space-y-2">
+              {accounts.map((a) => {
+                const typeName = TYPE_LABELS[a.account_type?.name ?? ''] ?? a.account_type?.name ?? '—'
+                return (
+                  <div key={a.id} className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3">
+                    <span className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] text-base text-white"
+                      style={{ background: a.color ?? '#6366f1' }}>
+                      {a.icon ?? a.account_type?.icon ?? '🏦'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{a.name}</p>
+                      <p className="text-xs-plus text-muted-foreground">{typeName} · {a.currency_code}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-semibold tabular-nums ${a.current_balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-foreground'}`}>
+                        {a.current_balance < 0 ? '-' : ''}{fmtBal(Math.abs(a.current_balance), a.currency_code)}
+                      </p>
+                      <button onClick={() => setEditAccount(a)} className="text-[11px] text-muted-foreground hover:text-foreground">Editar</button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Add account dashed button */}
+        <button onClick={() => setFormOpen(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-xl py-3.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+          style={{ border: '1.5px dashed var(--border)' }}
+        >
+          <Plus className="size-4" strokeWidth={1.75} /> Agregar cuenta
+        </button>
+      </div>
+
+      {/* ── Desktop layout ── */}
+      <div className="hidden lg:block space-y-4">
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5">
+            <Plus className="size-4" /> Nueva cuenta
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {accounts.map((a) => {
+            const typeName = TYPE_LABELS[a.account_type?.name ?? ''] ?? a.account_type?.name ?? '—'
+            return (
+              <div key={a.id} className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2.5">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full text-base" style={{ background: a.color ?? 'var(--muted)' }}>
+                  {a.icon ?? a.account_type?.icon ?? '🏦'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-medium">{a.name}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{typeName} · {a.currency_code}</p>
+                </div>
+                <span className="shrink-0 text-sm font-semibold tabular-nums">{fmtBal(a.current_balance, a.currency_code)}</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted focus:outline-none">
+                    <MoreHorizontal className="size-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-36">
+                    <DropdownMenuItem onClick={() => setEditAccount(a)} className="flex items-center gap-2">
+                      <Edit className="size-3.5" /> Editar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )
+          })}
+          {accounts.length === 0 && <p className="text-sm text-center text-muted-foreground py-8">No hay cuentas activas.</p>}
+        </div>
       </div>
 
       {formOpen && (
