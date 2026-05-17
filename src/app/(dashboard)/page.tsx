@@ -9,6 +9,7 @@ import { ChartsSection } from './_sections/ChartsSection'
 import { AccountsSection } from './_sections/AccountsSection'
 import { RecentTransactionsSection } from './_sections/RecentTransactionsSection'
 import { AlertsSection } from './_sections/AlertsSection'
+import { NetWorthHero } from './_sections/NetWorthHero'
 import { RefMarker } from './_components/RefMarker'
 
 export const dynamic = 'force-dynamic'
@@ -52,7 +53,11 @@ export default async function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* Mobile hero — replaces StatCards on small screens */}
+      <NetWorthHero data={statsResult.data} currency={currency} locale={locale} />
+
+      {/* Desktop page title — hidden on mobile (header shows period instead) */}
+      <div className="hidden lg:block">
         <h1 className="text-2xl font-bold tracking-tight">Resumen</h1>
         <p className="text-sm text-muted-foreground">{periodLabel}</p>
       </div>
