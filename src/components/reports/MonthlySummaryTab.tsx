@@ -1,42 +1,22 @@
 'use client'
 
 import { useTransition } from 'react'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer,
-} from 'recharts'
-import { Download, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react'
 import { toast } from 'sonner'
 import type { DashboardStats } from '@/lib/supabase/queries/dashboard'
-import { Button } from '@/components/ui/button'
 import { exportMonthlySummaryAction } from '@/app/(dashboard)/reports/actions'
 import { downloadCsv } from '@/lib/utils/csv'
 
+// Desktop-only recharts imports
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts'
+
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 
 function fmt(v: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
-}
-
-function fmtCompact(v: number, currency: string, locale: string) {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0, notation: 'compact' }).format(v)
-}
-
-function pctChange(curr: number, prev: number) {
-  if (prev === 0) return null
-  return ((curr - prev) / Math.abs(prev)) * 100
-}
-
-function Delta({ curr, prev, invert = false, label }: { curr: number; prev: number; invert?: boolean; label?: string }) {
-  const pct = pctChange(curr, prev)
-  if (pct === null) return null
-  const isGood = invert ? pct < 0 : pct > 0
-  return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-emerald-600 dark:text-emerald-400' : pct === 0 ? 'text-muted-foreground' : 'text-red-500 dark:text-red-400'}`}>
-      {pct === 0 ? <Minus className="size-3" /> : pct > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-      {pct > 0 ? '+' : ''}{pct.toFixed(1)}%{label ? ` ${label}` : ''}
-    </span>
-  )
 }
 
 interface Props {
@@ -48,13 +28,13 @@ interface Props {
   onMonthChange: (year: number, month: number) => void
 }
 
-function buildWeeklyData(stats: DashboardStats | null) {
-  if (!stats) return []
-  return [{ semana: 'Mes', Ingresos: stats.current_month.income, Gastos: stats.current_month.expenses }]
-}
-
 export function MonthlySummaryTab({ stats, currency, locale, year, month, onMonthChange }: Props) {
-  const [exporting, startExport] = useTransition()
+  const [, startExport] = useTransition()
+
+  function navigate(delta: -1 | 1) {
+    const d = new Date(year, month - 1 + delta, 1)
+    onMonthChange(d.getFullYear(), d.getMonth() + 1)
+  }
 
   function handleExport() {
     startExport(async () => {
@@ -64,223 +44,220 @@ export function MonthlySummaryTab({ stats, currency, locale, year, month, onMont
     })
   }
 
-  function navigate(delta: -1 | 1) {
-    const d = new Date(year, month - 1 + delta, 1)
-    onMonthChange(d.getFullYear(), d.getMonth() + 1)
-  }
-
-  const savings = stats ? stats.current_month.savings_rate : 0
+  const savings = stats?.current_month.savings_rate ?? 0
   const prevSavings = stats && stats.previous_month.income > 0
     ? ((stats.previous_month.income - stats.previous_month.expenses) / stats.previous_month.income) * 100
     : 0
-
-  const weeklyData = buildWeeklyData(stats)
+  const netResult = stats?.current_month.net ?? 0
   const catTotal = stats?.top_categories.reduce((s, c) => s + c.total, 0) ?? 1
 
-  const netResult = stats ? stats.current_month.net : 0
-  const isPositiveNet = netResult >= 0
+  const monthLabel = `${MONTHS_ES[month - 1] ?? ''} ${year}`
+  const monthShort = MONTHS_SHORT[month - 1] ?? ''
 
   return (
-    <div className="space-y-5">
-      {/* Period selector + export — always visible */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>‹</Button>
-          <span className="text-sm font-semibold min-w-[140px] text-center">
-            {MONTHS_ES[month - 1]} {year}
-          </span>
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate(1)}>›</Button>
+    <>
+      {/* ── MOBILE layout ── */}
+      <div className="lg:hidden space-y-4">
+        {/* Period selector — small bordered square buttons */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex size-8 items-center justify-center rounded-lg border bg-card text-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronLeft className="size-3.5" />
+          </button>
+          <span className="text-sm font-semibold">{monthLabel}</span>
+          <button
+            onClick={() => navigate(1)}
+            className="flex size-8 items-center justify-center rounded-lg border bg-card text-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="gap-1.5">
-          <Download className="size-3.5" />
-          Exportar CSV
-        </Button>
-      </div>
 
-      {/* ── Mobile hero ── */}
-      {stats && (
-        <div
-          className="lg:hidden rounded-2xl px-5 py-5 text-white"
-          style={{ background: 'linear-gradient(155deg, oklch(0.20 0 0), oklch(0.13 0 0))' }}
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
-            Resultado del mes
-          </span>
-          <div className="mt-1.5 flex items-end justify-between gap-3">
-            <p
-              className="tabular-nums leading-none"
-              style={{ fontSize: '30px', fontWeight: 700, letterSpacing: '-0.02em' }}
-            >
-              {isPositiveNet ? '+' : ''}{fmt(netResult, currency, locale)}
+        {/* Dark hero card */}
+        {stats && (
+          <div className="rounded-2xl px-4 py-4 text-white" style={{ background: 'var(--foreground)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ opacity: 0.6 }}>Resultado del mes</p>
+            <p className="mt-1 tabular-nums font-bold" style={{ fontSize: 30, letterSpacing: '-0.02em' }}>
+              {netResult >= 0 ? '+' : ''}{fmt(netResult, currency, locale)}
             </p>
-            <span
-              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold mb-0.5 shrink-0"
-              style={{
-                background: isPositiveNet ? 'oklch(0.58 0.13 155 / 0.25)' : 'oklch(0.577 0.245 27 / 0.25)',
-                color: isPositiveNet ? 'oklch(0.78 0.13 155)' : 'oklch(0.8 0.18 27)',
-              }}
-            >
-              {isPositiveNet ? <TrendingUp className="size-3" strokeWidth={2} /> : <TrendingDown className="size-3" strokeWidth={2} />}
-              {savings.toFixed(1)}% ahorro
-            </span>
-          </div>
+            <p className="text-xs mt-1" style={{ opacity: 0.7 }}>Ahorraste {savings.toFixed(1)}% de tus ingresos</p>
 
-          <div className="mt-4 h-px bg-white/10" />
-
-          {/* 3-row comparison vs prev month */}
-          <div className="mt-4 space-y-3">
-            {[
-              { label: 'Ingresos', curr: stats.current_month.income, prev: stats.previous_month.income },
-              { label: 'Gastos',   curr: stats.current_month.expenses, prev: stats.previous_month.expenses, invert: true },
-              { label: 'Ahorro',   curr: savings, prev: prevSavings, isPct: true },
-            ].map(({ label, curr, prev, invert, isPct }) => (
-              <div key={label} className="flex items-center justify-between">
-                <span className="text-xs text-white/60">{label}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs-plus font-semibold tabular-nums text-white/90">
-                    {isPct ? `${curr.toFixed(1)}%` : fmtCompact(curr, currency, locale)}
-                  </span>
-                  <Delta curr={curr} prev={prev} invert={invert} />
-                </div>
+            <div className="mt-3.5 pt-3.5 grid grid-cols-2 gap-0" style={{ borderTop: '1px solid oklch(1 0 0 / 0.12)' }}>
+              <div>
+                <p style={{ fontSize: 10.5, opacity: 0.6 }}>Ingresos</p>
+                <p className="mt-0.5 tabular-nums font-semibold" style={{ fontSize: 16 }}>{fmt(stats.current_month.income, currency, locale)}</p>
               </div>
-            ))}
-          </div>
-
-          {/* Numbered top categories */}
-          {stats.top_categories.length > 0 && (
-            <>
-              <div className="mt-4 h-px bg-white/10" />
-              <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">Top gastos</p>
-              <div className="mt-2 space-y-2">
-                {stats.top_categories.slice(0, 5).map((cat, i) => (
-                  <div key={cat.id} className="flex items-center gap-2.5">
-                    <span className="text-[10px] font-bold text-white/30 w-4 shrink-0">{i + 1}</span>
-                    {cat.icon && <span className="text-sm leading-none">{cat.icon}</span>}
-                    <span className="flex-1 truncate text-xs text-white/80">{cat.name}</span>
-                    <span className="text-xs-plus font-semibold tabular-nums text-white/90 shrink-0">
-                      {fmtCompact(cat.total, currency, locale)}
-                    </span>
-                    <span className="text-[10px] text-white/40 shrink-0 w-9 text-right">
-                      {catTotal > 0 ? ((cat.total / catTotal) * 100).toFixed(0) : 0}%
-                    </span>
-                  </div>
-                ))}
+              <div>
+                <p style={{ fontSize: 10.5, opacity: 0.6 }}>Gastos</p>
+                <p className="mt-0.5 tabular-nums font-semibold" style={{ fontSize: 16 }}>{fmt(stats.current_month.expenses, currency, locale)}</p>
               </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── Desktop stat cards ── */}
-      <div className="hidden lg:grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { title: 'Ingresos', curr: stats?.current_month.income ?? 0, prev: stats?.previous_month.income ?? 0 },
-          { title: 'Gastos', curr: stats?.current_month.expenses ?? 0, prev: stats?.previous_month.expenses ?? 0, invert: true },
-          { title: 'Ahorro del mes', curr: stats?.current_month.net ?? 0, prev: stats?.previous_month.net ?? 0 },
-          { title: 'Tasa de ahorro', curr: savings, prev: prevSavings, pct: true },
-        ].map(({ title, curr, prev, invert, pct }) => (
-          <div key={title} className="rounded-xl border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">{title}</p>
-            <p className="mt-1 text-xl font-bold tabular-nums">
-              {pct ? `${curr.toFixed(1)}%` : fmt(curr, currency, locale)}
-            </p>
-            <div className="mt-1"><Delta curr={curr} prev={prev} invert={invert} /></div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bar chart — desktop only (mobile has hero card) */}
-      {stats && (
-        <div className="hidden lg:block rounded-xl border bg-card p-5 shadow-sm">
-          <h3 className="text-sm font-semibold mb-4">Ingresos vs Gastos</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weeklyData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false}
-                tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} width={52} />
-              <Tooltip formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
-                contentStyle={{ fontSize: 11, backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)' }} />
-              <Legend wrapperStyle={{ fontSize: 11, color: 'var(--foreground)' }} />
-              <Bar dataKey="Ingresos" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Gastos" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* Category table — desktop full table, mobile list */}
-      {stats && stats.top_categories.length > 0 && (
-        <>
-          {/* Desktop table */}
-          <div className="hidden lg:block rounded-xl border bg-card shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b">
-              <h3 className="text-sm font-semibold">Gastos por categoría</h3>
             </div>
-            <table className="w-full text-xs">
-              <thead className="border-b text-muted-foreground">
-                <tr>
-                  <th className="px-5 py-2 text-left font-medium">Categoría</th>
-                  <th className="px-5 py-2 text-right font-medium">Monto</th>
-                  <th className="px-5 py-2 text-right font-medium">% total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.top_categories.map((cat) => (
-                  <tr key={cat.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="px-5 py-2 flex items-center gap-2">
-                      {cat.icon && <span>{cat.icon}</span>}
-                      <span style={{ color: cat.color ?? undefined }}>{cat.name}</span>
-                    </td>
-                    <td className="px-5 py-2 text-right tabular-nums">{fmt(cat.total, currency, locale)}</td>
-                    <td className="px-5 py-2 text-right tabular-nums text-muted-foreground">
-                      {catTotal > 0 ? ((cat.total / catTotal) * 100).toFixed(1) : 0}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
+        )}
 
-          {/* Mobile card list with progress bars */}
-          <div className="lg:hidden rounded-xl border bg-card shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-sm font-semibold">Gastos por categoría</h3>
-            </div>
-            <div className="divide-y divide-border">
-              {stats.top_categories.map((cat) => {
-                const pct = catTotal > 0 ? (cat.total / catTotal) * 100 : 0
+        {/* Vs. mes anterior */}
+        {stats && (
+          <>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Vs. mes anterior</p>
+            <div className="space-y-2">
+              {[
+                { l: 'Ingresos', curr: stats.current_month.income, prev: stats.previous_month.income, good: 'higher' },
+                { l: 'Gastos',   curr: stats.current_month.expenses, prev: stats.previous_month.expenses, good: 'lower' },
+                { l: 'Ahorro',   curr: netResult, prev: stats.previous_month.net, good: 'higher' },
+              ].map(({ l, curr, prev, good }) => {
+                const delta = prev !== 0 ? ((curr - prev) / Math.abs(prev)) * 100 : null
+                const positive = delta !== null ? ((good === 'higher' && delta > 0) || (good === 'lower' && delta < 0)) : null
                 return (
-                  <div key={cat.id} className="px-4 py-3 space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {cat.icon && <span className="text-sm">{cat.icon}</span>}
-                        <span className="text-xs-plus font-medium truncate">{cat.name}</span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-xs-plus font-semibold tabular-nums">{fmt(cat.total, currency, locale)}</span>
-                        <span className="ml-1.5 text-[10px] text-muted-foreground">{pct.toFixed(0)}%</span>
-                      </div>
+                  <div key={l} className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3">
+                    <div className="flex-1">
+                      <p className="text-[13.5px] font-medium">{l}</p>
+                      <p className="text-xs-plus text-muted-foreground tabular-nums">{fmt(prev, currency, locale)} en {monthShort} anterior</p>
                     </div>
-                    <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${pct}%`, background: cat.color ?? 'var(--primary)' }}
-                      />
+                    <div className="text-right">
+                      <p className="text-[15px] font-semibold tabular-nums">{fmt(curr, currency, locale)}</p>
+                      {delta !== null && (
+                        <p className={`text-xs font-medium flex items-center justify-end gap-0.5 mt-0.5 ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                          {delta > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                          <span className="tabular-nums">{delta > 0 ? '+' : ''}{delta.toFixed(1)}%</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 )
               })}
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
 
-      {!stats && (
-        <div className="rounded-xl border bg-card p-12 text-center text-sm text-muted-foreground shadow-sm">
-          No hay datos para este período.
+        {/* Top expenses — numbered list */}
+        {stats && stats.top_categories.length > 0 && (
+          <>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mayores gastos</p>
+            <div className="rounded-xl border bg-card overflow-hidden divide-y divide-border">
+              {stats.top_categories.slice(0, 5).map((cat, i) => (
+                <div key={cat.id} className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-[13px] font-bold text-muted-foreground">{i + 1}</span>
+                  {cat.icon && <span className="text-base shrink-0">{cat.icon}</span>}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13.5px] font-medium truncate">{cat.name}</p>
+                    <p className="text-xs-plus text-muted-foreground">{catTotal > 0 ? ((cat.total / catTotal) * 100).toFixed(0) : 0}% del total</p>
+                  </div>
+                  <p className="text-[13.5px] font-semibold tabular-nums shrink-0">−{fmt(cat.total, currency, locale)}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!stats && (
+          <div className="rounded-xl border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
+            No hay datos para este período.
+          </div>
+        )}
+      </div>
+
+      {/* ── DESKTOP layout ── */}
+      <div className="hidden lg:block space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(-1)} className="flex size-8 items-center justify-center rounded-lg border bg-card hover:bg-muted">
+              <ChevronLeft className="size-3.5" />
+            </button>
+            <span className="text-sm font-semibold min-w-[140px] text-center">{monthLabel}</span>
+            <button onClick={() => navigate(1)} className="flex size-8 items-center justify-center rounded-lg border bg-card hover:bg-muted">
+              <ChevronRight className="size-3.5" />
+            </button>
+          </div>
+          <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm hover:bg-muted transition-colors">
+            Exportar CSV
+          </button>
         </div>
-      )}
-    </div>
+
+        {stats && (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { title: 'Ingresos', curr: stats.current_month.income, prev: stats.previous_month.income },
+                { title: 'Gastos', curr: stats.current_month.expenses, prev: stats.previous_month.expenses, invert: true },
+                { title: 'Ahorro del mes', curr: netResult, prev: stats.previous_month.net },
+                { title: 'Tasa de ahorro', curr: savings, prev: prevSavings, pct: true },
+              ].map(({ title, curr, prev, invert, pct }) => {
+                const delta = prev !== 0 ? ((curr - prev) / Math.abs(prev)) * 100 : null
+                const positive = delta !== null ? (invert ? delta < 0 : delta > 0) : null
+                return (
+                  <div key={title} className="rounded-xl border bg-card p-4">
+                    <p className="text-xs text-muted-foreground">{title}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">
+                      {pct ? `${curr.toFixed(1)}%` : fmt(curr, currency, locale)}
+                    </p>
+                    {delta !== null && (
+                      <p className={`mt-1 text-xs font-medium flex items-center gap-0.5 ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {delta > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                        {delta > 0 ? '+' : ''}{delta.toFixed(1)}% vs mes anterior
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="rounded-xl border bg-card p-5">
+              <h3 className="text-sm font-semibold mb-4">Ingresos vs Gastos</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={[{ semana: 'Mes', Ingresos: stats.current_month.income, Gastos: stats.current_month.expenses }]}
+                  margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false}
+                    tickFormatter={(v: number) => new Intl.NumberFormat(locale, { notation: 'compact', style: 'currency', currency, maximumFractionDigits: 0 }).format(v)} width={52} />
+                  <Tooltip formatter={(v) => fmt(Number(v ?? 0), currency, locale)}
+                    contentStyle={{ fontSize: 11, backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px' }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="Ingresos" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Gastos" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {stats.top_categories.length > 0 && (
+              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="px-5 py-3 border-b"><h3 className="text-sm font-semibold">Gastos por categoría</h3></div>
+                <table className="w-full text-xs">
+                  <thead className="border-b text-muted-foreground">
+                    <tr>
+                      <th className="px-5 py-2 text-left font-medium">Categoría</th>
+                      <th className="px-5 py-2 text-right font-medium">Monto</th>
+                      <th className="px-5 py-2 text-right font-medium">% total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.top_categories.map((cat) => (
+                      <tr key={cat.id} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="px-5 py-2 flex items-center gap-2">
+                          {cat.icon && <span>{cat.icon}</span>}
+                          <span style={{ color: cat.color ?? undefined }}>{cat.name}</span>
+                        </td>
+                        <td className="px-5 py-2 text-right tabular-nums">{fmt(cat.total, currency, locale)}</td>
+                        <td className="px-5 py-2 text-right tabular-nums text-muted-foreground">
+                          {catTotal > 0 ? ((cat.total / catTotal) * 100).toFixed(1) : 0}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {!stats && (
+          <div className="rounded-xl border bg-card p-12 text-center text-sm text-muted-foreground">
+            No hay datos para este período.
+          </div>
+        )}
+      </div>
+    </>
   )
 }

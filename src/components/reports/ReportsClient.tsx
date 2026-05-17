@@ -30,20 +30,12 @@ interface Props {
 }
 
 export function ReportsClient({
-  initialStats,
-  flow,
-  accounts,
-  snapshots,
-  currency,
-  locale,
-  initialYear,
-  initialMonth,
+  initialStats, flow, accounts, snapshots, currency, locale, initialYear, initialMonth,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
 
-  // Month navigation pushes ?month=YYYY-MM so the page re-renders with fresh data
   function handleMonthChange(y: number, m: number) {
     const monthStr = `${y}-${String(m).padStart(2, '0')}`
     const next = new URLSearchParams(params.toString())
@@ -52,7 +44,8 @@ export function ReportsClient({
   }
 
   return (
-    <Tabs defaultValue="monthly" className="flex-col">
+    <div>
+      {/* Mobile page header — OUTSIDE Tabs so it doesn't break the tab layout */}
       <MobilePageHeader
         title="Reportes"
         action={
@@ -61,55 +54,63 @@ export function ReportsClient({
           </button>
         }
       />
-      <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0 overflow-x-auto flex-nowrap">
-        <TabsTrigger value="monthly"  className="rounded-none px-3 pb-3 lg:px-4">
-          <span className="lg:hidden">Mensual</span>
-          <span className="hidden lg:inline">Resumen mensual</span>
-        </TabsTrigger>
-        <TabsTrigger value="category" className="rounded-none px-3 pb-3 lg:px-4">
-          <span className="lg:hidden">Categoría</span>
-          <span className="hidden lg:inline">Por categoría</span>
-        </TabsTrigger>
-        <TabsTrigger value="cashflow" className="rounded-none px-3 pb-3 lg:px-4">
-          <span className="lg:hidden">Flujo</span>
-          <span className="hidden lg:inline">Flujo de caja</span>
-        </TabsTrigger>
-        <TabsTrigger value="networth" className="rounded-none px-3 pb-3 lg:px-4">
-          <span className="lg:hidden">Patrimonio</span>
-          <span className="hidden lg:inline">Patrimonio neto</span>
-        </TabsTrigger>
-      </TabsList>
 
-      <div className="mt-4 lg:mt-6">
-      <TabsContent value="monthly">
-        <MonthlySummaryTab
-          stats={initialStats}
-          currency={currency}
-          locale={locale}
-          year={initialYear}
-          month={initialMonth}
-          onMonthChange={handleMonthChange}
-        />
-      </TabsContent>
+      <Tabs defaultValue="monthly" className="flex-col">
+        {/* Tab bar */}
+        <TabsList
+          variant="line"
+          className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0 overflow-x-auto flex-nowrap [&::-webkit-scrollbar]:hidden"
+        >
+          <TabsTrigger value="monthly"  className="rounded-none px-3 pb-3 text-[13px] lg:px-4">
+            <span className="lg:hidden">Mensual</span>
+            <span className="hidden lg:inline">Resumen mensual</span>
+          </TabsTrigger>
+          <TabsTrigger value="category" className="rounded-none px-3 pb-3 text-[13px] lg:px-4">
+            <span className="lg:hidden">Categoría</span>
+            <span className="hidden lg:inline">Por categoría</span>
+          </TabsTrigger>
+          <TabsTrigger value="cashflow" className="rounded-none px-3 pb-3 text-[13px] lg:px-4">
+            <span className="lg:hidden">Flujo</span>
+            <span className="hidden lg:inline">Flujo de caja</span>
+          </TabsTrigger>
+          <TabsTrigger value="networth" className="rounded-none px-3 pb-3 text-[13px] lg:px-4">
+            <span className="lg:hidden">Patrimonio</span>
+            <span className="hidden lg:inline">Patrimonio neto</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <TabsContent value="category">
-        <CategoryBreakdownTab currency={currency} locale={locale} />
-      </TabsContent>
+        {/* Content — mobile gets px-4 pt-3.5 pb-6, desktop gets mt-6 */}
+        <div className="px-4 pt-3.5 pb-6 lg:px-0 lg:pt-0 lg:pb-0 lg:mt-6">
+          <TabsContent value="monthly">
+            <MonthlySummaryTab
+              stats={initialStats}
+              currency={currency}
+              locale={locale}
+              year={initialYear}
+              month={initialMonth}
+              onMonthChange={handleMonthChange}
+            />
+          </TabsContent>
 
-      <TabsContent value="cashflow">
-        <CashFlowTab flow={flow} currency={currency} locale={locale} />
-      </TabsContent>
+          <TabsContent value="category">
+            <CategoryBreakdownTab currency={currency} locale={locale} />
+          </TabsContent>
 
-      <TabsContent value="networth">
-        <NetWorthTab
-          snapshots={snapshots}
-          accounts={accounts}
-          stats={initialStats}
-          currency={currency}
-          locale={locale}
-        />
-      </TabsContent>
-      </div>
-    </Tabs>
+          <TabsContent value="cashflow">
+            <CashFlowTab flow={flow} currency={currency} locale={locale} />
+          </TabsContent>
+
+          <TabsContent value="networth">
+            <NetWorthTab
+              snapshots={snapshots}
+              accounts={accounts}
+              stats={initialStats}
+              currency={currency}
+              locale={locale}
+            />
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   )
 }
