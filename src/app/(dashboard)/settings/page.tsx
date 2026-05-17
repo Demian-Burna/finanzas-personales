@@ -64,7 +64,7 @@ export default async function SettingsPage({
   const tabTitle = TAB_LABELS[tab] ?? 'Configuración'
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* Desktop title */}
       <div className="hidden lg:block">
         <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>

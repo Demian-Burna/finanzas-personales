@@ -35,18 +35,18 @@ export default async function TransactionsPage() {
   ])
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div>
+      {/* Desktop title — hidden on mobile (MobilePageHeader handles it) */}
+      <div className="hidden lg:flex items-center justify-between mb-5 px-0">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Transacciones</h1>
           <p className="text-sm text-muted-foreground">Registrá y gestioná tus movimientos</p>
         </div>
-        {/* base-ui Button supports render prop to swap root element */}
         <Button
           variant="outline"
           size="sm"
           render={<Link href="/transactions/import" />}
-          className="gap-1.5 hidden sm:inline-flex"
+          className="gap-1.5"
         >
           <Upload className="size-4" />
           Importar CSV

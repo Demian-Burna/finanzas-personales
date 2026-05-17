@@ -36,8 +36,8 @@ function Skeleton() {
 
 export default function GoalsPage() {
   return (
-    <div className="space-y-5">
-      <div>
+    <div>
+      <div className="hidden lg:block mb-5">
         <h1 className="text-2xl font-bold tracking-tight">Metas de ahorro</h1>
         <p className="text-sm text-muted-foreground">Seguimiento de tus objetivos financieros</p>
       </div>

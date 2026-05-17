@@ -45,14 +45,11 @@ async function BudgetsData() {
 
 export default function BudgetsPage() {
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Presupuestos</h1>
-          <p className="text-sm text-muted-foreground">Control de gastos por categoria</p>
-        </div>
+    <div>
+      <div className="hidden lg:block mb-5">
+        <h1 className="text-2xl font-bold tracking-tight">Presupuestos</h1>
+        <p className="text-sm text-muted-foreground">Control de gastos por categoría</p>
       </div>
-
       <Suspense fallback={<BudgetsClientSkeleton />}>
         <BudgetsData />
       </Suspense>

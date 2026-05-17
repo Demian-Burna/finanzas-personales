@@ -67,8 +67,8 @@ export default async function ReportsPage({
   }>
 
   return (
-    <div className="space-y-5">
-      <div>
+    <div>
+      <div className="hidden lg:block mb-5">
         <h1 className="text-2xl font-bold tracking-tight">Reportes</h1>
         <p className="text-sm text-muted-foreground">Análisis y visualización de tus finanzas</p>
       </div>

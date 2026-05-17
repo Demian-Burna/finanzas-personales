@@ -38,8 +38,8 @@ function Skeleton() {
 
 export default function RecurringPage() {
   return (
-    <div className="space-y-5">
-      <div>
+    <div>
+      <div className="hidden lg:block mb-5">
         <h1 className="text-2xl font-bold tracking-tight">Recurrentes</h1>
         <p className="text-sm text-muted-foreground">Ingresos y gastos que se repiten mensual o anualmente</p>
       </div>
