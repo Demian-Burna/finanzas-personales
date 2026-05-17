@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { MobileHeader } from '@/components/layout/MobileHeader'
+import { NotificationsDrawer } from '@/components/shared/NotificationsDrawer'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -36,6 +37,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </main>
       </div>
       <MobileNav user={user} />
+      <NotificationsDrawer />
     </div>
   )
 }

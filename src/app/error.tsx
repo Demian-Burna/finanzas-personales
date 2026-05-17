@@ -1,5 +1,7 @@
 'use client'
 
+import { ErrorScreen } from '@/components/shared/ErrorScreen'
+
 export default function GlobalError({
   error,
   reset,
@@ -7,17 +9,23 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const refCode = error.digest
+    ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+    : `ERR-${Math.random().toString(36).slice(2, 10).toUpperCase()}`
+
   return (
     <html>
-      <body className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-4 p-8">
-          <h2 className="text-2xl font-bold">Algo salió mal</h2>
-          <p className="text-muted-foreground text-sm">{error.message}</p>
-          {error.digest && <p className="text-xs text-muted-foreground font-mono">ID: {error.digest}</p>}
-          <button onClick={reset} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm">
-            Intentar de nuevo
-          </button>
-        </div>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <ErrorScreen
+          icon={<span className="flex size-[72px] items-center justify-center rounded-[22px] bg-destructive/15 text-destructive text-3xl font-bold">!</span>}
+          title="Algo se rompió de nuestro lado"
+          body="Hubo un problema procesando tu pedido. Ya lo registramos y lo estamos mirando."
+          actions={[
+            { label: 'Intentar de nuevo', onClick: reset },
+            { label: 'Volver al inicio', href: '/' },
+          ]}
+          refCode={refCode}
+        />
       </body>
     </html>
   )

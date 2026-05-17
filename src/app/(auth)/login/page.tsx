@@ -34,6 +34,7 @@ export default async function LoginPage({
   let magicSent = false
   let sentEmail: string | undefined
 
+  let sessionExpired = false
   try {
     const params = await Promise.resolve(searchParams)
     const raw = params?.error
@@ -41,7 +42,37 @@ export default async function LoginPage({
     magicSent = params?.magic_sent === '1'
     const rawEmail = params?.email
     sentEmail = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail
+    sessionExpired = params?.reason === 'expired'
   } catch { /* ignore */ }
+
+  // Session expired — show dedicated screen
+  if (sessionExpired) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-8 text-center">
+        <div className="flex size-[72px] items-center justify-center rounded-[22px] bg-muted mb-7 text-3xl">
+          ⏱
+        </div>
+        <h1 className="text-xl font-bold">Tu sesión expiró</h1>
+        <p className="mt-3 text-sm text-muted-foreground max-w-xs leading-relaxed">
+          Por seguridad, cerramos tu sesión después de un rato sin actividad. Entrá de nuevo para seguir.
+        </p>
+        <div className="mt-8 w-full max-w-xs space-y-3">
+          <a
+            href="/login"
+            className="flex h-12 w-full items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Iniciar sesión
+          </a>
+          <a
+            href="/"
+            className="flex h-12 w-full items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Recordarme mañana
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
