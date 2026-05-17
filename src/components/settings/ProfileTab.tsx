@@ -42,17 +42,6 @@ interface Props {
   userEmail: string | null
 }
 
-// Field row — label left, value right (iOS-style)
-function FieldRow({ label, children, last }: { label: string; children: React.ReactNode; last?: boolean }) {
-  return (
-    <div className={`flex items-center gap-3 px-4 py-3 ${last ? '' : 'border-b border-border'}`}>
-      <div className="w-28 text-sm text-muted-foreground shrink-0">{label}</div>
-      <div className="flex-1 text-sm font-medium text-right">{children}</div>
-      <ChevronRight className="size-4 text-muted-foreground/50 shrink-0" />
-    </div>
-  )
-}
-
 function SectionCard({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <section className="mb-5">
