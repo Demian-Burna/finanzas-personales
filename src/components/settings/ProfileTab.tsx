@@ -172,8 +172,8 @@ export function ProfileTab({ profile, userEmail }: Props) {
         {isPending ? 'Guardando...' : 'Guardar cambios'}
       </Button>
 
-      {/* Mobile-only: theme toggle + sign out (same card style as Notifications) */}
-      <div className="lg:hidden space-y-2 pt-2 border-t">
+      {/* Mobile: theme + sign out are in SettingsMobileIndex; show them here only on desktop */}
+      <div className="hidden lg:block space-y-2 pt-2 border-t">
         <button
           type="button"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
