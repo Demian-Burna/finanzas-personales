@@ -6,7 +6,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import {
   ChevronRight, Wallet, Tag, Globe, Bell, Database,
-  Palette, HelpCircle, FileText, LogOut, Sun, Moon, Monitor,
+  HelpCircle, FileText, LogOut, Sun, Moon, Monitor,
 } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
