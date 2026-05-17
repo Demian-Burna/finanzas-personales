@@ -129,7 +129,128 @@ export function BudgetForm({
         </Button>
       }
     >
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+
+        {/* ── Mobile layout ── */}
+        <div className="lg:hidden space-y-0">
+
+          {/* Category chips */}
+          <div className="mb-5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Categoría</p>
+            <div className="flex flex-wrap gap-1.5">
+              <Controller control={form.control} name="category_id" render={({ field }) => (
+                <>
+                  {leaves.slice(0, 8).map((c) => {
+                    const selected = field.value === c.id
+                    return (
+                      <button key={c.id} type="button" onClick={() => field.onChange(selected ? '' : c.id)}
+                        className="flex items-center gap-1 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors"
+                        style={{
+                          border: selected ? '1.5px solid var(--foreground)' : '1px solid var(--border)',
+                          background: selected ? 'var(--foreground)' : 'var(--card)',
+                          color: selected ? 'var(--background)' : 'var(--foreground)',
+                        }}
+                      >
+                        {c.icon && <span>{c.icon}</span>}
+                        {c.name}
+                      </button>
+                    )
+                  })}
+                </>
+              )} />
+            </div>
+            {form.formState.errors.category_id && <p className="mt-1 text-xs text-destructive">{form.formState.errors.category_id.message}</p>}
+          </div>
+
+          {/* Big amount + period */}
+          <div className="rounded-xl border bg-card overflow-hidden mb-4">
+            {/* Big amount */}
+            <div className="text-center py-5 border-b border-border">
+              <Controller control={form.control} name="amount" render={({ field }) => (
+                <div className="flex items-start justify-center">
+                  <span className="text-muted-foreground mr-1 mt-1" style={{ fontSize: 18, verticalAlign: 'top' }}>$</span>
+                  <input type="text" inputMode="decimal" placeholder="0"
+                    value={field.value === 0 ? '' : String(field.value)}
+                    onChange={(e) => { const n = parseFloat(e.target.value.replace(',', '.')); field.onChange(isNaN(n) ? 0 : n) }}
+                    onBlur={field.onBlur}
+                    className="bg-transparent border-0 outline-none text-center tabular-nums"
+                    style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, width: '7ch', minWidth: '3ch' }}
+                  />
+                </div>
+              )} />
+              <p className="text-xs-plus text-muted-foreground mt-1.5">ARS · tocá para cambiar</p>
+              {form.formState.errors.amount && <p className="mt-1 text-xs text-destructive">{form.formState.errors.amount.message}</p>}
+            </div>
+
+            {/* Period segmented */}
+            <div className="p-2">
+              <Controller control={form.control} name="period_type" render={({ field }) => (
+                <div className="grid" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4, padding: 4, background: 'var(--muted)', borderRadius: 10 }}>
+                  {PERIOD_OPTIONS.map((o) => (
+                    <button key={o.value} type="button" onClick={() => field.onChange(o.value)}
+                      className="rounded-lg py-2 text-[11.5px] font-medium transition-colors"
+                      style={{
+                        background: field.value === o.value ? 'var(--background)' : 'transparent',
+                        boxShadow: field.value === o.value ? '0 1px 3px oklch(0 0 0 / 0.08)' : 'none',
+                        color: field.value === o.value ? 'var(--foreground)' : 'var(--muted-foreground)',
+                      }}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              )} />
+            </div>
+          </div>
+
+          {/* Alert threshold slider */}
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-4 pt-3.5 pb-0">Alertas</p>
+            <div className="px-4 py-3.5 border-b border-border">
+              <div className="flex justify-between items-baseline mb-2">
+                <span className="text-[13.5px] font-medium">Avisar cuando llegue al…</span>
+                <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--accent)' }}>{alertThreshold}%</span>
+              </div>
+              <div className="relative h-1.5 rounded-full bg-muted">
+                <div className="absolute left-0 top-0 bottom-0 rounded-full" style={{ width: `${((alertThreshold - 50) / 50) * 100}%`, background: 'var(--accent)' }} />
+              </div>
+              <input type="range" min={50} max={100} step={5}
+                {...form.register('alert_threshold_pct', { valueAsNumber: true })}
+                className="w-full mt-2" style={{ accentColor: 'var(--accent)' }}
+              />
+              <div className="flex justify-between">
+                <span className="text-[10px] text-muted-foreground">50%</span>
+                <span className="text-[10px] text-muted-foreground">100%</span>
+              </div>
+            </div>
+
+            {/* Rollover row */}
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[13.5px] font-medium">Acumulado</p>
+                <p className="text-xs-plus text-muted-foreground">{rollover ? 'Sí reinicia mes a mes' : 'No reinicia mes a mes'}</p>
+              </div>
+              <button type="button" role="switch" aria-checked={rollover} onClick={() => form.setValue('rollover_unused', !rollover)}
+                className="relative inline-flex shrink-0 items-center rounded-full transition-colors"
+                style={{ width: 38, height: 22, background: rollover ? 'var(--success)' : 'var(--muted)', padding: 2 }}
+              >
+                <span className="inline-block rounded-full bg-white shadow transition-transform"
+                  style={{ width: 18, height: 18, transform: rollover ? 'translateX(16px)' : 'translateX(0)' }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Save button */}
+          <button type="button" onClick={handleSubmit} disabled={isPending}
+            className="mt-5 w-full rounded-xl py-3.5 text-[15px] font-semibold transition-colors"
+            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+          >
+            {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear presupuesto'}
+          </button>
+        </div>
+
+        {/* ── Desktop layout ── */}
+        <div className="hidden lg:block space-y-4">
           {/* Category — searchable combobox */}
           <div>
             <Label>Categoría</Label>
@@ -267,8 +388,9 @@ export function BudgetForm({
               />
             </button>
           </div>
+        </div>{/* end desktop */}
 
-        </form>
+      </form>
     </FormShell>
   )
 }

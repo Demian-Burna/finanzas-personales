@@ -10,6 +10,7 @@ import { AccountsSection } from './_sections/AccountsSection'
 import { RecentTransactionsSection } from './_sections/RecentTransactionsSection'
 import { AlertsSection } from './_sections/AlertsSection'
 import { NetWorthHero } from './_sections/NetWorthHero'
+import { BudgetsSummarySection } from './_sections/BudgetsSummarySection'
 import { RefMarker } from './_components/RefMarker'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +73,9 @@ export default async function OverviewPage() {
         currency={currency}
         locale={locale}
       />
+
+      {/* Mobile-only budgets section (appears between charts and accounts per design) */}
+      <BudgetsSummarySection budgets={budgetsResult.data ?? []} locale={locale} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <AccountsSection accounts={accountsResult.data ?? []} locale={locale} />

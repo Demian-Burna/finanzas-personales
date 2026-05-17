@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { AlertTriangle, Download, Upload } from 'lucide-react'
+import { AlertTriangle, Download, Upload, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -37,8 +37,11 @@ export function DataTab() {
     })
   }
 
+  const [backupEnabled, setBackupEnabled] = useState(true)
+  const lastBackup = 'domingo 4/05'
+
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="max-w-2xl px-4 lg:px-0 pt-2 pb-6 lg:py-0 space-y-6">
       {/* Export */}
       <section className="space-y-3">
         <h3 className="text-sm font-semibold">Exportar datos</h3>
@@ -63,6 +66,33 @@ export function DataTab() {
           <Upload className="size-3.5" />
           Ir al importador
         </Button>
+      </section>
+
+      {/* Backups */}
+      <section>
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Backups</p>
+        <div className="overflow-hidden rounded-xl border bg-card divide-y divide-border">
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <div>
+              <p className="text-sm font-medium">Backup automático</p>
+              <p className="text-xs-plus text-muted-foreground">Cada domingo a la madrugada. Próximo: 11/05.</p>
+            </div>
+            <button type="button" role="switch" aria-checked={backupEnabled} onClick={() => setBackupEnabled(v => !v)}
+              className="relative inline-flex shrink-0 items-center rounded-full transition-colors"
+              style={{ width: 38, height: 22, background: backupEnabled ? 'var(--success)' : 'var(--muted)', padding: 2 }}
+            >
+              <span className="inline-block rounded-full bg-white shadow transition-transform"
+                style={{ width: 18, height: 18, transform: backupEnabled ? 'translateX(16px)' : 'translateX(0)' }} />
+            </button>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className="flex-1">
+              <p className="text-sm font-medium">Último backup</p>
+            </div>
+            <span className="text-sm text-muted-foreground tabular-nums">{lastBackup}</span>
+            <ChevronRight className="size-4 text-muted-foreground/50 shrink-0" />
+          </div>
+        </div>
       </section>
 
       {/* Danger zone */}
