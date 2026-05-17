@@ -93,7 +93,7 @@ export function SettingsMobileIndex({ user, profile }: Props) {
   const ThemeIcon = resolvedTheme === 'dark' ? Moon : resolvedTheme === 'light' ? Sun : Monitor
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-5 px-4 pt-4 pb-8">
       {/* User card */}
       <button
         type="button"

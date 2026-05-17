@@ -19,7 +19,7 @@ export function SettingsMobileBackHeader({ title }: Props) {
   }
 
   return (
-    <div className="sticky top-16 z-30 -mx-4 mb-4 flex items-center gap-1 border-b bg-background/95 px-2 py-2 backdrop-blur-sm lg:hidden">
+    <div className="sticky top-0 z-30 flex items-center gap-1 border-b bg-background/95 px-2 py-2 backdrop-blur-sm lg:hidden">
       <button
         onClick={goBack}
         className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
