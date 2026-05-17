@@ -11,6 +11,7 @@ import type { AccountWithType } from '@/lib/supabase/queries/accounts'
 import type { SavingGoalInput, GoalContributionInput } from '@/lib/validations/saving-goal'
 import { GoalForm } from '@/components/forms/GoalForm'
 import { EmptyCard } from '@/components/shared/EmptyCard'
+import { MobilePageHeader } from '@/components/layout/MobilePageHeader'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -343,52 +344,110 @@ export function GoalsClient({ goals, accounts, currency, locale }: Props) {
   const active = goals.filter((g) => g.status !== 'completed')
   const completed = goals.filter((g) => g.status === 'completed')
 
+  // Mobile summary
+  const totalSaved = goals.reduce((s, g) => s + g.current_amount, 0)
+  const totalTarget = goals.reduce((s, g) => s + g.target_amount, 0)
+  const totalPct = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0
+
+  const fmtCurrency = (v: number) => new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
+
   return (
-    <div className="space-y-6">
-      {/* Always-visible new button on desktop */}
-      {goals.length > 0 && (
-        <div className="flex justify-end">
-          <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5 hidden sm:inline-flex">
-            <Plus className="size-4" />
-            Nueva meta
-          </Button>
-        </div>
-      )}
+    <div>
+      <MobilePageHeader
+        title="Metas"
+        action={
+          <button
+            onClick={() => setFormOpen(true)}
+            className="flex size-9 items-center justify-center rounded-full bg-foreground text-background"
+            aria-label="Nueva meta"
+          >
+            <Plus className="size-[18px]" strokeWidth={2} />
+          </button>
+        }
+      />
 
       {goals.length === 0 ? (
-        <EmptyCard
-          emoji="🚀"
-          title="Sin metas todavía"
-          description="Ponete un objetivo, mirá tu progreso y la app te dice cuánto aportar cada mes para llegar a tiempo."
-          ctaLabel="Crear la primera meta"
-          onCta={() => setFormOpen(true)}
-        />
+        <div className="px-4 pt-4 lg:p-0">
+          <EmptyCard
+            emoji="🚀"
+            title="Sin metas todavía"
+            description="Ponete un objetivo, mirá tu progreso y la app te dice cuánto aportar cada mes para llegar a tiempo."
+            ctaLabel="Crear la primera meta"
+            onCta={() => setFormOpen(true)}
+          />
+        </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {active.map((g) => (
-              <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
-                onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
-            ))}
-          </div>
-          {completed.length > 0 && (
-            <div>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Cumplidas</h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {completed.map((g) => (
-                  <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
-                    onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
-                ))}
+          {/* ── Mobile layout ── */}
+          <div className="lg:hidden px-4 pt-4 pb-6 space-y-5">
+            {/* Dark summary card */}
+            <div className="rounded-2xl px-5 py-4 text-white" style={{ background: 'var(--foreground)' }}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ opacity: 0.7 }}>Ahorrado en metas</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight">{fmtCurrency(totalSaved)}</p>
+              <div className="flex items-center gap-2 mt-2 text-[11.5px]" style={{ opacity: 0.85 }}>
+                <span>de {fmtCurrency(totalTarget)} totales</span>
+                <span style={{ opacity: 0.5 }}>·</span>
+                <span>{totalPct}%</span>
+              </div>
+              <div className="mt-3 h-1 rounded-full" style={{ background: 'oklch(1 0 0 / 0.18)' }}>
+                <div className="h-full rounded-full bg-white" style={{ width: `${totalPct}%` }} />
               </div>
             </div>
-          )}
+
+            {/* Active goals */}
+            {active.length > 0 && (
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Activas</p>
+                <div className="space-y-2.5">
+                  {active.map((g) => (
+                    <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
+                      onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Completed goals */}
+            {completed.length > 0 && (
+              <div>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Cumplidas</p>
+                <div className="space-y-2">
+                  {completed.map((g) => (
+                    <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
+                      onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Desktop layout ── */}
+          <div className="hidden lg:block space-y-6">
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setFormOpen(true)} className="gap-1.5">
+                <Plus className="size-4" /> Nueva meta
+              </Button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {active.map((g) => (
+                <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
+                  onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
+              ))}
+            </div>
+            {completed.length > 0 && (
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Cumplidas</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {completed.map((g) => (
+                    <GoalCard key={g.id} goal={g} currency={currency} locale={locale}
+                      onContribute={setContributeGoal} onEdit={setEditGoal} onPause={handlePause} onDelete={handleDeleteGoal} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
-
-      {/* FAB */}
-      <button onClick={() => setFormOpen(true)} className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden" aria-label="Nueva meta">
-        <Plus className="size-5" />
-      </button>
 
       <GoalForm open={formOpen} onOpenChange={setFormOpen} defaultCurrency={currency} onSubmit={handleCreate} isPending={isPending} />
       <GoalForm open={!!editGoal} onOpenChange={(o) => { if (!o) setEditGoal(null) }} defaultCurrency={currency} goal={editGoal ?? undefined} onSubmit={handleUpdate} isPending={isPending} />

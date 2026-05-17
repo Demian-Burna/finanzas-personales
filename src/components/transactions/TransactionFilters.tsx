@@ -191,11 +191,22 @@ function FilterContent({
   )
 }
 
-export function TransactionFilters({ accounts, categories }: Props) {
+interface TransactionFiltersProps extends Props {
+  externalSheetOpen?: boolean
+  onExternalSheetClose?: () => void
+}
+
+export function TransactionFilters({ accounts, categories, externalSheetOpen, onExternalSheetClose }: TransactionFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  const effectiveSheetOpen = externalSheetOpen ?? sheetOpen
+  const handleSheetClose = () => {
+    setSheetOpen(false)
+    onExternalSheetClose?.()
+  }
 
   const update = useCallback(
     (key: string, value: string | null) => {
@@ -280,11 +291,11 @@ export function TransactionFilters({ accounts, categories }: Props) {
 
       {/* Mobile filter sheet */}
       <FormShell
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        open={effectiveSheetOpen}
+        onOpenChange={handleSheetClose}
         title="Filtros"
         primaryAction={
-          <Button size="sm" variant="outline" onClick={() => setSheetOpen(false)}>
+          <Button size="sm" variant="outline" onClick={handleSheetClose}>
             Aplicar
           </Button>
         }

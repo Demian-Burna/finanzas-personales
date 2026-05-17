@@ -52,7 +52,7 @@ export default async function OverviewPage() {
   const locale = profile?.locale ?? 'es-AR'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 pt-4 pb-4 lg:p-0">
       {/* Mobile hero — replaces StatCards on small screens */}
       <NetWorthHero data={statsResult.data} currency={currency} locale={locale} />
 

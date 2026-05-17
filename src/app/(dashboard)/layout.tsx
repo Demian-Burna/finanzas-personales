@@ -32,7 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile-only header — 64px reserved via pt-16 on main */}
         <MobileHeader user={user} />
-        <main className="flex-1 overflow-y-auto p-4 pt-4 pb-20 lg:p-6 lg:pb-6 lg:pt-6">
+        <main className="flex-1 overflow-y-auto p-0 pb-20 lg:p-6 lg:pb-6">
           {children}
         </main>
       </div>

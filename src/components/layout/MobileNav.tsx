@@ -11,7 +11,7 @@ import { MobileMoreSheet } from './MobileMoreSheet'
 const NAV_ITEMS = [
   { href: '/',             label: 'Inicio',  icon: Home },
   { href: '/transactions', label: 'Movim.',  icon: ArrowLeftRight },
-  // center slot = FAB
+  // center = FAB
   { href: '/budgets',      label: 'Pres.',   icon: PieChart },
 ] as const
 
@@ -25,75 +25,94 @@ export function MobileNav({ user }: Props) {
   const { setQuickAddOpen, setMoreSheetOpen } = useUIStore()
 
   function handleFAB() {
-    // Open global quick-add sheet. Until Step 5 lands, fall back to ?new=1.
     setQuickAddOpen(true)
     router.push('/transactions?new=1')
   }
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
     <>
       <MobileMoreSheet user={user} />
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 backdrop-blur-sm safe-bottom">
-        <div className="flex items-end h-16 px-2">
-
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t pb-2.5"
+        style={{ background: 'oklch(1 0 0 / 0.92)', backdropFilter: 'blur(12px)' }}
+      >
+        <div
+          className="grid items-center"
+          style={{ gridTemplateColumns: '1fr 1fr 64px 1fr 1fr' }}
+        >
           {/* Left items */}
           {NAV_ITEMS.slice(0, 2).map(({ href, label, icon: Icon }) => {
-            const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+            const active = isActive(href)
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'flex flex-1 flex-col items-center gap-0.5 pb-3 pt-2 text-[10px] font-medium transition-colors',
+                  'relative flex flex-col items-center gap-0.5 pt-2.5 pb-1',
+                  'text-[10.5px] font-medium transition-colors',
                   active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <Icon className="size-[22px]" strokeWidth={1.75} />
+                {active && (
+                  <span className="absolute top-0 h-[3px] w-7 rounded-full bg-accent" />
+                )}
+                <Icon className="size-5" strokeWidth={1.75} />
                 <span>{label}</span>
-                {active && <span className="absolute bottom-1.5 h-0.5 w-5 rounded-full bg-foreground" />}
               </Link>
             )
           })}
 
           {/* FAB — central */}
-          <div className="flex flex-1 flex-col items-center pb-3">
+          <div className="relative flex justify-center">
             <button
               onClick={handleFAB}
-              className="flex size-12 -translate-y-3 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90 active:scale-95 transition-all"
+              className="absolute flex items-center justify-center rounded-full bg-foreground text-background"
+              style={{
+                width: 52, height: 52,
+                top: -22,
+                border: '4px solid white',
+                boxShadow: '0 4px 16px oklch(0.145 0 0 / 0.24)',
+              }}
               aria-label="Nueva transacción"
             >
               <Plus className="size-6" strokeWidth={2} />
             </button>
           </div>
 
-          {/* Right items + Más */}
+          {/* Right item */}
           {NAV_ITEMS.slice(2).map(({ href, label, icon: Icon }) => {
-            const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+            const active = isActive(href)
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'flex flex-1 flex-col items-center gap-0.5 pb-3 pt-2 text-[10px] font-medium transition-colors',
+                  'relative flex flex-col items-center gap-0.5 pt-2.5 pb-1',
+                  'text-[10.5px] font-medium transition-colors',
                   active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <Icon className="size-[22px]" strokeWidth={1.75} />
+                {active && (
+                  <span className="absolute top-0 h-[3px] w-7 rounded-full bg-accent" />
+                )}
+                <Icon className="size-5" strokeWidth={1.75} />
                 <span>{label}</span>
-                {active && <span className="absolute bottom-1.5 h-0.5 w-5 rounded-full bg-foreground" />}
               </Link>
             )
           })}
 
+          {/* Más button */}
           <button
             onClick={() => setMoreSheetOpen(true)}
-            className="flex flex-1 flex-col items-center gap-0.5 pb-3 pt-2 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="relative flex flex-col items-center gap-0.5 pt-2.5 pb-1 text-[10.5px] font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Menu className="size-[22px]" strokeWidth={1.75} />
+            <Menu className="size-5" strokeWidth={1.75} />
             <span>Más</span>
           </button>
-
         </div>
       </nav>
     </>

@@ -1,7 +1,9 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { Download } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { MobilePageHeader } from '@/components/layout/MobilePageHeader'
 import { MonthlySummaryTab } from './MonthlySummaryTab'
 import { CategoryBreakdownTab } from './CategoryBreakdownTab'
 import { CashFlowTab } from './CashFlowTab'
@@ -50,7 +52,15 @@ export function ReportsClient({
   }
 
   return (
-    <Tabs defaultValue="monthly" className="flex-col space-y-6">
+    <Tabs defaultValue="monthly" className="flex-col">
+      <MobilePageHeader
+        title="Reportes"
+        action={
+          <button className="flex size-9 items-center justify-center text-foreground" aria-label="Exportar">
+            <Download className="size-[18px]" strokeWidth={1.75} />
+          </button>
+        }
+      />
       <TabsList variant="line" className="w-full justify-start border-b rounded-none px-0 bg-transparent h-auto pb-0 gap-0 overflow-x-auto flex-nowrap">
         <TabsTrigger value="monthly"  className="rounded-none px-3 pb-3 lg:px-4">
           <span className="lg:hidden">Mensual</span>
@@ -70,6 +80,7 @@ export function ReportsClient({
         </TabsTrigger>
       </TabsList>
 
+      <div className="mt-4 lg:mt-6">
       <TabsContent value="monthly">
         <MonthlySummaryTab
           stats={initialStats}
@@ -98,6 +109,7 @@ export function ReportsClient({
           locale={locale}
         />
       </TabsContent>
+      </div>
     </Tabs>
   )
 }
