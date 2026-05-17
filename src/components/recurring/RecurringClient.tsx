@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, MoreHorizontal, Edit, Power, PowerOff, Trash2, Clock, CreditCard } from 'lucide-react'
+import { Plus, MoreHorizontal, Edit, Power, PowerOff, Trash2, CreditCard } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
