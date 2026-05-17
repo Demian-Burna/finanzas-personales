@@ -157,15 +157,6 @@ export function BudgetsClient({ budgets, categories, currency, locale }: Props) 
         </div>
       )}
 
-      {/* FAB */}
-      <button
-        onClick={() => setFormOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden"
-        aria-label="Nuevo presupuesto"
-      >
-        <Plus className="size-5" />
-      </button>
-
       {/* Create form */}
       <BudgetForm
         open={formOpen}

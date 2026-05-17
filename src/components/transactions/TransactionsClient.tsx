@@ -87,14 +87,6 @@ export function TransactionsClient({ accounts, categories, currency, locale }: P
         isPending={createMutation.isPending}
       />
 
-      {/* Mobile FAB */}
-      <button
-        onClick={() => setCreateOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg lg:hidden"
-        aria-label="Nueva transacción"
-      >
-        <Plus className="size-5" />
-      </button>
     </div>
   )
 }

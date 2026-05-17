@@ -10,7 +10,6 @@ import { AccountsSection } from './_sections/AccountsSection'
 import { RecentTransactionsSection } from './_sections/RecentTransactionsSection'
 import { AlertsSection } from './_sections/AlertsSection'
 import { RefMarker } from './_components/RefMarker'
-import { QuickAddFAB } from './_components/QuickAddFAB'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +77,6 @@ export default async function OverviewPage() {
         />
       </div>
 
-      <QuickAddFAB />
       <RefMarker />
     </div>
   )

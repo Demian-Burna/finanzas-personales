@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { MobileHeader } from '@/components/layout/MobileHeader'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -28,11 +29,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar user={user} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-4 pb-20 lg:p-6 lg:pb-6">
+        {/* Mobile-only header — 64px reserved via pt-16 on main */}
+        <MobileHeader user={user} />
+        <main className="flex-1 overflow-y-auto p-4 pt-4 pb-20 lg:p-6 lg:pb-6 lg:pt-6">
           {children}
         </main>
       </div>
-      <MobileNav />
+      <MobileNav user={user} />
     </div>
   )
 }
